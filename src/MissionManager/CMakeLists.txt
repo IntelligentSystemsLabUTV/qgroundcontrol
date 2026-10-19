@@ -46,6 +46,14 @@ target_sources(${CMAKE_PROJECT_NAME}
         MissionManager.h
         MissionSettingsItem.cc
         MissionSettingsItem.h
+        PathComplexItem.cc
+        PathComplexItem.h
+        PathPlanCreator.cc
+        PathPlanCreator.h
+        PerimeterComplexItem.cc
+        PerimeterComplexItem.h
+        PerimeterPlanCreator.cc
+        PerimeterPlanCreator.h
         PlanCreator.cc
         PlanCreator.h
         PlanElementController.cc
@@ -101,6 +109,8 @@ qt_add_resources(${CMAKE_PROJECT_NAME} missionmanager_plancreator_images
     FILES
         "${CMAKE_CURRENT_SOURCE_DIR}/BlankPlanCreator.png"
         "${CMAKE_CURRENT_SOURCE_DIR}/CorridorScanPlanCreator.png"
+        "${CMAKE_CURRENT_SOURCE_DIR}/PathPlanCreator.png"
+        "${CMAKE_CURRENT_SOURCE_DIR}/PerimeterPlanCreator.png"
         "${CMAKE_CURRENT_SOURCE_DIR}/StructureScanPlanCreator.png"
         "${CMAKE_CURRENT_SOURCE_DIR}/SurveyPlanCreator.png"
 )

@@ -1,0 +1,21 @@
+{
+    "version":      1,
+    "fileType":  "FactMetaData",
+    "QGC.MetaData.Facts":
+[
+{
+    "name":             "ReturnTrip",
+    "shortDesc": "At the end of the path drive back along it to the starting point.",
+    "type":             "bool",
+    "default":          false
+},
+{
+    "name":             "Repeats",
+    "shortDesc": "Number of times the vehicle drives the path.",
+    "type":             "uint32",
+    "min":              1,
+    "max":              100,
+    "default":          1
+}
+]
+}

@@ -1,0 +1,30 @@
+{
+    "version":      1,
+    "fileType":  "FactMetaData",
+    "QGC.MetaData.Facts":
+[
+{
+    "name":             "Inset",
+    "shortDesc": "Distance from the boundary, towards the inside of the area, at which the vehicle drives.",
+    "type":             "double",
+    "units":            "m",
+    "min":              0,
+    "decimalPlaces":    1,
+    "default":          1
+},
+{
+    "name":             "Laps",
+    "shortDesc": "Number of times the vehicle drives around the perimeter.",
+    "type":             "uint32",
+    "min":              1,
+    "max":              100,
+    "default":          1
+},
+{
+    "name":             "Reverse",
+    "shortDesc": "Drive around the perimeter in the opposite direction.",
+    "type":             "bool",
+    "default":          false
+}
+]
+}

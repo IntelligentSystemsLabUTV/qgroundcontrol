@@ -2,6 +2,42 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="it" sourcelanguage="en">
   <context>
+    <name>Path.SettingsGroup.json</name>
+    <message>
+      <extracomment>.QGC.MetaData.Facts[ReturnTrip].shortDesc</extracomment>
+      <location filename="/home/runner/work/qgroundcontrol/qgroundcontrol/src/MissionManager/Path.SettingsGroup.json"/>
+      <source>At the end of the path drive back along it to the starting point.</source>
+      <translation>Alla fine del percorso torna indietro lungo lo stesso percorso fino al punto di partenza.</translation>
+    </message>
+    <message>
+      <extracomment>.QGC.MetaData.Facts[Repeats].shortDesc</extracomment>
+      <location filename="/home/runner/work/qgroundcontrol/qgroundcontrol/src/MissionManager/Path.SettingsGroup.json"/>
+      <source>Number of times the vehicle drives the path.</source>
+      <translation>Numero di volte che il veicolo percorre il percorso.</translation>
+    </message>
+  </context>
+  <context>
+    <name>Perimeter.SettingsGroup.json</name>
+    <message>
+      <extracomment>.QGC.MetaData.Facts[Inset].shortDesc</extracomment>
+      <location filename="/home/runner/work/qgroundcontrol/qgroundcontrol/src/MissionManager/Perimeter.SettingsGroup.json"/>
+      <source>Distance from the boundary, towards the inside of the area, at which the vehicle drives.</source>
+      <translation>Distanza dal confine, verso l'interno dell'area, alla quale si muove il veicolo.</translation>
+    </message>
+    <message>
+      <extracomment>.QGC.MetaData.Facts[Laps].shortDesc</extracomment>
+      <location filename="/home/runner/work/qgroundcontrol/qgroundcontrol/src/MissionManager/Perimeter.SettingsGroup.json"/>
+      <source>Number of times the vehicle drives around the perimeter.</source>
+      <translation>Numero di giri del perimetro che il veicolo percorre.</translation>
+    </message>
+    <message>
+      <extracomment>.QGC.MetaData.Facts[Reverse].shortDesc</extracomment>
+      <location filename="/home/runner/work/qgroundcontrol/qgroundcontrol/src/MissionManager/Perimeter.SettingsGroup.json"/>
+      <source>Drive around the perimeter in the opposite direction.</source>
+      <translation>Percorre il perimetro nel senso opposto.</translation>
+    </message>
+  </context>
+  <context>
     <name>RCToParamDialog.FactMetaData.json</name>
     <message>
       <extracomment>.QGC.MetaData.Facts[Scale].shortDesc</extracomment>

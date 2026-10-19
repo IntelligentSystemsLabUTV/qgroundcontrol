@@ -21,9 +21,13 @@
 #include "VideoBackend.h"
 #include "SurveyPlanCreator.h"
 #include "CorridorScanPlanCreator.h"
+#include "PathPlanCreator.h"
+#include "PerimeterPlanCreator.h"
 #include "StructureScanPlanCreator.h"
 #include "SurveyComplexItem.h"
 #include "CorridorScanComplexItem.h"
+#include "PathComplexItem.h"
+#include "PerimeterComplexItem.h"
 #include "StructureScanComplexItem.h"
 #include "FixedWingLandingComplexItem.h"
 #include "VTOLLandingComplexItem.h"
@@ -447,6 +451,10 @@ QVariantList QGCCorePlugin::complexMissionItemNames(Vehicle *vehicle)
     if (vehicle->multiRotor() || vehicle->vtol()) {
         items.append(makeEntry(StructureScanComplexItem::canonicalName, StructureScanComplexItem::tr(StructureScanComplexItem::canonicalName)));
     }
+    if (vehicle->rover()) {
+        items.append(makeEntry(PathComplexItem::canonicalName, PathComplexItem::tr(PathComplexItem::canonicalName)));
+        items.append(makeEntry(PerimeterComplexItem::canonicalName, PerimeterComplexItem::tr(PerimeterComplexItem::canonicalName)));
+    }
     // Note: Landing pattern items are not added here — they have their own dedicated button
     return items;
 }
@@ -456,6 +464,8 @@ QList<PlanCreator*> QGCCorePlugin::planCreators(PlanMasterController *planMaster
     return {
         new SurveyPlanCreator(planMasterController),
         new CorridorScanPlanCreator(planMasterController),
+        new PathPlanCreator(planMasterController),
+        new PerimeterPlanCreator(planMasterController),
         new StructureScanPlanCreator(planMasterController),
         new BlankPlanCreator(planMasterController),
     };
@@ -471,6 +481,10 @@ ComplexMissionItem *QGCCorePlugin::createComplexMissionItem(
         return new SurveyComplexItem(masterController, flyView, kmlOrShpFile);
     } else if (complexItemType == CorridorScanComplexItem::canonicalName || complexItemType == CorridorScanComplexItem::jsonComplexItemTypeValue) {
         return new CorridorScanComplexItem(masterController, flyView, kmlOrShpFile);
+    } else if (complexItemType == PathComplexItem::canonicalName || complexItemType == PathComplexItem::jsonComplexItemTypeValue) {
+        return new PathComplexItem(masterController, flyView, kmlOrShpFile);
+    } else if (complexItemType == PerimeterComplexItem::canonicalName || complexItemType == PerimeterComplexItem::jsonComplexItemTypeValue) {
+        return new PerimeterComplexItem(masterController, flyView, kmlOrShpFile);
     } else if (complexItemType == StructureScanComplexItem::canonicalName || complexItemType == StructureScanComplexItem::jsonComplexItemTypeValue) {
         return new StructureScanComplexItem(masterController, flyView, kmlOrShpFile);
     } else if (complexItemType == FixedWingLandingComplexItem::canonicalName || complexItemType == FixedWingLandingComplexItem::jsonComplexItemTypeValue) {

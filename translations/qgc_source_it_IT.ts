@@ -16243,6 +16243,142 @@ Attenzione: verrà azzerato completamente tutto, compresi i nodi UAVCAN, tutte l
     </message>
   </context>
   <context>
+    <name>PathComplexItem</name>
+    <message>
+      <location filename="../src/MissionManager/PathComplexItem.cc" line="82"/>
+      <source>%1 does not support loading this complex mission item type: %2:%3</source>
+      <translation>%1 non supporta il caricamento di questo tipo di elemento complesso della missione: %2:%3</translation>
+    </message>
+    <message>
+      <location filename="../src/MissionManager/PathComplexItem.cc" line="89"/>
+      <source>%1 complex item version %2 not supported</source>
+      <translation>Versione %2 dell'elemento complesso %1 non supportata</translation>
+    </message>
+    <message>
+      <location filename="../src/MissionManager/PathComplexItem.h" line="45"/>
+      <location filename="../src/MissionManager/PathComplexItem.h" line="47"/>
+      <location filename="../src/MissionManager/PathComplexItem.h" line="55"/>
+      <source>Path</source>
+      <translation>Percorso</translation>
+    </message>
+    <message>
+      <location filename="../src/MissionManager/PathComplexItem.h" line="49"/>
+      <source>R</source>
+      <translation>R</translation>
+    </message>
+  </context>
+  <context>
+    <name>PathEditor</name>
+    <message>
+      <location filename="../src/PlanView/PathEditor.qml" line="35"/>
+      <source>Use the Polyline Tools to draw the path the vehicle will follow.</source>
+      <translation>Usa gli strumenti polilinea per disegnare il percorso che il veicolo seguirà.</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/PathEditor.qml" line="52"/>
+      <source>Return trip</source>
+      <translation>Andata e ritorno</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/PathEditor.qml" line="56"/>
+      <source>Repeats</source>
+      <translation>Ripetizioni</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/PathEditor.qml" line="67"/>
+      <source>Statistics</source>
+      <translation>Statistiche</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/PathEditor.qml" line="76"/>
+      <source>Path length</source>
+      <translation>Lunghezza del percorso</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/PathEditor.qml" line="79"/>
+      <source>Total distance</source>
+      <translation>Distanza totale</translation>
+    </message>
+  </context>
+  <context>
+    <name>PerimeterComplexItem</name>
+    <message>
+      <location filename="../src/MissionManager/PerimeterComplexItem.cc" line="122"/>
+      <source>%1 does not support loading this complex mission item type: %2:%3</source>
+      <translation>%1 non supporta il caricamento di questo tipo di elemento complesso della missione: %2:%3</translation>
+    </message>
+    <message>
+      <location filename="../src/MissionManager/PerimeterComplexItem.cc" line="129"/>
+      <source>%1 complex item version %2 not supported</source>
+      <translation>Versione %2 dell'elemento complesso %1 non supportata</translation>
+    </message>
+    <message>
+      <location filename="../src/MissionManager/PerimeterComplexItem.h" line="52"/>
+      <location filename="../src/MissionManager/PerimeterComplexItem.h" line="54"/>
+      <location filename="../src/MissionManager/PerimeterComplexItem.h" line="62"/>
+      <source>Perimeter</source>
+      <translation>Perimetro</translation>
+    </message>
+    <message>
+      <location filename="../src/MissionManager/PerimeterComplexItem.h" line="56"/>
+      <source>P</source>
+      <translation>P</translation>
+    </message>
+  </context>
+  <context>
+    <name>PerimeterEditor</name>
+    <message>
+      <location filename="../src/PlanView/PerimeterEditor.qml" line="35"/>
+      <source>Use the Polygon Tools to draw the boundary the vehicle will drive around.</source>
+      <translation>Usa gli strumenti poligono per disegnare il confine che il veicolo percorrerà.</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/PerimeterEditor.qml" line="50"/>
+      <source>Distance from edge</source>
+      <translation>Distanza dal bordo</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/PerimeterEditor.qml" line="57"/>
+      <source>Laps</source>
+      <translation>Giri</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/PerimeterEditor.qml" line="66"/>
+      <source>Opposite direction</source>
+      <translation>Senso opposto</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/PerimeterEditor.qml" line="82"/>
+      <source>Change Starting Point</source>
+      <translation>Cambia punto di partenza</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/PerimeterEditor.qml" line="89"/>
+      <source>Statistics</source>
+      <translation>Statistiche</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/PerimeterEditor.qml" line="98"/>
+      <source>Perimeter length</source>
+      <translation>Lunghezza del perimetro</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/PerimeterEditor.qml" line="101"/>
+      <source>Total distance</source>
+      <translation>Distanza totale</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/PerimeterEditor.qml" line="104"/>
+      <source>Area</source>
+      <translation>Area</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/PerimeterEditor.qml" line="76"/>
+      <source>The distance from the edge is too large for this area: reduce it to save or upload the mission.</source>
+      <translation>La distanza dal bordo è troppo grande per quest'area: riducila per poter salvare o caricare la missione.</translation>
+    </message>
+  </context>
+  <context>
     <name>PhotoVideoControl</name>
     <message>
       <location filename="../src/FlightMap/Widgets/PhotoVideoControl.qml" line="356"/>

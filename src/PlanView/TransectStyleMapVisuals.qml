@@ -16,6 +16,7 @@ Item {
     property bool   interactive: true
     property var    vehicle
     property bool   hideMapPolygon: false
+    property bool   showTransectPairArrows: true                       ///< Arrows on the second and second to last transects, which assume a pair of points per transect
 
     property var    _missionItem:               object
     property var    _mapPolygon:                object.surveyAreaPolygon
@@ -148,7 +149,7 @@ Item {
             fromCoord:      _transectPoints[nextTrueTransectIndex]
             toCoord:        _transectPoints[nextTrueTransectIndex + 1]
             arrowPosition:  1
-            visible:        _currentItem && _transectCount > 3 && !_vertexDrag
+            visible:        _currentItem && showTransectPairArrows && _transectCount > 3 && !_vertexDrag
             opacity:        _root.opacity
 
             property int nextTrueTransectIndex: _firstTrueTransectIndex + (_hasTurnaround ? 4 : 2)
@@ -174,7 +175,7 @@ Item {
             fromCoord:      _transectPoints[prevTrueTransectIndex - 1]
             toCoord:        _transectPoints[prevTrueTransectIndex]
             arrowPosition:  13
-            visible:        _currentItem && _transectCount > 3 && !_vertexDrag
+            visible:        _currentItem && showTransectPairArrows && _transectCount > 3 && !_vertexDrag
             opacity:        _root.opacity
 
             property int prevTrueTransectIndex: _lastTrueTransectIndex - (_hasTurnaround ? 4 : 2)
