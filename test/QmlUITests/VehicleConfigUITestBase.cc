@@ -187,6 +187,13 @@ void VehicleConfigUITestBase::verifyPanelContentVisible(const QString &context)
              qPrintable(context + QStringLiteral(": page loaded but renders no visible content (blank page)")));
 }
 
+// The restart message is translated: once the Italian catalog is loaded it is shown in Italian
+static QRegularExpression _restartAppMessagePattern()
+{
+    return QRegularExpression(QStringLiteral(
+        "Restart application for changes to take effect|Riavvia l'applicazione per applicare le modifiche"));
+}
+
 void VehicleConfigUITestBase::clickThroughAllComponentsAllLocales(Vehicle *vehicle, const QString &vehicleName)
 {
     Fact *languageFact = SettingsManager::instance()->appSettings()->qLocaleLanguage();
@@ -215,7 +222,7 @@ void VehicleConfigUITestBase::clickThroughAllComponentsAllLocales(Vehicle *vehic
     // Language is a reboot-required setting: each change announces a restart via
     // an app message dialog which must be dismissed before clicking the UI.
     if (languageFact->rawValue().toInt() != QLocale::English) {
-        expectAppMessage(QRegularExpression(QStringLiteral("Restart application for changes to take effect")));
+        expectAppMessage(_restartAppMessagePattern());
         languageFact->setRawValue(QLocale::English);
         QVERIFY2(acceptDialog(5000), "Restart-required dialog never shown after switching language to English");
         verifyExpectedLogMessage();
@@ -226,34 +233,34 @@ void VehicleConfigUITestBase::clickThroughAllComponentsAllLocales(Vehicle *vehic
     if (QTest::currentTestFailed()) return;
 
     // Language anchor: capture live English text so the switch can be verified
-    // to actually retranslate the UI (not just flip the setting)
-    clickSidebarButton(QStringLiteral("vehicleConfig_comp_Sensors"));
-    if (QTest::currentTestFailed()) return;
-    QPointer<QQuickItem> anchor = findVisibleItem(_rootItem, QStringLiteral("sensorsSetup_calibrateCompass"), 3000);
-    QVERIFY2(anchor, "Calibrate Compass language anchor not found");
+    // to actually retranslate the UI (not just flip the setting).
+    // MEDEA fork: the build bundles Italian instead of Chinese, and the vehicle setup pages are left in English
+    // there, so the anchor is the sidebar Summary button which the Italian catalog translates.
+    QPointer<QQuickItem> anchor = findVisibleItem(_rootItem, QStringLiteral("vehicleConfig_summary"), 3000);
+    QVERIFY2(anchor, "Summary language anchor not found");
     const QString englishAnchorText = anchor->property("text").toString();
 
     qgcApp()->resetRebootMessageDebounce();
-    expectAppMessage(QRegularExpression(QStringLiteral("Restart application for changes to take effect")));
-    languageFact->setRawValue(QLocale::Chinese);
-    QVERIFY2(acceptDialog(5000), "Restart-required dialog never shown after switching language to Chinese");
+    expectAppMessage(_restartAppMessagePattern());
+    languageFact->setRawValue(QLocale::Italian);
+    QVERIFY2(acceptDialog(5000), "Restart-required dialog never shown after switching language to Italian");
     verifyExpectedLogMessage();
     if (QTest::currentTestFailed()) return;
 
     QVERIFY2(anchor, "Language anchor destroyed during language switch");
     QVERIFY2(QTest::qWaitFor([&] { return anchor && (anchor->property("text").toString() != englishAnchorText); }, 3000),
-             qPrintable(QStringLiteral("UI text did not change after switching to Chinese (still '%1')")
+             qPrintable(QStringLiteral("UI text did not change after switching to Italian (still '%1')")
                             .arg(englishAnchorText)));
 
-    const QString zhPrefix = vehicleName.isEmpty() ? QStringLiteral("zh_CN") : vehicleName + QStringLiteral(" zh_CN");
-    clickThroughAllComponents(vehicle, zhPrefix);
+    const QString itPrefix = vehicleName.isEmpty() ? QStringLiteral("it_IT") : vehicleName + QStringLiteral(" it_IT");
+    clickThroughAllComponents(vehicle, itPrefix);
     if (QTest::currentTestFailed()) return;
 
-    // No restore needed when the saved language was already Chinese (no change, no dialog)
+    // No restore needed when the saved language was already Italian (no change, no dialog)
     if (languageFact->rawValue() != savedLanguage) {
         // showRebootAppMessage() debounces repeats: reset so the restore change shows its own dialog
         qgcApp()->resetRebootMessageDebounce();
-        expectAppMessage(QRegularExpression(QStringLiteral("Restart application for changes to take effect")));
+        expectAppMessage(_restartAppMessagePattern());
         languageFact->setRawValue(savedLanguage);
         QVERIFY2(acceptDialog(5000), "Restart-required dialog never shown after restoring language");
         verifyExpectedLogMessage();
@@ -262,7 +269,7 @@ void VehicleConfigUITestBase::clickThroughAllComponentsAllLocales(Vehicle *vehic
     // The saved language may itself be non-English, so only verify retranslation
     // back to the English anchor when it renders English
     if (savedLanguage.toInt() == QLocale::English) {
-        QPointer<QQuickItem> restoredAnchor = findVisibleItem(_rootItem, QStringLiteral("sensorsSetup_calibrateCompass"), 3000);
+        QPointer<QQuickItem> restoredAnchor = findVisibleItem(_rootItem, QStringLiteral("vehicleConfig_summary"), 3000);
         if (restoredAnchor) {
             QVERIFY2(QTest::qWaitFor([&] { return restoredAnchor && (restoredAnchor->property("text").toString() == englishAnchorText); }, 3000),
                      "UI text did not return to English after restoring language");

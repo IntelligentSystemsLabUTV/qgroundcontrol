@@ -24,6 +24,7 @@
 #include "QGCCorePlugin.h"
 #include "QGCFileDialogController.h"
 #include "QGCImageProvider.h"
+#include "QGCMAVLink.h"
 #include "SettingsManager.h"
 #include "Vehicle.h"
 
@@ -83,6 +84,17 @@ QQuickItem *QmlUITestBase::findVisibleItem(QQuickItem *root, const QString &obje
     return nullptr;
 }
 
+void QmlUITestBase::init()
+{
+    UnitTest::init();
+
+    AppSettings* const appSettings = SettingsManager::instance()->appSettings();
+    if (appSettings) {
+        appSettings->offlineEditingFirmwareClass()->setRawValue(QGCMAVLink::FirmwareClassPX4);
+        appSettings->offlineEditingVehicleClass()->setRawValue(QGCMAVLink::VehicleClassMultiRotor);
+    }
+}
+
 void QmlUITestBase::startUI()
 {
     // Initialise subsystems needed for the full QML UI
@@ -109,6 +121,11 @@ void QmlUITestBase::startUI()
     // Custom builds may default advanced UI off; these tests exercise the full UI.
     QGCCorePlugin::instance()->setProperty("showAdvancedUI", true);
     QVERIFY2(QGCCorePlugin::instance()->showAdvancedUI(), "Test requires Advanced UI mode");
+
+    // The MEDEA fork defaults to a rover and a 115% UI scale. These tests exercise the stock drone UI, which is
+    // still there (only hidden when the preferred vehicle is a rover), at the stock scale they are laid out for.
+    appSettings->uiScalePercent()->setRawValue(100);
+    appSettings->preferredVehicleClass()->setRawValue(QGCMAVLink::VehicleClassGeneric);
 
     // Ignore benign Qt platform warnings that cannot be avoided in offscreen mode
     ignoreLogMessage("default", QtWarningMsg,

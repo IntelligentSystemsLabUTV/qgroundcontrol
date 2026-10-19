@@ -36,6 +36,10 @@ class QmlUITestBase : public UnitTest
     Q_OBJECT
 
 protected slots:
+    /// The MEDEA fork plans for a rover by default: start every test from the stock drone offline vehicle.
+    /// A test can still pick another vehicle before calling startUI().
+    void init() override;
+
     void cleanup() override
     {
         _verifyFileDialogTestHookConsumed();

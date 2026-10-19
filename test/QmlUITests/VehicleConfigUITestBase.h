@@ -46,8 +46,9 @@ protected:
     void clickThroughAllComponents(Vehicle *vehicle, const QString &vehicleName = QString());
 
     /// Run clickThroughAllComponents() in English and then again with the
-    /// Chinese translations loaded. Guards against section filtering that
-    /// compares translated strings rendering blank pages (issue #14929).
+    /// Italian translations loaded (Chinese upstream, not bundled by the MEDEA
+    /// fork). Guards against section filtering that compares translated
+    /// strings rendering blank pages (issue #14929).
     void clickThroughAllComponentsAllLocales(Vehicle *vehicle, const QString &vehicleName = QString());
 
     /// Verify the currently loaded config panel actually renders visible
