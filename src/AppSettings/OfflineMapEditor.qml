@@ -179,7 +179,7 @@ FlightMap {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     wrapMode: Text.WordWrap
-                    text: tileSet ? tileSet.name : ""
+                    text: tileSet ? (tileSet.defaultSet ? qsTr("Default Tile Set") : tileSet.name) : ""
                     font.pointSize: _saveRealEstate ? ScreenTools.defaultFontPointSize : ScreenTools.mediumFontPointSize
                     horizontalAlignment: Text.AlignHCenter
                     visible: _defaultSet

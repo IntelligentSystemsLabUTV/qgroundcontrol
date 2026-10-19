@@ -13,6 +13,27 @@ SettingsGroupLayout {
     property Fact _mapProviderFact:     QGroundControl.settingsManager.flightMapSettings.mapProvider
     property Fact _mapTypeFact:         QGroundControl.settingsManager.flightMapSettings.mapType
     property Fact _elevationProviderFact: QGroundControl.settingsManager.flightMapSettings.elevationMapProvider
+    property var  _mapTypes:            _mapEngineManager.mapTypeList(_mapProviderFact.rawValue)
+
+    // Map type names double as setting values, so only the displayed text is translated
+    function _mapTypeLabel(mapType) {
+        switch (mapType) {
+        case "Road":            return qsTr("Road")
+        case "Street Map":      return qsTr("Street Map")
+        case "Streets":         return qsTr("Streets")
+        case "StreetsBasic":    return qsTr("Streets (basic)")
+        case "Satellite":       return qsTr("Satellite")
+        case "Satellite Map":   return qsTr("Satellite Map")
+        case "Hybrid":          return qsTr("Hybrid")
+        case "Terrain":         return qsTr("Terrain")
+        case "Outdoors":        return qsTr("Outdoors")
+        case "Light":           return qsTr("Light")
+        case "Dark":            return qsTr("Dark")
+        case "Bright":          return qsTr("Bright")
+        case "Custom":          return qsTr("Custom")
+        default:                return mapType
+        }
+    }
 
     LabelledComboBox {
         label: qsTr("Provider")
@@ -32,12 +53,12 @@ SettingsGroupLayout {
 
     LabelledComboBox {
         label: qsTr("Type")
-        model: _mapEngineManager.mapTypeList(_mapProviderFact.rawValue)
+        model: _mapTypes.map(mapType => _mapTypeLabel(mapType))
 
-        onActivated: (index) => { _mapTypeFact.rawValue = comboBox.textAt(index) }
+        onActivated: (index) => { _mapTypeFact.rawValue = _mapTypes[index] }
 
         Component.onCompleted: {
-            var index = comboBox.find(_mapTypeFact.rawValue)
+            var index = _mapTypes.indexOf(_mapTypeFact.rawValue)
             if (index < 0) index = 0
             comboBox.currentIndex = index
         }
