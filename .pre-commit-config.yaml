@@ -172,7 +172,8 @@ repos:
     rev: v1.48.0
     hooks:
       - id: typos
-        args: []  # Empty args disables auto-fix mode
+        # No --write-changes: report only. --force-exclude applies the .typos.toml excludes to the files pre-commit passes
+        args: [--force-exclude]
         files: \.(md|markdown|txt|rst)$|^docs/
 
   - repo: local

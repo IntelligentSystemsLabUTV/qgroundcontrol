@@ -12,7 +12,7 @@
   <a href="https://doi.org/10.5281/zenodo.595404"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.595404.svg" alt="DOI"></a>
 </p>
 
-> **MEDEA HMI fork:** branch `medea-hmi`, based on upstream [**QGroundControl v5.1.5**](https://github.com/mavlink/qgroundcontrol/releases/tag/v5.1.5) (commit `3a67d31`), customized for the MEDEA autonomous rover HMI.
+> **MEDEA HMI fork:** branch `medea-hmi`, based on upstream [**QGroundControl v5.1.5**](https://github.com/mavlink/qgroundcontrol/releases/tag/v5.1.5) (commit `3a67d31`), customized for the MEDEA autonomous rover HMI. Changes, operator guide and technician guide (in Italian): [`docs/medea/`](docs/medea/CHANGELOG.md).
 
 **QGroundControl** (QGC) is a Ground Control Station (GCS) for UAVs, providing full flight control
 and mission planning for any *MAVLink-enabled* drone, including *PX4* and *ArduPilot* platforms.

@@ -85,4 +85,6 @@ extend-exclude = [
     "docs/fr/",
     "docs/he/",
     "docs/uk/",
+    # MEDEA fork documentation, in Italian
+    "docs/medea/",
 ]
