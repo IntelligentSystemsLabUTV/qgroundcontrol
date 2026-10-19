@@ -210,12 +210,12 @@
         {
             "name": "uiScalePercent",
             "shortDesc": "Scales the entire user interface including fonts and controls.",
-            "longDesc": "Scales the entire user interface relative to the platform default. 100% is the default size.",
+            "longDesc": "Scales the entire user interface relative to the platform default. 115% is the default size.",
             "type": "uint32",
             "units": "%",
             "min": 50,
             "max": 200,
-            "default": 100,
+            "default": 115,
             "label": "UI Scaling",
             "keywords": "ui scale,font size,zoom"
         },

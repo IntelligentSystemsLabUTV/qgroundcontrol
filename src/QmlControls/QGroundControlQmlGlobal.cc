@@ -34,8 +34,9 @@
 
 QGC_LOGGING_CATEGORY(GuidedActionsControllerLog, "QMLControls.GuidedActionsController")
 
-QGeoCoordinate QGroundControlQmlGlobal::_coord = QGeoCoordinate(0.0,0.0);
-double QGroundControlQmlGlobal::_zoom = 2;
+// MEDEA HMI: until the user moves the map, open it centered on Italy
+QGeoCoordinate QGroundControlQmlGlobal::_coord = QGeoCoordinate(42.5, 12.5);
+double QGroundControlQmlGlobal::_zoom = 6;
 
 QGroundControlQmlGlobal::QGroundControlQmlGlobal(QObject *parent)
     : QObject(parent)
