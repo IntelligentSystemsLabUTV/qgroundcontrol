@@ -37,12 +37,11 @@ DECLARE_SETTINGGROUP(Video, "Video")
     for (const QString& device : uvcDevices) {
         videoSourceList.append(device);
     }
+    // The video stream is always on: there is no "Video Stream Disabled" choice, the user only picks the source
     if (videoSourceList.count() == 0) {
         _noVideo = true;
         videoSourceList.append(videoSourceNoVideo);
         setUserVisible(false);
-    } else {
-        videoSourceList.insert(0, videoDisabled);
     }
 
     // make translated strings
@@ -80,7 +79,8 @@ void VideoSettings::_setDefaults()
     if (_noVideo) {
         _nameToMetaDataMap[videoSourceName]->setRawDefaultValue(videoSourceNoVideo);
     } else {
-        _nameToMetaDataMap[videoSourceName]->setRawDefaultValue(videoDisabled);
+        // Out of the box listen for the rover cameras on the default UDP port
+        _nameToMetaDataMap[videoSourceName]->setRawDefaultValue(videoSourceUDPH264);
     }
 }
 
@@ -98,13 +98,9 @@ DECLARE_SETTINGSFACT_NO_FUNC(VideoSettings, videoSource)
 {
     if (!_videoSourceFact) {
         _videoSourceFact = _createSettingsFact(videoSourceName);
-        //-- Check for sources no longer available
+        //-- Check for sources no longer available, including a saved "Video Stream Disabled"
         if(!_videoSourceFact->enumValues().contains(_videoSourceFact->rawValue().toString())) {
-            if (_noVideo) {
-                _videoSourceFact->setRawValue(videoSourceNoVideo);
-            } else {
-                _videoSourceFact->setRawValue(videoDisabled);
-            }
+            _videoSourceFact->setRawValue(_videoSourceFact->rawDefaultValue());
         }
         connect(_videoSourceFact, &Fact::valueChanged, this, &VideoSettings::_configChanged);
     }

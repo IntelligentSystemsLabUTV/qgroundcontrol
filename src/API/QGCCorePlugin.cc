@@ -18,6 +18,7 @@
 #include "SettingsManager.h"
 #include "VideoReceiver.h"
 #include "VideoBackend.h"
+#include "VideoSettings.h"
 #include "SurveyPlanCreator.h"
 #include "CorridorScanPlanCreator.h"
 #include "PathPlanCreator.h"
@@ -163,6 +164,15 @@ void QGCCorePlugin::adjustSettingMetaData(const QString &settingsGroup, FactMeta
 #else
             userVisible = false;
 #endif
+            return;
+        }
+    }
+
+    // The video stream is always on (see VideoSettings): hiding the enable flags forces them to their defaults,
+    // stream enabled and never stopped when the vehicle disarms, whatever was saved before
+    if (settingsGroup == VideoSettings::settingsGroup) {
+        if ((metaData.name() == VideoSettings::streamEnabledName) || (metaData.name() == VideoSettings::disableWhenDisarmedName)) {
+            userVisible = false;
             return;
         }
     }

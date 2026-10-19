@@ -5279,6 +5279,56 @@
       <translation>bassa latenza,low latency</translation>
     </message>
     <message>
+      <extracomment>.QGC.MetaData.Facts[rtpJitterLatencyMs].shortDesc</extracomment>
+      <location filename="/home/runner/work/qgroundcontrol/qgroundcontrol/src/Settings/Video.SettingsGroup.json"/>
+      <source>RTP jitter-buffer playout latency (ms).</source>
+      <translation>Latenza di riproduzione del buffer anti-jitter RTP (ms).</translation>
+    </message>
+    <message>
+      <extracomment>.QGC.MetaData.Facts[rtpJitterLatencyMs].longDesc</extracomment>
+      <location filename="/home/runner/work/qgroundcontrol/qgroundcontrol/src/Settings/Video.SettingsGroup.json"/>
+      <source>Latency budget for the RTP jitter buffer (rtspsrc.latency / rtpjitterbuffer.latency). Lower = less glass-to-glass delay; higher = more headroom for packet reordering and retransmission. The default of 80 ms allows RFC 4588 retransmission to recover lost packets before the playout deadline; values &lt;40 ms effectively disable retransmission. Ignored when Low Latency Mode is enabled.</source>
+      <translation>Latenza riservata al buffer anti-jitter RTP (rtspsrc.latency / rtpjitterbuffer.latency). Valori più bassi = meno ritardo tra ripresa e schermo; valori più alti = più margine per riordinare e ritrasmettere i pacchetti. Il valore predefinito di 80 ms permette alla ritrasmissione RFC 4588 di recuperare i pacchetti persi prima della riproduzione; sotto i 40 ms la ritrasmissione è di fatto disattivata. Ignorato quando è attiva la modalità a bassa latenza.</translation>
+    </message>
+    <message>
+      <extracomment>.QGC.MetaData.Facts[rtpJitterLatencyMs].label</extracomment>
+      <location filename="/home/runner/work/qgroundcontrol/qgroundcontrol/src/Settings/Video.SettingsGroup.json"/>
+      <source>RTP jitter latency</source>
+      <translation>Latenza jitter RTP</translation>
+    </message>
+    <message>
+      <extracomment>.QGC.MetaData.Facts[rtpJitterLatencyMs].keywords</extracomment>
+      <translatorcomment>Only use english comma ',' to separate strings</translatorcomment>
+      <location filename="/home/runner/work/qgroundcontrol/qgroundcontrol/src/Settings/Video.SettingsGroup.json"/>
+      <source>rtp,jitter,latency,rtsp,rtx,retransmission,advanced</source>
+      <translation>rtp,jitter,latenza,rtsp,rtx,ritrasmissione,avanzate,latency,retransmission,advanced</translation>
+    </message>
+    <message>
+      <extracomment>.QGC.MetaData.Facts[rtspAutoReconnect].shortDesc</extracomment>
+      <location filename="/home/runner/work/qgroundcontrol/qgroundcontrol/src/Settings/Video.SettingsGroup.json"/>
+      <source>Automatically restart the pipeline on watchdog timeout or pipeline error.</source>
+      <translation>Riavvia automaticamente la pipeline video dopo un timeout o un errore.</translation>
+    </message>
+    <message>
+      <extracomment>.QGC.MetaData.Facts[rtspAutoReconnect].longDesc</extracomment>
+      <location filename="/home/runner/work/qgroundcontrol/qgroundcontrol/src/Settings/Video.SettingsGroup.json"/>
+      <source>When enabled, the receiver reconnects with exponential backoff (1s → 30s) after a stream timeout or a fatal pipeline error. Disable to fall back to the legacy behaviour of giving up after one failure.</source>
+      <translation>Se attivo, il ricevitore si ricollega con attese crescenti (da 1 s a 30 s) dopo un timeout dello stream o un errore grave della pipeline. Disattivalo per tornare al comportamento precedente, che si arrende dopo il primo errore.</translation>
+    </message>
+    <message>
+      <extracomment>.QGC.MetaData.Facts[rtspAutoReconnect].label</extracomment>
+      <location filename="/home/runner/work/qgroundcontrol/qgroundcontrol/src/Settings/Video.SettingsGroup.json"/>
+      <source>Auto-reconnect on stream loss</source>
+      <translation>Riconnessione automatica se si perde lo stream</translation>
+    </message>
+    <message>
+      <extracomment>.QGC.MetaData.Facts[rtspAutoReconnect].keywords</extracomment>
+      <translatorcomment>Only use english comma ',' to separate strings</translatorcomment>
+      <location filename="/home/runner/work/qgroundcontrol/qgroundcontrol/src/Settings/Video.SettingsGroup.json"/>
+      <source>rtsp,reconnect,watchdog,recovery,advanced</source>
+      <translation>rtsp,riconnessione,watchdog,ripristino,avanzate,reconnect,recovery,advanced</translation>
+    </message>
+    <message>
       <extracomment>.QGC.MetaData.Facts[forceVideoDecoder].shortDesc</extracomment>
       <location filename="/home/runner/work/qgroundcontrol/qgroundcontrol/src/Settings/Video.SettingsGroup.json"/>
       <source>Override automatic video decoder selection to force a specific decoding method.</source>
