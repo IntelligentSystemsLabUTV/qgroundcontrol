@@ -700,7 +700,8 @@ Item {
                     implicitHeight: implicitWidth
                     color: checked ? QGroundControl.globalPalette.buttonHighlight : QGroundControl.globalPalette.button
 
-                    property bool checked: true
+                    // Terrain height profile is of no use to ground vehicles, show mission stats instead
+                    property bool checked: !_planMasterController.controllerVehicle.rover
 
                     QGCColoredImage {
                         anchors.margins: missionStatsButtonLayout._buttonImageMargins
@@ -724,7 +725,7 @@ Item {
                     implicitHeight: implicitWidth
                     color: checked ? QGroundControl.globalPalette.buttonHighlight : QGroundControl.globalPalette.button
 
-                    property bool checked: false
+                    property bool checked: _planMasterController.controllerVehicle.rover
 
                     QGCColoredImage {
                         anchors.margins: missionStatsButtonLayout._buttonImageMargins

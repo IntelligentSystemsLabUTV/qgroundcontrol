@@ -122,6 +122,9 @@ Item {
     property bool   _canStartMission:           _activeVehicle ? (_checklistPassed && (!_activeVehicle.healthAndArmingCheckReport.supported || _activeVehicle.healthAndArmingCheckReport.canStartMission)) : false
     property bool   _initialConnectComplete:    _activeVehicle ? _activeVehicle.initialConnectComplete : false
 
+    // Ground vehicle UI: the connected vehicle is a rover/boat, or with no vehicle the preferred vehicle is a rover
+    property bool   groundVehicleUI:            _activeVehicle ? _activeVehicle.rover : QGroundControl.settingsManager.appSettings.preferredVehicleClass.rawValue === MAVLinkEnums.MAV_TYPE_GROUND_ROVER
+
     property bool showEmergenyStop:         _guidedActionsEnabled && !_hideEmergenyStop && _vehicleArmed && _vehicleFlying
     property bool showArm:                  _guidedActionsEnabled && !_vehicleArmed && _canArm
     property bool showForceArm:             _guidedActionsEnabled && !_vehicleArmed

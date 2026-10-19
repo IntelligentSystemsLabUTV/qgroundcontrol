@@ -20,7 +20,7 @@
             "type": "uint32",
             "enumStrings": "No preference,Fixed Wing,Multi-Rotor,VTOL,Rover,Sub",
             "enumValues": "0,1,2,20,10,12",
-            "default": 0,
+            "default": 10,
             "label": "Preferred Vehicle",
             "keywords": "vehicle,multirotor,fixed wing,vtol,rover,sub"
         },
@@ -30,7 +30,7 @@
             "type": "uint32",
             "enumStrings": "ArduPilot,PX4 Pro,MAVLink",
             "enumValues": "3,12,0",
-            "default": 12,
+            "default": 0,
             "label": "Offline editing firmware class"
         },
         {
@@ -39,7 +39,7 @@
             "type": "uint32",
             "enumStrings": "Fixed Wing,Multi-Rotor,VTOL,Rover,Sub,Unknown",
             "enumValues": "1,2,20,10,12,0",
-            "default": 2,
+            "default": 10,
             "label": "Offline editing vehicle class"
         },
         {
@@ -47,7 +47,7 @@
             "shortDesc": "Offline editing cruise speed",
             "longDesc": "This value defines the default speed for calculating mission statistics for vehicles which do not support hover or VTOL vehicles in fixed wing mode. It does not modify the flight speed for a specific flight plan.",
             "type": "double",
-            "default": 15.0,
+            "default": 1.0,
             "min": 1.0,
             "units": "m/s",
             "decimalPlaces": 1,

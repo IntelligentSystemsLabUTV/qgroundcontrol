@@ -2,6 +2,7 @@
     "version": 1,
     "fileType": "SettingsUI",
     "bindings": {
+        "showAircraftSettings": "QGroundControl.settingsManager.appSettings.preferredVehicleClass.rawValue !== MAVLinkEnums.MAV_TYPE_GROUND_ROVER",
         "hasChecklist": "QGroundControl.corePlugin.options.preFlightChecklistUrl.toString().length",
         "useChecklistValue": "QGroundControl.settingsManager.appSettings.useChecklist.value",
         "virtualJoystickOn": "QGroundControl.settingsManager.appSettings.virtualJoystick.rawValue"
@@ -45,16 +46,19 @@
             "keywords": ["altitude", "guided", "minimum", "maximum", "goto", "go to", "loiter radius", "confirmation"],
             "controls": [
                 {
-                    "setting": "flyViewSettings.guidedMinimumAltitude"
+                    "setting": "flyViewSettings.guidedMinimumAltitude",
+                    "showWhen": "showAircraftSettings"
                 },
                 {
-                    "setting": "flyViewSettings.guidedMaximumAltitude"
+                    "setting": "flyViewSettings.guidedMaximumAltitude",
+                    "showWhen": "showAircraftSettings"
                 },
                 {
                     "setting": "flyViewSettings.maxGoToLocationDistance"
                 },
                 {
-                    "setting": "flyViewSettings.forwardFlightGoToLocationLoiterRad"
+                    "setting": "flyViewSettings.forwardFlightGoToLocationLoiterRad",
+                    "showWhen": "showAircraftSettings"
                 },
                 {
                     "setting": "flyViewSettings.goToLocationRequiresConfirmInGuided"

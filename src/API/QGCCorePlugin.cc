@@ -224,16 +224,52 @@ void QGCCorePlugin::factValueGridCreateDefaultSettings(FactValueGrid* factValueG
         }
     } else {
         const bool includeFWValues = ((factValueGrid->vehicleClass() == QGCMAVLink::VehicleClassFixedWing) || (factValueGrid->vehicleClass() == QGCMAVLink::VehicleClassVTOL) || (factValueGrid->vehicleClass() == QGCMAVLink::VehicleClassAirship));
+        // Ground vehicles have no use for altitude and climb rate
+        const bool groundVehicle = (factValueGrid->vehicleClass() == QGCMAVLink::VehicleClassRoverBoat);
 
         factValueGrid->setFontSize(defaultFontSize);
 
         (void) factValueGrid->appendColumn();
         (void) factValueGrid->appendColumn();
-        (void) factValueGrid->appendColumn();
+        if (!groundVehicle) {
+            (void) factValueGrid->appendColumn();
+        }
         if (includeFWValues) {
             (void) factValueGrid->appendColumn();
         }
         factValueGrid->appendRow();
+
+        if (groundVehicle) {
+            QmlObjectListModel* column = factValueGrid->columns()->value<QmlObjectListModel*>(0);
+
+            InstrumentValueData* value = column->value<InstrumentValueData*>(0);
+            value->setFact(QStringLiteral("Vehicle"), QStringLiteral("GroundSpeed"));
+            value->setIcon(QStringLiteral("arrow-simple-right.svg"));
+            value->setText(value->fact()->shortDescription());
+            value->setShowUnits(true);
+
+            value = column->value<InstrumentValueData*>(1);
+            value->setFact(QStringLiteral("Vehicle"), QStringLiteral("DistanceToHome"));
+            value->setIcon(QStringLiteral("bookmark copy 3.svg"));
+            value->setText(value->fact()->shortDescription());
+            value->setShowUnits(true);
+
+            column = factValueGrid->columns()->value<QmlObjectListModel*>(1);
+
+            value = column->value<InstrumentValueData*>(0);
+            value->setFact(QStringLiteral("Vehicle"), QStringLiteral("FlightTime"));
+            value->setIcon(QStringLiteral("timer.svg"));
+            value->setText(value->fact()->shortDescription());
+            value->setShowUnits(false);
+
+            value = column->value<InstrumentValueData*>(1);
+            value->setFact(QStringLiteral("Vehicle"), QStringLiteral("FlightDistance"));
+            value->setIcon(QStringLiteral("travel-walk.svg"));
+            value->setText(value->fact()->shortDescription());
+            value->setShowUnits(true);
+
+            return;
+        }
 
         int rowIndex = 0;
         QmlObjectListModel *column = factValueGrid->columns()->value<QmlObjectListModel*>(0);

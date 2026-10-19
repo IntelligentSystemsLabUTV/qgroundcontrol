@@ -1,6 +1,9 @@
 {
     "version": 1,
     "fileType": "SettingsUI",
+    "bindings": {
+        "showAircraftSettings": "QGroundControl.settingsManager.appSettings.preferredVehicleClass.rawValue !== MAVLinkEnums.MAV_TYPE_GROUND_ROVER"
+    },
     "groups": [
         {
             "heading": "General",
@@ -10,16 +13,19 @@
                     "setting": "appSettings.defaultMissionItemAltitude"
                 },
                 {
-                    "setting": "planViewSettings.vtolTransitionDistance"
+                    "setting": "planViewSettings.vtolTransitionDistance",
+                    "showWhen": "showAircraftSettings"
                 },
                 {
                     "setting": "planViewSettings.useConditionGate"
                 },
                 {
-                    "setting": "planViewSettings.takeoffItemNotRequired"
+                    "setting": "planViewSettings.takeoffItemNotRequired",
+                    "showWhen": "showAircraftSettings"
                 },
                 {
-                    "setting": "planViewSettings.allowMultipleLandingPatterns"
+                    "setting": "planViewSettings.allowMultipleLandingPatterns",
+                    "showWhen": "showAircraftSettings"
                 }
             ]
         }
