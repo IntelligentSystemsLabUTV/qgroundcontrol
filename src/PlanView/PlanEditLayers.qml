@@ -13,8 +13,13 @@ QtObject {
     readonly property var layerInfos: [
         { layer: layerMission, nodeType: "missionGroup", icon: "/res/waypoint.svg",   name: qsTr("Mission") },
         { layer: layerFence,   nodeType: "fenceGroup",   icon: "/res/GeoFence.svg",   name: qsTr("GeoFence") },
-        { layer: layerRally,   nodeType: "rallyGroup",   icon: "/res/RallyPoint.svg", name: qsTr("Rally Points") }
+        { layer: layerRally,   nodeType: "rallyGroup",   icon: "/res/RallyPoint.svg", name: qsTr("Rally Points"), advancedOnly: true }
     ]
+
+    /// Layers offered in the layer switcher: technician-only layers need Advanced Mode
+    function availableLayerInfos(showAdvancedUI) {
+        return layerInfos.filter(l => showAdvancedUI || !l.advancedOnly)
+    }
 
     function infoForNodeType(nodeType) {
         return layerInfos.find(l => l.nodeType === nodeType) ?? null

@@ -51,6 +51,31 @@ TreeView {
     QGCFlickableScrollIndicator { parent: root; orientation: QGCFlickableScrollIndicator.Horizontal }
     QGCFlickableScrollIndicator { parent: root; orientation: QGCFlickableScrollIndicator.Vertical }
 
+    // Technician-only sections are hidden unless Advanced Mode is on: mission defaults, rally points,
+    // transform and the initial camera settings item. A row height of 0 hides the row.
+    rowHeightProvider: (row) => _hiddenInBasicMode(row) ? 0 : -1
+
+    function _hiddenInBasicMode(row) {
+        if (QGroundControl.corePlugin.showAdvancedUI) {
+            return false
+        }
+        const tree = _missionController.visualItemsTree
+        const modelIndex = root.index(row, 0)
+        const parentRow = root.rowAtIndex(tree.parentIndex(modelIndex))
+        for (const groupIndex of [ _missionController.defaultsGroupIndex, _missionController.rallyGroupIndex, _missionController.transformGroupIndex ]) {
+            const groupRow = _rowFor(groupIndex)
+            if (row === groupRow || parentRow === groupRow) {
+                return true
+            }
+        }
+        return _missionController.visualItems.count > 0 && tree.getObject(modelIndex) === _missionController.visualItems.get(0)
+    }
+
+    Connections {
+        target: QGroundControl.corePlugin
+        function onShowAdvancedUIChanged() { root.forceLayout() }
+    }
+
     property int _lastMissionItemCount: 0
 
     Connections {

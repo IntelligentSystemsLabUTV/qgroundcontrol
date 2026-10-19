@@ -360,9 +360,11 @@ Rectangle {
                 }
             }
 
+            // Camera settings (grid, fit, reset, format) are for technicians: Advanced Mode only
             QGCColoredImage {
                 Layout.alignment: Qt.AlignHCenter
                 source: "/res/gear-black.svg"
+                visible: QGroundControl.corePlugin.showAdvancedUI
                 mipmap: true
                 Layout.preferredHeight: ScreenTools.defaultFontPixelHeight * 1.5
                 Layout.preferredWidth: Layout.preferredHeight

@@ -17490,9 +17490,9 @@ Premi &apos;Ok&apos; per caricare comunque il piano.</translation>
       <translation>Ispettore MAVLink</translation>
     </message>
     <message>
-      <location filename="../src/API/QGCCorePlugin.cc" line="166"/>
-      <source>WARNING: You are about to enter Advanced Mode. If used incorrectly, this may cause your vehicle to malfunction thus voiding your warranty. You should do so only if instructed by customer support. Are you sure you want to enable Advanced Mode?</source>
-      <translation>ATTENZIONE: stai per entrare in modalità avanzata. Se usata in modo scorretto, può causare malfunzionamenti del veicolo e far decadere la garanzia. Procedi solo se indicato dall'assistenza. Vuoi davvero attivare la modalità avanzata?</translation>
+      <location filename="../src/API/QGCCorePlugin.cc" line="183"/>
+      <source>Advanced Mode is meant for technical staff only. It shows the application settings, vehicle configuration and analysis tools: wrong changes may stop the vehicle from working properly. Are you sure you want to enable Advanced Mode?</source>
+      <translation>La modalità avanzata è riservata al personale tecnico. Mostra le impostazioni dell'applicazione, la configurazione del veicolo e gli strumenti di analisi: modifiche errate possono impedire al veicolo di funzionare correttamente. Vuoi davvero attivare la modalità avanzata?</translation>
     </message>
   </context>
   <context>
@@ -19548,6 +19548,11 @@ Premi &apos;Ok&apos; per caricare comunque il piano.</translation>
       <location filename="../src/Toolbar/SelectViewDropdown.qml" line="121"/>
       <source>%1 Version</source>
       <translation>Versione %1</translation>
+    </message>
+    <message>
+      <location filename="../src/Toolbar/SelectViewDropdown.qml" line="152"/>
+      <source>Advanced Mode</source>
+      <translation>Modalità avanzata</translation>
     </message>
   </context>
   <context>

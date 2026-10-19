@@ -59,7 +59,7 @@ Rectangle {
             id: vehicleInfoSectionHeader
             Layout.fillWidth: true
             text: qsTr("Vehicle Info")
-            visible: !_root._waypointsOnlyMode && (_root._multipleFirmware || _root._multipleVehicleTypes)
+            visible: !_root._waypointsOnlyMode && QGroundControl.corePlugin.showAdvancedUI && (_root._multipleFirmware || _root._multipleVehicleTypes)
         }
 
         RowLayout {

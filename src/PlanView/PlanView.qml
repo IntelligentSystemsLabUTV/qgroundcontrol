@@ -615,7 +615,7 @@ Item {
 
                 // Choice buttons (only layers that are NOT the current one)
                 Repeater {
-                    model: PlanEditLayers.layerInfos.filter(l => l.layer !== _editingLayer)
+                    model: PlanEditLayers.availableLayerInfos(QGroundControl.corePlugin.showAdvancedUI).filter(l => l.layer !== _editingLayer)
 
                     Rectangle {
                         required property var modelData

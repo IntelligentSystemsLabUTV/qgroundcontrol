@@ -7,14 +7,15 @@
 #include <algorithm>
 
 #include "Fact.h"
+#include "QGCCorePlugin.h"
 #include "ScreenToolsController.h"
 #include "SettingsManager.h"
 #include "VideoSettings.h"
 
 UT_REGISTER_TEST(TopLevelViewsTest, TestLabel::Integration)
 
-// This test assumes Advanced UI mode is enabled (the default). All views including
-// Analyze are expected to be visible.
+// This test assumes Advanced UI mode is enabled (startUI() turns it on; the MEDEA fork starts without it).
+// All views including Analyze are expected to be visible.
 
 // Section nav buttons carry a sectionIndex property; match on the label text so
 // tests don't depend on section ordering in the page definition JSON.
@@ -420,4 +421,23 @@ void TopLevelViewsTest::_testDiscoveredCameraReceiverSettingsVisible()
 
     stopUI();
 #endif
+}
+
+// MEDEA fork: without Advanced Mode, which is off at every start, the operator only gets Fly, Plan and Close
+void TopLevelViewsTest::_testOperatorModeHidesTechnicianViews()
+{
+    startUI();
+    if (QTest::currentTestFailed())
+        return;
+
+    QGCCorePlugin::instance()->setProperty("showAdvancedUI", false);
+    const auto restoreAdvancedUI = qScopeGuard([] { QGCCorePlugin::instance()->setProperty("showAdvancedUI", true); });
+
+    QVERIFY(clickButton(QStringLiteral("toolbar_qgcLogo")));
+    QVERIFY(findVisibleItem(_rootItem, QStringLiteral("toolbar_viewFly"), 2000));
+    QVERIFY(findVisibleItem(_rootItem, QStringLiteral("toolbar_viewPlan"), 0));
+    QVERIFY(findVisibleItem(_rootItem, QStringLiteral("toolbar_viewClose"), 0));
+    QVERIFY(!findVisibleItem(_rootItem, QStringLiteral("toolbar_viewAnalyze"), 0));
+    QVERIFY(!findVisibleItem(_rootItem, QStringLiteral("toolbar_viewConfigure"), 0));
+    QVERIFY(!findVisibleItem(_rootItem, QStringLiteral("toolbar_viewSettings"), 0));
 }

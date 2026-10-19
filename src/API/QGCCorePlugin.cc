@@ -7,7 +7,6 @@
 #endif
 #endif
 #include "FactMetaData.h"
-#include "FirmwarePluginManager.h"
 #include "QGCMAVLink.h"
 #include "HorizontalFactValueGrid.h"
 #include "InstrumentValueData.h"
@@ -171,20 +170,21 @@ void QGCCorePlugin::adjustSettingMetaData(const QString &settingsGroup, FactMeta
 
 QString QGCCorePlugin::showAdvancedUIMessage() const
 {
-    return tr("WARNING: You are about to enter Advanced Mode. "
-              "If used incorrectly, this may cause your vehicle to malfunction thus voiding your warranty. "
-              "You should do so only if instructed by customer support. "
+    return tr("Advanced Mode is meant for technical staff only. "
+              "It shows the application settings, vehicle configuration and analysis tools: "
+              "wrong changes may stop the vehicle from working properly. "
               "Are you sure you want to enable Advanced Mode?");
 }
 
+// Vehicle type and units already default to the rover and metric units: no first run questions for the operator
 bool QGCCorePlugin::showInitialSetupVehiclePreferences() const
 {
-    return !FirmwarePluginManager::instance()->singleVehicleSupport();
+    return false;
 }
 
 bool QGCCorePlugin::showInitialSetupMeasurementUnits() const
 {
-    return true;
+    return false;
 }
 
 void QGCCorePlugin::factValueGridCreateDefaultSettings(FactValueGrid* factValueGrid)

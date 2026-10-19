@@ -43,8 +43,9 @@ ToolIndicatorPage {
         EU
     }
 
+    // The status flags link to the application settings, which are for technicians: Advanced Mode only
     function goToSettings() {
-        if (mainWindow.allowViewSwitch()) {
+        if (QGroundControl.corePlugin.showAdvancedUI && mainWindow.allowViewSwitch()) {
             mainWindow.closeIndicatorDrawer()
             globals.commingFromRIDIndicator = true
             mainWindow.showSettingsTool()

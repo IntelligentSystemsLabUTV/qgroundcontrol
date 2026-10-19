@@ -26,7 +26,8 @@ RowLayout {
     property bool   parametersReady:    QGroundControl.multiVehicleManager.parameterReadyVehicleAvailable
 
     property bool _showMainComponent: !waitForParameters || parametersReady
-    property bool _showExpand: showExpand && expandedComponent !== undefined
+    // The expanded page holds settings: only offered in Advanced Mode
+    property bool _showExpand: showExpand && expandedComponent !== undefined && QGroundControl.corePlugin.showAdvancedUI
     property bool _expandedParametersReady: !expandedComponentWaitForParameters || parametersReady
     property string _waitingForParamsText: activeVehicle && activeVehicle.parameterManager.parameterDownloadSkipped ? qsTr("Parameters not available") : qsTr("Waiting for parameters...")
 

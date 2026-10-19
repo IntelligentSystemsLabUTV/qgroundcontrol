@@ -66,6 +66,7 @@ ToolIndicatorPage {
                 Layout.fillWidth: true
                 text: qsTr("Configure")
                 imageResource: "/res/GearWithPaperPlane.svg"
+                visible: QGroundControl.corePlugin.showAdvancedUI
                 onClicked: {
                     if (mainWindow.allowViewSwitch()) {
                         mainWindow.closeIndicatorDrawer()
@@ -81,7 +82,7 @@ ToolIndicatorPage {
                 Layout.fillWidth: true
                 text: qsTr("Settings")
                 imageResource: "/res/QGCLogoWhite.svg"
-                visible: !QGroundControl.corePlugin.options.combineSettingsAndSetup
+                visible: QGroundControl.corePlugin.showAdvancedUI && !QGroundControl.corePlugin.options.combineSettingsAndSetup
                 onClicked: {
                     if (mainWindow.allowViewSwitch()) {
                         mainWindow.closeIndicatorDrawer()
@@ -108,61 +109,76 @@ ToolIndicatorPage {
                 }
             }
 
-            ColumnLayout {
-                id: versionColumnLayout
+            // Version info, which also hides the Advanced Mode toggle: press and hold (or shift-click on desktop)
+            Item {
                 Layout.fillWidth: true
                 Layout.columnSpan: 2
-                spacing: 0
+                implicitHeight: versionColumnLayout.implicitHeight
 
-                QGCLabel {
-                    id: versionLabel
-                    Layout.fillWidth: true
-                    horizontalAlignment: Text.AlignHCenter
-                    text: qsTr("%1 Version").arg(QGroundControl.appName)
-                    font.pointSize: ScreenTools.smallFontPointSize
-                    wrapMode: QGCLabel.WordWrap
+                ColumnLayout {
+                    id: versionColumnLayout
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    spacing: 0
+
+                    QGCLabel {
+                        Layout.fillWidth: true
+                        horizontalAlignment: Text.AlignHCenter
+                        text: qsTr("%1 Version").arg(QGroundControl.appName)
+                        font.pointSize: ScreenTools.smallFontPointSize
+                        wrapMode: QGCLabel.WordWrap
+                    }
+
+                    QGCLabel {
+                        Layout.fillWidth: true
+                        horizontalAlignment: Text.AlignHCenter
+                        text: QGroundControl.qgcVersion
+                        font.pointSize: ScreenTools.smallFontPointSize
+                        wrapMode: QGCLabel.WrapAnywhere
+                    }
+
+                    QGCLabel {
+                        Layout.fillWidth: true
+                        horizontalAlignment: Text.AlignHCenter
+                        text: QGroundControl.qgcAppDate
+                        font.pointSize: ScreenTools.smallFontPointSize
+                        wrapMode: QGCLabel.WrapAnywhere
+                        visible: QGroundControl.qgcDailyBuild
+                    }
+
+                    QGCLabel {
+                        Layout.fillWidth: true
+                        horizontalAlignment: Text.AlignHCenter
+                        text: qsTr("Advanced Mode")
+                        font.pointSize: ScreenTools.smallFontPointSize
+                        color: QGroundControl.globalPalette.warningText
+                        visible: QGroundControl.corePlugin.showAdvancedUI
+                    }
                 }
 
-                QGCLabel {
-                    Layout.fillWidth: true
-                    horizontalAlignment: Text.AlignHCenter
-                    text: QGroundControl.qgcVersion
-                    font.pointSize: ScreenTools.smallFontPointSize
-                    wrapMode: QGCLabel.WrapAnywhere
-                }
+                QGCMouseArea {
+                    anchors.fill: parent
 
-                QGCLabel {
-                    Layout.fillWidth: true
-                    horizontalAlignment: Text.AlignHCenter
-                    text: QGroundControl.qgcAppDate
-                    font.pointSize: ScreenTools.smallFontPointSize
-                    wrapMode: QGCLabel.WrapAnywhere
-                    visible: QGroundControl.qgcDailyBuild
-
-                    QGCMouseArea {
-                        anchors.topMargin: -(parent.y - versionLabel.y)
-                        anchors.fill: parent
-
-                        onClicked: (mouse) => {
-                            if (mouse.modifiers & Qt.ControlModifier) {
-                                QGroundControl.corePlugin.showTouchAreas = !QGroundControl.corePlugin.showTouchAreas
-                                showTouchAreasNotification.open()
-                            } else if (ScreenTools.isMobile || mouse.modifiers & Qt.ShiftModifier) {
-                                mainWindow.closeIndicatorDrawer()
-                                if (!QGroundControl.corePlugin.showAdvancedUI) {
-                                    advancedModeOnConfirmation.open()
-                                } else {
-                                    advancedModeOffConfirmation.open()
-                                }
-                            }
-                        }
-
-                        // This allows you to change this on mobile
-                        onPressAndHold: {
-                            QGroundControl.corePlugin.showTouchAreas = !QGroundControl.corePlugin.showTouchAreas
-                            showTouchAreasNotification.open()
+                    function toggleAdvancedMode() {
+                        mainWindow.closeIndicatorDrawer()
+                        if (!QGroundControl.corePlugin.showAdvancedUI) {
+                            advancedModeOnConfirmation.open()
+                        } else {
+                            advancedModeOffConfirmation.open()
                         }
                     }
+
+                    onClicked: (mouse) => {
+                        if (mouse.modifiers & Qt.ControlModifier) {
+                            QGroundControl.corePlugin.showTouchAreas = !QGroundControl.corePlugin.showTouchAreas
+                            showTouchAreasNotification.open()
+                        } else if (mouse.modifiers & Qt.ShiftModifier) {
+                            toggleAdvancedMode()
+                        }
+                    }
+
+                    // A long press is needed so the operator can't switch mode by accident
+                    onPressAndHold: toggleAdvancedMode()
                 }
             }
         }
