@@ -377,6 +377,8 @@ get_property(_qgc_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 if(_qgc_is_multi_config OR NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     list(FILTER TS_SOURCES EXCLUDE REGEX "_eo\\.ts$")
 endif()
+# MEDEA HMI: ship only the Italian, French and Spanish translations (English is the source language)
+list(FILTER TS_SOURCES INCLUDE REGEX "_(it_IT|fr_FR|es_ES)\\.ts$")
 
 set(QT_NO_MISSING_CATALOG_LANGUAGE_WARNING ON)
 

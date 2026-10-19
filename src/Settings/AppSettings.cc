@@ -18,44 +18,23 @@
 
 QGC_LOGGING_CATEGORY(AppSettingsLog, "Settings.AppSettings")
 
-// Release languages are 90%+ complete
+// MEDEA HMI: only the languages offered to end users
 QList<QLocale::Language> AppSettings::_rgReleaseLanguages = {
     QLocale::English,
-    QLocale::Azerbaijani,
-    QLocale::Chinese,
-    QLocale::Japanese,
-    QLocale::Korean,
-    QLocale::Portuguese,
-    QLocale::Russian,
+    QLocale::Italian,
+    QLocale::French,
+    QLocale::Spanish,
 };
 
 // Partial languages are 40%+ complete
-QList<QLocale::Language> AppSettings::_rgPartialLanguages = {
-    QLocale::Ukrainian,
-};
+QList<QLocale::Language> AppSettings::_rgPartialLanguages = {};
 
 AppSettings::LanguageInfo_t AppSettings::_rgLanguageInfo[] = {
     { QLocale::AnyLanguage,     "System" },                     // Must be first
-    { QLocale::Azerbaijani,     "Azerbaijani (Azerbaijani)" },
-    { QLocale::Bulgarian,       "български (Bulgarian)" },
-    { QLocale::Chinese,         "中文 (Chinese)" },
-    { QLocale::Dutch,           "Nederlands (Dutch)" },
     { QLocale::English,         "English" },
-    { QLocale::Finnish,         "Suomi (Finnish)" },
     { QLocale::French,          "Français (French)" },
-    { QLocale::German,          "Deutsche (German)" },
-    { QLocale::Greek,           "Ελληνικά (Greek)" },
-    { QLocale::Hebrew,          "עברית (Hebrew)" },
     { QLocale::Italian,         "Italiano (Italian)" },
-    { QLocale::Japanese,        "日本語 (Japanese)" },
-    { QLocale::Korean,          "한국어 (Korean)" },
-    { QLocale::NorwegianBokmal, "Norsk (Norwegian)" },
-    { QLocale::Polish,          "Polskie (Polish)" },
-    { QLocale::Portuguese,      "Português (Portuguese)" },
-    { QLocale::Russian,         "Pусский (Russian)" },
     { QLocale::Spanish,         "Español (Spanish)" },
-    { QLocale::Swedish,         "Svenska (Swedish)" },
-    { QLocale::Turkish,         "Türk (Turkish)" }
 };
 
 DECLARE_SETTINGGROUP(App, "")
@@ -259,11 +238,6 @@ DECLARE_SETTINGSFACT_NO_FUNC(AppSettings, qLocaleLanguage)
                 rgEnumValues.append(languageInfo.languageId);
             }
         }
-#endif
-#ifdef QT_DEBUG
-        // Debug builds include pseudo-localization for UI layout testing
-        rgEnumStrings.append(AppSettings::tr("Pseudo Localization (Test Only)"));
-        rgEnumValues.append(QLocale::Esperanto);
 #endif
         metaData->setEnumInfo(rgEnumStrings, rgEnumValues);
 
