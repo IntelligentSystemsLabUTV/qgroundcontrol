@@ -32,7 +32,10 @@ QList<QGCMAVLink::FirmwareClass_t> FirmwarePluginManager::supportedFirmwareClass
         for (const FirmwarePluginFactory *factory: factoryList) {
             _supportedFirmwareClasses.append(factory->supportedFirmwareClasses());
         }
-        _supportedFirmwareClasses.append(QGCMAVLink::FirmwareClassGeneric);
+        if (!_supportedFirmwareClasses.contains(QGCMAVLink::FirmwareClassGeneric)) {
+            // A factory may already handle part of the generic vehicles (MEDEA rover)
+            _supportedFirmwareClasses.append(QGCMAVLink::FirmwareClassGeneric);
+        }
     }
 
     return _supportedFirmwareClasses;
