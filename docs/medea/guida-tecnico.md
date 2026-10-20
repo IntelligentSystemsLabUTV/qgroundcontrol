@@ -4,8 +4,9 @@ Questa guida è per chi installa, configura e mantiene la dashboard del rover ME
 personalizzato). Per l'uso quotidiano vedi la [guida per l'operatore](guida-operatore.md); per
 l'elenco delle modifiche e i motivi vedi il [changelog](CHANGELOG.md).
 
-> **Bozza.** Descrive la versione in sviluppo (ottobre 2026). Il bridge Kafka → MAVLink che collega la
-> dashboard al rover reale è ancora in preparazione.
+> **Bozza.** Descrive la versione in sviluppo (ottobre 2026). Il bridge Kafka ↔ MAVLink che collega la
+> dashboard al rover funziona con un rover simulato; i topic del rover reale sono da concordare con il
+> CREA.
 
 ## Modalità tecnico (modalità avanzata)
 
@@ -27,8 +28,10 @@ In modalità avanzata tornano:
 - nel menu: **Analizza**, **Configura** (configurazione del veicolo) e **Impostazioni**;
 - negli indicatori della barra in alto: la parte "espandi" con le impostazioni (per esempio la base
   RTK nel pannello GPS);
+- nella barra in alto: il pannello dello stato (messaggi del veicolo, sensori, arma/disarma) e il menu
+  delle modalità, che in modalità operatore non si aprono;
 - nella Fly View: l'ingranaggio delle impostazioni della camera (griglia, adattamento, ripristino e
-  formattazione della memoria);
+  formattazione della memoria) e, con il rover, la barra a sinistra con il menu *Azioni*;
 - nella Plan View: *Info veicolo* (firmware e tipo di veicolo per la pianificazione), *Predefiniti*,
   *Punti di raccolta*, *Trasforma* e *Impostazioni iniziali della camera*.
 
@@ -37,15 +40,15 @@ In modalità avanzata tornano:
 1. **Lingua:** il valore predefinito è *Sistema*: su un computer in italiano l'interfaccia è già in
    italiano. Altrimenti *Impostazioni → Generali → Lingua → Italiano* e riavvia.
 2. **Collegamento con il rover:** il programma ascolta i veicoli MAVLink su UDP (porta 14550) e si
-   collega da solo. La connessione automatica a Pixhawk, radio SiK e LibrePilot è disattivata. Il
-   bridge Kafka → MAVLink girerà sullo stesso computer e invierà i dati su UDP. Collegamenti manuali:
-   *Impostazioni → Collegamenti*.
+   collega da solo. La connessione automatica a Pixhawk, radio SiK e LibrePilot è disattivata. I dati
+   del rover arrivano dal [bridge Kafka](#collegamento-con-il-rover-bridge-kafka), che gira sullo
+   stesso computer. Collegamenti manuali: *Impostazioni → Collegamenti*.
 3. **Video:** vedi la sezione [Video](#video).
 4. **Schermo:** unità europee (m, km/h, ettari, °C) e scala dell'interfaccia al 115% sono già
    impostate (*Impostazioni → Generali*). Per lavorare al sole scegli *Schema colori → Esterni*
    (chiaro): sul PC il predefinito è *Interni* (scuro), sul tablet *Esterni*.
-5. **Prova:** senza rover puoi provare la postazione con il [collegamento simulato](#prove-senza-rover)
-   e con uno [stream video di prova](#provare-il-video-senza-camere).
+5. **Prova:** senza rover puoi provare la postazione con il [rover finto](#prove-senza-rover) e con uno
+   [stream video di prova](#provare-il-video-senza-camere).
 
 ## Video
 
@@ -100,6 +103,57 @@ gst-launch-1.0 videotestsrc is-live=true \
   ! x264enc tune=zerolatency bitrate=1500 key-int-max=25 ! video/x-h264,profile=baseline \
   ! rtspclientsink location=rtsp://127.0.0.1:8554/camera
 ```
+
+## Collegamento con il rover (bridge Kafka)
+
+Il rover pubblica i suoi dati su Kafka; QGroundControl parla solo MAVLink. In mezzo c'è il **bridge**
+(`medea-bridge`), un programma Python del repository `medea_hmi` (cartella `src/medea_bridge`, con
+istruzioni nel suo `README.md`) che gira sul computer della dashboard:
+
+- legge da Kafka posizione, stato, batteria, RTK e messaggi del rover e li manda a QGroundControl;
+- trasforma i comandi dell'operatore in comandi Kafka con una **scadenza** (3 s): il rover non li
+  esegue se arrivano dopo, per esempio quando il WiFi torna dopo un'interruzione;
+- pubblica su Kafka i lavori caricati con *Carica sul veicolo*.
+
+Avvio: `medea-bridge --config config/bridge.yaml`. Il file `bridge.yaml` contiene indirizzo del
+broker, topic e campi dei messaggi: per collegarsi a un altro rover si modifica solo quello. Il formato
+proposto per i messaggi è in `src/medea_bridge/PROTOCOLLO.md`.
+
+Cosa si vede in QGroundControl:
+
+- se la telemetria del rover si interrompe per più di 3 s, il rover risulta *Disconnesso*;
+- la modalità del rover ha nomi italiani: *Fermo*, *Lavoro*, *Pausa*, *Rientro*, *Manuale*, *Emergenza*;
+- se il rover rifiuta un comando, il motivo compare in un riquadro giallo in alto (il bridge lo invia
+  come messaggio di errore del veicolo). Se non risponde in tempo il messaggio è *il rover non ha
+  risposto*.
+
+### Pulsanti del rover
+
+Un rover MAVLink con autopilota generico (`MAV_AUTOPILOT_GENERIC`), come quello presentato dal bridge,
+usa il **FirmwarePlugin del rover MEDEA** (`src/FirmwarePlugin/MedeaRover/`). Per l'operatore la
+schermata Guida ha allora solo i pulsanti grandi in basso, mostrati secondo lo stato del rover:
+
+| Pulsante | Quando compare | Comando MAVLink | Al rover |
+| --- | --- | --- | --- |
+| Avvia lavoro (con conferma) | rover fermo, attivo se c'è un lavoro caricato | `MAV_CMD_MISSION_START` | `start_mission` |
+| Pausa | lavoro o rientro in corso | `MAV_CMD_DO_PAUSE_CONTINUE` (0) | `pause` |
+| Riprendi | in pausa | `MAV_CMD_DO_PAUSE_CONTINUE` (1) | `resume` |
+| Torna alla partenza (con conferma) | sempre, tranne durante il rientro | `MAV_CMD_NAV_RETURN_TO_LAUNCH` | `return_home` |
+| Stop | motori accesi | `MAV_CMD_COMPONENT_ARM_DISARM` (0) | `stop` |
+
+- Il rover si arma da solo quando parte: non c'è un passo "arma" separato.
+- Le modalità sono riconosciute dal numero (custom_mode 1-6: Fermo, Lavoro, Pausa, Rientro, Manuale,
+  Emergenza) e mostrate con i nomi tradotti di QGroundControl; i nomi in `bridge.yaml` non vengono
+  usati.
+- Per questo rover sono spenti i comandi guidati generici di QGroundControl (*Avvia missione*,
+  *Continua missione*, *Rientra*, *Vai qui*, arma/disarma) e la finestra *Piano completato*: il lavoro
+  resta sul rover per essere ripetuto. Nella barra in alto restano solo GPS e batteria.
+- Dopo un caricamento riuscito dalla Plan View il programma passa da solo alla schermata Guida.
+
+Il file di *MAVLink Actions* `src/medea_bridge/qgc/MavlinkActions/medea-rover.json` (stessi comandi,
+nel menu *Azioni*) non serve più all'operatore: resta utile al tecnico per provare i comandi in
+modalità avanzata. Si installa copiandolo nella cartella `MavlinkActions` dei dati del programma e
+scegliendolo in *Impostazioni → Vista di guida → Azioni MAVLink → Azioni della vista di guida*.
 
 ## Veicolo preferito e funzioni da drone
 
@@ -169,10 +223,25 @@ solo estetico.
 
 ## Prove senza rover
 
-Nelle build di sviluppo (Debug) c'è un rover simulato: *Impostazioni → Collegamento simulato*, *Tipo di
-veicolo → Veicolo APM ArduRover*, **Avvia collegamento simulato**. Si può caricare un lavoro e
-avviarlo, ma il veicolo simulato non si muove. Compaiono anche degli aerei simulati e un avviso in
-inglese sulla versione del firmware: con il rover reale non ci saranno.
+Con il **rover finto** del bridge si prova tutta la catena: Kafka, bridge, QGroundControl, lavori e
+comandi. Il rover finto esegue davvero i lavori caricati, a 1,5 m/s (`--speed` per cambiare), e
+finito il lavoro torna alla partenza. Comandi (dettagli nel `README.md` di `src/medea_bridge`):
+
+```bash
+cd ~/workspace/src/medea_bridge
+./kafka/run_local.sh &                     # oppure: docker compose -f kafka/docker-compose.yaml up -d
+env -u PYTHONPATH .venv/bin/medea-fake-rover &
+env -u PYTHONPATH .venv/bin/medea-bridge --config config/bridge.yaml
+```
+
+Nel container DUA `env -u PYTHONPATH` evita che i pacchetti Python di ROS si mescolino a quelli del
+bridge. Il rover compare vicino a Monterotondo (`--lat`, `--lon` per spostarlo). Poi: *Pianifica* →
+lavoro → *Carica sul veicolo* → (la Guida si apre da sola) → **Avvia lavoro**.
+
+Nelle build di sviluppo (Debug) c'è anche il collegamento simulato di QGroundControl (*Impostazioni →
+Collegamento simulato*, *Veicolo APM ArduRover*): finge un rover ArduPilot, non si muove e mostra
+aerei simulati e un avviso in inglese sulla versione del firmware. Serve solo per provare le schermate
+senza il bridge.
 
 ## File e cartelle
 
@@ -184,6 +253,7 @@ Nella cartella dei dati del programma (vedi sopra):
 | `Video` | Registrazioni video. |
 | `Logs` | Log di telemetria. |
 | `Settings` | File di override delle impostazioni. |
+| `MavlinkActions` | File dei comandi del menu *Azioni* (`medea-rover.json`). |
 | `CrashLogs` | Rapporti di errore del programma. |
 
 Per tornare ai valori di fabbrica: *Impostazioni → Generali → Cancella tutte le impostazioni al
@@ -192,6 +262,10 @@ prossimo avvio*, poi riavvia.
 ## Per chi sviluppa
 
 - Compilazione ed esecuzione: `README.md` del repository principale `medea_hmi`.
+- Per le prove conviene avviare QGroundControl con `bin/qgc.sh` (repository `medea_hmi`): salva l'output
+  in `logs/qgc/` e, se il programma si chiude per un errore, in fondo al log c'è la traccia (backtrace)
+  da allegare alla segnalazione. Nel container i core dump non vengono salvati.
+- Test del plugin del rover: `ctest --test-dir build -R MedeaRoverFirmwarePluginTest`.
 - Modifiche e motivazioni: [CHANGELOG.md](CHANGELOG.md).
 - Test dei nuovi tipi di lavoro: `ctest --test-dir build -R "PathComplexItemTest|PerimeterComplexItemTest"`.
 - I test di interfaccia di upstream (`test/QmlUITests`) girano con la configurazione di serie (drone,

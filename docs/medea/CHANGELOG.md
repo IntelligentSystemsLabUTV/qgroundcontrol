@@ -22,6 +22,54 @@ Guide d'uso: [guida per l'operatore](guida-operatore.md), [guida per il tecnico]
 
 ---
 
+## 2026-10-20
+
+### Pulsanti del rover nella schermata Guida (FirmwarePlugin MEDEA)
+
+**Cosa.**
+
+- Nuovo **FirmwarePlugin del rover MEDEA** (`src/FirmwarePlugin/MedeaRover/`): lo usano i rover e le
+  barche MAVLink con autopilota generico, cioè il rover presentato dal bridge Kafka ↔ MAVLink
+  (`src/medea_bridge` nel repository `medea_hmi`). Gli altri veicoli generici restano al plugin di base.
+  - Modalità riconosciute dal numero (custom_mode 1-6) e mostrate con nomi tradotti: *Fermo*,
+    *Lavoro*, *Pausa*, *Rientro*, *Manuale*, *Emergenza*.
+  - *Avvia* invia `MAV_CMD_MISSION_START` (o `MAV_CMD_DO_PAUSE_CONTINUE` 1 se il rover è in pausa),
+    *Pausa* `MAV_CMD_DO_PAUSE_CONTINUE` 0, *Rientro* `MAV_CMD_NAV_RETURN_TO_LAUNCH`. Il rover si arma da
+    solo quando parte.
+  - I comandi sono inviati senza il messaggio generico "comando negato": il motivo di un rifiuto arriva
+    dal rover come messaggio di errore e compare da solo in alto.
+  - Nella barra in alto restano solo GPS e batteria.
+- `FirmwarePluginManager`: la classe di firmware "generica" compare una sola volta anche se una factory
+  ne gestisce una parte.
+- **Fly View:** nuovo pannello `RoverJobControls.qml` in basso al centro, con pulsanti grandi che
+  compaiono secondo lo stato del rover. Ci sono *Avvia lavoro* e *Torna alla partenza*, che chiedono
+  conferma, poi *Pausa*, *Riprendi* e *Stop*, che agiscono subito.
+- **Comandi generici nascosti:** per questo rover `GuidedActionsController.roverJobUI` spegne le azioni
+  guidate di QGroundControl e le loro richieste automatiche (*Avvia missione*, *Continua missione*,
+  arma/disarma, *Vai qui*). Sono nascosti anche il pulsante *Rientra*, la barra degli strumenti a
+  sinistra e il menu *Azioni* (tranne in modalità avanzata) e la finestra *Piano completato*.
+- **Plan View:** dopo un caricamento riuscito sul rover il programma passa da solo alla schermata Guida.
+- **Barra in alto, modalità operatore:** con un veicolo collegato, toccando lo stato o la modalità non
+  si apre più nessun pannello. Per i rover armati lo stato dice *Motori accesi* invece di *In volo*;
+  "Flying" ora è tradotto *In volo*, prima era *In movimento*.
+- **Test:** `MedeaRoverFirmwarePluginTest` verifica quali veicoli ricevono il plugin e come vengono
+  mappate le modalità.
+- **Guide:** descrivono il collegamento con il bridge, i pulsanti del rover e le prove con il rover finto,
+  con immagini nuove (`operatore-guida.jpg`, `operatore-pulsanti.jpg`).
+
+**Perché.** Nella prima prova con il bridge si vedeva quanto era scomodo il percorso dell'operatore:
+
+- QGroundControl trattava il rover come veicolo generico e i suoi pulsanti davano *Guided mode not
+  supported by Vehicle*;
+- per partire servivano più passi (armare dal pannello di stato, poi *Avvia missione*);
+- toccando la Q, lo stato e la modalità si aprivano tre pannelli diversi, e il menu delle modalità
+  era vuoto.
+
+Ora il lavoro si avvia con un pulsante e una conferma, e si vedono solo i comandi utili in quel momento.
+Il resto non è cancellato: torna con la modalità avanzata o con un altro tipo di veicolo.
+
+---
+
 ## 2026-10-19
 
 ### Modalità operatore e modalità tecnico

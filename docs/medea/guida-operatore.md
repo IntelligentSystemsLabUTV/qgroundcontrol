@@ -4,8 +4,8 @@ Questa guida spiega come usare la dashboard del rover agricolo MEDEA per prepara
 avviarlo e seguirlo. Non servono conoscenze di informatica o di ROS.
 
 > **Bozza.** La guida descrive la versione in sviluppo (ottobre 2026). Il collegamento con il rover
-> vero passa da un programma ponte che è ancora in preparazione: alcune schermate e alcuni nomi
-> cambieranno. Le immagini vengono da un rover simulato.
+> passa da un programma ponte (bridge) provato finora con un rover simulato: alcune schermate e alcuni
+> nomi cambieranno. Le immagini vengono dal rover simulato.
 
 ## Prima di tutto: la sicurezza
 
@@ -23,27 +23,29 @@ mappa. Quando il rover è acceso e collegato alla rete, il programma si collega 
 
 ![Schermata Guida con il rover collegato e un lavoro caricato](img/operatore-guida.jpg)
 
-*Nell'immagine il rover è simulato: l'aereo vicino all'angolo 4 e il video a barre colorate vengono dal
-simulatore e non compaiono con il rover vero.*
+*Nell'immagine il rover è simulato e il video a barre colorate è un'immagine di prova.*
 
 1. **Pulsante Q** (in alto a sinistra): apre il menu.
 2. **Stato del rover**, accanto alla Q:
    - *Disconnesso*: il rover non è collegato;
-   - *Pronto*: il rover è collegato e fermo;
-   - *Armato*: i motori sono attivi, il rover può muoversi.
+   - *Pronto*: il rover è collegato, con i motori spenti;
+   - *Motori accesi*: il rover lavora, è in pausa o sta tornando.
 
-   Più a destra c'è la modalità di guida del rover (per ora con nomi in inglese).
-3. **Indicatori** (in alto a destra): GPS (numero di satelliti), collegamento, **batteria** in
+   Più a destra c'è la **modalità**: *Fermo*, *Lavoro*, *Pausa*, *Rientro*, *Manuale* (guidato con il
+   radiocomando) o *Emergenza*. Stato e modalità servono solo da leggere: toccarli non apre niente.
+3. **Indicatori** (in alto a destra): GPS (numero di satelliti e precisione) e **batteria** in
    percentuale. Tocca un indicatore per vedere i dettagli.
 4. **Mappa**: la freccia rossa è il rover; la linea arancione con i numeri è il lavoro caricato sul
-   rover; la casetta verde è il punto di partenza.
+   rover; il numero verde è il punto verso cui il rover sta andando; la linea rossa è il tragitto già
+   fatto; la casetta verde è il punto di partenza.
 5. **Video** della camera (in basso a sinistra). Tocca il riquadro per scambiare video e mappa.
    *IN ATTESA DEL VIDEO* vuol dire che la camera non sta inviando immagini.
 6. **Valori** (in basso a destra): velocità, distanza dal punto di partenza, tempo di lavoro, distanza
    percorsa; accanto c'è la bussola.
-7. **Pulsanti a sinistra**: *Rientra* riporta il rover al punto di partenza; *Azioni* contiene i
-   comandi disponibili in quel momento (per esempio *Avvia missione*).
-8. **Pulsante rosso** (in alto a destra): registra il video sul computer.
+7. **Pulsanti del rover** (in basso al centro): compaiono solo quelli utili in quel momento, vedi
+   [Eseguire il lavoro](#eseguire-il-lavoro).
+8. **Pulsante rosso** (in alto a destra): registra il video sul computer; *Foto* ne salva
+   un'immagine.
 
 ## Il menu
 
@@ -143,21 +145,35 @@ ancora molte opzioni da drone e verrà semplificata.
 ### 5. Carica il lavoro sul rover
 
 Premi **Carica sul veicolo** (in alto). Il pulsante è evidenziato quando il lavoro sullo schermo è
-diverso da quello sul rover.
+diverso da quello sul rover. Appena il rover ha ricevuto il lavoro, il programma passa da solo alla
+schermata **Guida**, da dove lo avvii.
 
 Se compare *Il piano ha elementi incompleti*, un elemento non è finito: nell'elenco a destra è
 segnato con un punto interrogativo rosso. Di solito manca da disegnare il percorso o l'area.
 
 ## Eseguire il lavoro
 
-1. Apri il menu e scegli **Guida**.
-2. Controlla sulla mappa che la linea arancione sia il lavoro giusto.
-3. In alto compare **Avvia missione**: trascina il cursore verso destra fino in fondo per confermare
-   (lo stesso comando è anche in **Azioni**).
-4. Lo stato diventa *Armato* e il rover parte. Segui il lavoro sulla mappa e nel video.
-5. Per far tornare il rover al punto di partenza usa **Rientra** e conferma trascinando il cursore.
+![I pulsanti del rover: da fermo, durante il lavoro e in pausa](img/operatore-pulsanti.jpg)
 
-I pulsanti grandi dedicati al rover (Avvia lavoro, Pausa/Riprendi, Torna, Stop) sono in preparazione.
+1. Dopo **Carica sul veicolo** sei già nella schermata **Guida** (altrimenti: menu → **Guida**).
+   Controlla sulla mappa che la linea arancione sia il lavoro giusto.
+2. Premi **Avvia lavoro** e conferma con **Sì**. Il rover si mette in moto da solo: lo stato diventa
+   *Motori accesi* e la modalità *Lavoro*. Segui il lavoro sulla mappa e nel video.
+3. Durante il lavoro i pulsanti in basso sono:
+   - **Pausa**: il rover si ferma e aspetta (modalità *Pausa*). **Riprendi** lo fa ripartire da dove si
+     era fermato;
+   - **Torna alla partenza** (chiede conferma): il rover interrompe il lavoro, torna al punto di
+     partenza (modalità *Rientro*) e si ferma;
+   - **Stop**: il rover si ferma subito, spegne i motori e il lavoro finisce. *Avvia lavoro* lo rifà
+     dall'inizio.
+4. Finito il lavoro il rover torna alla partenza e si ferma: modalità *Fermo*, stato *Pronto*. Il lavoro
+   resta sul rover: per ripeterlo basta premere di nuovo **Avvia lavoro**.
+
+Se il rover non può eseguire un comando, in alto compare un riquadro giallo con il motivo, per esempio
+*Avvia lavoro: nessun lavoro caricato*. Toccalo per chiuderlo.
+
+Pausa e Stop agiscono subito, senza conferma, perché fermano il rover. **Stop non è l'arresto di
+emergenza**: in caso di pericolo usa il pulsante di emergenza sul rover.
 
 ## Problemi comuni
 
@@ -166,6 +182,9 @@ I pulsanti grandi dedicati al rover (Avvia lavoro, Pausa/Riprendi, Torna, Stop) 
 | *Disconnesso - Clicca per connetterti manualmente* | Il rover non è collegato. Controlla che sia acceso e che il computer o il tablet sia sulla rete del rover. Se il problema resta, chiama il tecnico. |
 | *IN ATTESA DEL VIDEO* | La camera non invia immagini. Controlla che sia accesa; se il problema resta, chiama il tecnico. |
 | *Il piano ha elementi incompleti* | Finisci di disegnare l'elemento segnato con il punto interrogativo rosso. |
+| *Nessun lavoro sul rover* (sopra i pulsanti) o *nessun lavoro caricato* | Prepara il lavoro e caricalo: *Pianifica* → **Carica sul veicolo**. |
+| Riquadro giallo con un messaggio del rover | Leggi il motivo: il rover non ha eseguito il comando. Toccalo per chiuderlo. |
+| *il rover non ha risposto* o *Il rover non è collegato* | Controlla che il rover sia acceso e in rete, poi riprova. Se il problema resta, chiama il tecnico. |
 | Avviso sulla distanza dal bordo (Perimetro) | Riduci la *Distanza dal bordo*. |
 | La batteria diventa rossa | Fai rientrare il rover e ricaricalo. |
 | Serve cambiare un'impostazione (video, collegamento, lingua...) | Chiama il tecnico: le impostazioni sono nascoste di proposito. |
