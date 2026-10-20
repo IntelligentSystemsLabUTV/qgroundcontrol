@@ -87,6 +87,13 @@ Item {
         property real rightEdgeBottomInset:     width + _layoutMargin
     }
 
+    // MEDEA rover: big buttons to start, pause, resume, stop the job and send the rover home
+    RoverJobControls {
+        anchors.bottom:             parent.bottom
+        anchors.horizontalCenter:   parent.horizontalCenter
+        z:                          QGroundControl.zOrderWidgets
+    }
+
     FlyViewMissionCompleteDialog {
         missionController:      _missionController
         geoFenceController:     _geoFenceController
@@ -152,7 +159,8 @@ Item {
         anchors.top:            parent.top
         z:                      QGroundControl.zOrderWidgets
         maxHeight:              parent.height - y - parentToolInsets.bottomEdgeLeftInset - _toolsMargin
-        visible:                !QGroundControl.videoManager.fullScreen
+        // MEDEA rover in operator mode: the job is run with the rover buttons, nothing is left in the tool strip
+        visible:                !QGroundControl.videoManager.fullScreen && (!_guidedController.roverJobUI || QGroundControl.corePlugin.showAdvancedUI)
 
         onDisplayPreFlightChecklist: {
             if (!preFlightChecklistLoader.active) {

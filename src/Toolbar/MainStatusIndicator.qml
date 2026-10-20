@@ -39,7 +39,8 @@ RowLayout {
         property string _notReadyToFlyText: qsTr("Not Ready")
         property string _disconnectedText:  qsTr("Disconnected - Click to manually connect")
         property string _armedText:         qsTr("Armed")
-        property string _flyingText:        qsTr("Flying")
+        // An armed rover counts as "flying" even when paused or stopping: say what is true in every case
+        property string _flyingText:        _activeVehicle && _activeVehicle.rover ? qsTr("Motors on") : qsTr("Flying")
         property string _landingText:       qsTr("Landing")
 
         function mainStatusText() {
@@ -134,6 +135,9 @@ RowLayout {
 
         QGCMouseArea {
             anchors.fill:   parent
+            // Operator mode: the status is only shown (vehicle errors pop up by themselves); without a vehicle the
+            // page to connect manually stays available
+            enabled:        !_activeVehicle || QGroundControl.corePlugin.showAdvancedUI
             onClicked:      dropMainStatusIndicator()
         }
     }

@@ -30,7 +30,8 @@ Item {
             _vehicleWasArmed = true
             _vehicleWasInMissionFlightMode = _vehicleInMissionFlightMode
         } else {
-            if (_showMissionCompleteDialog) {
+            // MEDEA rover: the job stays on the rover, ready to be started again; no question for the operator
+            if (_showMissionCompleteDialog && !globals.guidedControllerFlyView.roverJobUI) {
                 missionCompleteDialogFactory.open()
             }
             _vehicleWasArmed = false

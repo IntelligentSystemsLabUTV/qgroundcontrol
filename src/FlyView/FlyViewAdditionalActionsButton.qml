@@ -10,7 +10,9 @@ ToolStripAction {
     id:         action
     text:       qsTr("Actions")
     iconSource: "qrc:/qmlimages/HamburgerThin.svg"
-    visible:    _additionalActions.anyActionAvailable || _mavlinkActions.anyActionAvailable || _customActions.anyActionAvailable
+    // With the MEDEA rover the operator uses the rover buttons: the actions menu is for the technician
+    visible:    (_additionalActions.anyActionAvailable || _mavlinkActions.anyActionAvailable || _customActions.anyActionAvailable) &&
+                (!_guidedController.roverJobUI || QGroundControl.corePlugin.showAdvancedUI)
     enabled:    true
 
     property var _guidedController: globals.guidedControllerFlyView

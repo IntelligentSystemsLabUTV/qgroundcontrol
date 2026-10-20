@@ -85,6 +85,21 @@ Item {
             }
         }
 
+        // MEDEA rover: after a successful upload go to the Fly View, where the job is started
+        property bool _showFlyViewAfterUpload: false
+
+        onSyncInProgressChanged: {
+            if (!syncInProgress && _showFlyViewAfterUpload) {
+                _showFlyViewAfterUpload = false
+                // dirtyForUpload is updated just after the end of the sync
+                Qt.callLater(function() {
+                    if (!dirtyForUpload && globals.guidedControllerFlyView.roverJobUI) {
+                        mainWindow.showFlyView()
+                    }
+                })
+            }
+        }
+
         function waitingOnIncompleteDataMessage(save) {
             var saveOrUpload = save ? qsTr("Save") : qsTr("Upload")
             QGroundControl.showMessageDialog(_root, qsTr("Unable to %1").arg(saveOrUpload), qsTr("Plan has incomplete items. Complete all items and %1 again.").arg(saveOrUpload))
@@ -111,7 +126,9 @@ Item {
                 return
             }
             switch (_missionController.sendToVehiclePreCheck()) {
-                case MissionController.SendToVehiclePreCheckStateOk: sendToVehicle()
+                case MissionController.SendToVehiclePreCheckStateOk:
+                    _showFlyViewAfterUpload = true
+                    sendToVehicle()
                     break
                 case MissionController.SendToVehiclePreCheckStateActiveMission: QGroundControl.showMessageDialog(_root, qsTr("Send To Vehicle"), qsTr("Current mission must be paused prior to uploading a new Plan"))
                     break
@@ -121,7 +138,7 @@ Item {
                                                       "It is recommended to recreate the Plan for the correct firmware/vehicle type.\n\n" +
                                                       "Click 'Ok' to upload the Plan anyway."),
                                                  Dialog.Ok | Dialog.Cancel,
-                                                 function() { _planMasterController.sendToVehicle() })
+                                                 function() { _showFlyViewAfterUpload = true; _planMasterController.sendToVehicle() })
                     break
             }
         }

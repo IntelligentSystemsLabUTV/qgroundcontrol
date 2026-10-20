@@ -125,6 +125,10 @@ Item {
     // Ground vehicle UI: the connected vehicle is a rover/boat, or with no vehicle the preferred vehicle is a rover
     property bool   groundVehicleUI:            _activeVehicle ? _activeVehicle.rover : QGroundControl.settingsManager.appSettings.preferredVehicleClass.rawValue === MAVLinkEnums.MAV_TYPE_GROUND_ROVER
 
+    // MEDEA rover (generic MAVLink rover, MedeaRoverFirmwarePlugin): the job is run with the RoverJobControls buttons,
+    // so the guided actions and their automatic prompts are turned off
+    property bool   roverJobUI:                 _activeVehicle ? _activeVehicle.rover && _activeVehicle.genericFirmware : false
+
     property bool showEmergenyStop:         _guidedActionsEnabled && !_hideEmergenyStop && _vehicleArmed && _vehicleFlying
     property bool showArm:                  _guidedActionsEnabled && !_vehicleArmed && _canArm
     property bool showForceArm:             _guidedActionsEnabled && !_vehicleArmed
@@ -156,7 +160,7 @@ Item {
 
     property var    _corePlugin:            QGroundControl.corePlugin
     property var    _corePluginOptions:     QGroundControl.corePlugin.options
-    property bool   _guidedActionsEnabled:  (!ScreenTools.isDebug && _corePluginOptions.guidedActionsRequireRCRSSI && _activeVehicle) ? _rcRSSIAvailable : _activeVehicle
+    property bool   _guidedActionsEnabled:  !roverJobUI && ((!ScreenTools.isDebug && _corePluginOptions.guidedActionsRequireRCRSSI && _activeVehicle) ? _rcRSSIAvailable : _activeVehicle)
     property string _flightMode:            _activeVehicle ? _activeVehicle.flightMode : ""
     property bool   _missionAvailable:      missionController.containsItems
     property bool   _missionActive:         _activeVehicle ? _vehicleArmed && (_vehicleInLandMode || _vehicleInRTLMode || _vehicleInMissionMode) : false

@@ -60,6 +60,7 @@ Item {
 
     MouseArea {
         anchors.fill:   mainLayout
+        enabled:        QGroundControl.corePlugin.showAdvancedUI // operator mode: the mode is only shown
         onClicked:      mainWindow.showIndicatorDrawer(drawerComponent, control)
     }
 
