@@ -104,7 +104,12 @@ gst-launch-1.0 videotestsrc is-live=true \
   ! rtspclientsink location=rtsp://127.0.0.1:8554/camera
 ```
 
-## Collegamento con il rover (bridge Kafka)
+## Collegamento con il rover (bridge)
+
+> **In transizione (26/10/2026).** La dashboard non passerà più da Kafka: il bridge diventerà un nodo
+> ROS 2 ↔ MAVLink sul computer della dashboard e farà anche la gestione del lavoro (piano in
+> `docs/piano-dashboard.md` del repository `medea_hmi`). Questa sezione descrive la versione attuale,
+> ancora con Kafka; il lato MAVLink, cioè quello che vede QGroundControl, resta lo stesso.
 
 Il rover pubblica i suoi dati su Kafka; QGroundControl parla solo MAVLink. In mezzo c'è il **bridge**
 (`medea-bridge`), un programma Python del repository `medea_hmi` (cartella `src/medea_bridge`, con
@@ -121,13 +126,14 @@ proposto per i messaggi è in `src/medea_bridge/PROTOCOLLO.md`.
 
 Cosa si vede in QGroundControl:
 
-- se la telemetria del rover si interrompe per più di 3 s, il rover risulta *Disconnesso*;
-- la modalità del rover ha nomi italiani: *Fermo*, *Lavoro*, *Pausa*, *Rientro*, *Manuale*, *Emergenza*;
+- se la telemetria del rover si interrompe per più di 3 s, il rover risulta *Non collegato*;
+- lo stato del rover (la modalità MAVLink) ha nomi italiani: *Pronto*, *Al lavoro*, *In pausa*,
+  *Rientro*, *Guida manuale*, *Arresto di emergenza*, *Avvio in corso*, *Guasto*;
 - se il rover rifiuta un comando, il motivo compare in un riquadro giallo in alto (il bridge lo invia
   come messaggio di errore del veicolo). Se non risponde in tempo il messaggio è *il rover non ha
   risposto*.
 
-### Pulsanti del rover
+### Pulsanti, stato e avanzamento del rover
 
 Un rover MAVLink con autopilota generico (`MAV_AUTOPILOT_GENERIC`), come quello presentato dal bridge,
 usa il **FirmwarePlugin del rover MEDEA** (`src/FirmwarePlugin/MedeaRover/`). Per l'operatore la
@@ -135,19 +141,49 @@ schermata Guida ha allora solo i pulsanti grandi in basso, mostrati secondo lo s
 
 | Pulsante | Quando compare | Comando MAVLink | Al rover |
 | --- | --- | --- | --- |
-| Avvia lavoro (con conferma) | rover fermo, attivo se c'è un lavoro caricato | `MAV_CMD_MISSION_START` | `start_mission` |
-| Pausa | lavoro o rientro in corso | `MAV_CMD_DO_PAUSE_CONTINUE` (0) | `pause` |
-| Riprendi | in pausa | `MAV_CMD_DO_PAUSE_CONTINUE` (1) | `resume` |
-| Torna alla partenza (con conferma) | sempre, tranne durante il rientro | `MAV_CMD_NAV_RETURN_TO_LAUNCH` | `return_home` |
-| Stop | motori accesi | `MAV_CMD_COMPONENT_ARM_DISARM` (0) | `stop` |
+| Avvia lavoro (con conferma) | *Pronto*, attivo se c'è un lavoro caricato | `MAV_CMD_MISSION_START` | `start_mission` |
+| **FERMA** | *Al lavoro*, *Rientro* | `MAV_CMD_DO_PAUSE_CONTINUE` (0) | `pause` (si ferma, motori spenti, lavoro sospeso) |
+| Riprendi | *In pausa* | `MAV_CMD_DO_PAUSE_CONTINUE` (1) | `resume` |
+| Torna alla base (con conferma) | *Pronto*, *Al lavoro*, *In pausa* | `MAV_CMD_NAV_RETURN_TO_LAUNCH` | `return_home` |
+| Termina lavoro (con conferma) | *In pausa* | `MAV_CMD_COMPONENT_ARM_DISARM` (0) | `stop` (chiude il lavoro) |
 
+- *FERMA* è l'unico stop della dashboard e non fa perdere il lavoro; *Termina lavoro* è lo STOP delle
+  regole operative del CREA. L'arresto di emergenza è solo il fungo elettrico sul rover.
 - Il rover si arma da solo quando parte: non c'è un passo "arma" separato.
-- Le modalità sono riconosciute dal numero (custom_mode 1-6: Fermo, Lavoro, Pausa, Rientro, Manuale,
-  Emergenza) e mostrate con i nomi tradotti di QGroundControl; i nomi in `bridge.yaml` non vengono
-  usati.
+- Gli stati sono le modalità MAVLink, riconosciute dal numero (custom_mode) e mostrate con i nomi
+  tradotti di QGroundControl; i nomi in `bridge.yaml` non vengono usati:
+
+  | custom_mode | Stato | Selezionabile | `HEARTBEAT.system_status` |
+  | --- | --- | --- | --- |
+  | 1 | Pronto | sì | STANDBY |
+  | 2 | Al lavoro | sì | ACTIVE |
+  | 3 | In pausa | sì | ACTIVE / STANDBY |
+  | 4 | Rientro | sì | ACTIVE |
+  | 5 | Guida manuale | no | ACTIVE / STANDBY |
+  | 6 | Arresto di emergenza | no | EMERGENCY |
+  | 7 | Avvio in corso | no | BOOT |
+  | 8 | Guasto | no | CRITICAL |
+
+- Lo **stato** (pillola colorata in alto), l'**avanzamento** (riquadro in alto a sinistra) e gli
+  **avvisi** (al centro) vengono da `MedeaRoverJobStatus` (C++, nello stesso FirmwarePlugin):
+  - l'avanzamento è la distanza percorsa lungo il lavoro caricato sul rover, dalla posizione di partenza
+    (*home*) al punto in corso (`MISSION_CURRENT.seq`), sulla lunghezza totale. Il tempo rimanente usa
+    la velocità media dell'ultimo minuto (all'inizio la velocità di crociera delle impostazioni,
+    2,8 km/h);
+  - lo stato del lavoro viene da `MISSION_CURRENT.mission_state`: *Lavoro completato* quando passa da
+    attivo/in pausa a COMPLETE; *Lavoro non completato* se durante il lavoro il rover va in *Arresto di
+    emergenza* o *Guasto* (con l'ultimo messaggio di errore del rover come motivo);
+  - l'avviso di *Guasto* riporta l'ultimo `STATUSTEXT` di gravità *error* o superiore.
+- L'indicatore di posizione dice *RTK fisso*, *RTK float*, *GPS senza RTK* o *Nessuna posizione*
+  (da `GPS_RAW_INT.fix_type`); in modalità avanzata il tocco apre la pagina GPS di QGroundControl.
+- Con due pacchi batteria il bridge invia due `BATTERY_STATUS` (id 0 e 1): l'indicatore mostra il più
+  scarico, il dettaglio è nella pagina della batteria (modalità avanzata).
+- In modalità operatore sono nascosti il pulsante rosso di registrazione video (sembrava un arresto di
+  emergenza; la registrazione è un compito del tecnico) e la modalità accanto allo stato (è la stessa
+  informazione).
 - Per questo rover sono spenti i comandi guidati generici di QGroundControl (*Avvia missione*,
   *Continua missione*, *Rientra*, *Vai qui*, arma/disarma) e la finestra *Piano completato*: il lavoro
-  resta sul rover per essere ripetuto. Nella barra in alto restano solo GPS e batteria.
+  resta sul rover per essere ripetuto.
 - Dopo un caricamento riuscito dalla Plan View il programma passa da solo alla schermata Guida.
 
 Il file di *MAVLink Actions* `src/medea_bridge/qgc/MavlinkActions/medea-rover.json` (stessi comandi,
@@ -224,8 +260,16 @@ solo estetico.
 ## Prove senza rover
 
 Con il **rover finto** del bridge si prova tutta la catena: Kafka, bridge, QGroundControl, lavori e
-comandi. Il rover finto esegue davvero i lavori caricati, a 1,5 m/s (`--speed` per cambiare), e
-finito il lavoro torna alla partenza. Comandi (dettagli nel `README.md` di `src/medea_bridge`):
+comandi. Il rover finto esegue davvero i lavori caricati, a 2,8 km/h come il rover vero (`--speed`
+in m/s per cambiare, per esempio `--speed 4` per prove veloci), e finito il lavoro torna alla partenza.
+All'accensione resta 8 s in *Avvio in corso* (`--startup-s`). Per provare gli avvisi:
+
+```bash
+kill -USR1 $(pgrep -f "[m]edea-fake-rover")   # preme o sblocca il fungo di emergenza
+kill -USR2 $(pgrep -f "[m]edea-fake-rover")   # inizia o risolve un guasto (il GPS non risponde)
+```
+
+Avvio (dettagli nel `README.md` di `src/medea_bridge`):
 
 ```bash
 cd ~/workspace/src/medea_bridge

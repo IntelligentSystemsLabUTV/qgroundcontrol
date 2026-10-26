@@ -22,6 +22,58 @@ Guide d'uso: [guida per l'operatore](guida-operatore.md), [guida per il tecnico]
 
 ---
 
+## 2026-10-26
+
+### Schermata Guida del rover: stati, FERMA, avanzamento e avvisi
+
+**Cosa.**
+
+- **Stati del rover** (FirmwarePlugin MEDEA): le modalità diventano gli stati macchina delle regole
+  operative del CREA, con nomi pensati per l'operatore: *Pronto*, *Al lavoro*, *In pausa*, *Rientro*,
+  *Guida manuale*, *Arresto di emergenza* (prima *Fermo*, *Lavoro*, *Pausa*, *Manuale*, *Emergenza*) e
+  due nuovi, non selezionabili: *Avvio in corso* (custom_mode 7) e *Guasto* (8).
+- **Barra in alto:** lo stato del rover è una pillola colorata (grigio, verde, blu, giallo, viola,
+  arancione, rosso) al posto di *Pronto/Motori accesi* + modalità; in modalità operatore la modalità non
+  è più ripetuta accanto. L'indicatore GPS diventa **indicatore di posizione** a parole: *RTK fisso*,
+  *RTK float*, *GPS senza RTK*, *Nessuna posizione* (`RoverPositionIndicator.qml`).
+- **Pulsanti** (`RoverJobControls.qml`): **FERMA** (rosso, il più grande) al posto di *Pausa* e *Stop*:
+  ferma il rover e spegne i motori, il lavoro resta sospeso. Da *In pausa*: **Riprendi**, **Torna alla
+  base** e **Termina lavoro** (con conferma; è lo STOP delle regole operative, chiude il lavoro). In
+  *Avvio in corso* e *Guida manuale* compare solo una spiegazione; in *Guasto* e *Arresto di emergenza*
+  nessun pulsante.
+- **Riquadro del lavoro** (`RoverJobPanel.qml`, in alto a sinistra): percentuale e barra di
+  avanzamento, punto in corso (*Punto 3 di 12*), distanza e tempo che mancano, velocità in km/h,
+  pulsante **Registro eventi** (i messaggi del rover con l'ora). Il registro si apre dentro il riquadro e
+  non in una finestra modale, così **FERMA** resta raggiungibile mentre il rover si muove.
+- **Avvisi** (`RoverStatusBanner.qml`, al centro): *Arresto di emergenza* e *Guasto* (con il motivo)
+  finché durano; *Lavoro completato* e *Lavoro non completato* (con il motivo) finché l'operatore non
+  li chiude o non carica un altro lavoro.
+- Nuovo `MedeaRoverJobStatus` (C++, `QML_ELEMENT`, un'istanza nella Fly View esposta in
+  `globals.roverJobStatusFlyView`): stato macchina, colore, avanzamento sul lavoro caricato (dalla
+  posizione di partenza al punto di `MISSION_CURRENT`), tempo rimanente con la velocità media
+  dell'ultimo minuto, esito del lavoro da `MISSION_CURRENT.mission_state`.
+- **Modalità operatore:** nascosto il pulsante rosso di registrazione video della Fly View.
+- **Velocità di crociera** predefinita per le statistiche: 0,78 m/s (2,8 km/h, la velocità delle
+  lavorazioni in campo), minimo 0,1 m/s.
+- **Test:** nuovo `MedeaRoverJobStatusTest` (stati, distanza percorsa lungo il lavoro);
+  `MedeaRoverFirmwarePluginTest` aggiornato per gli 8 stati.
+
+**Perché.** Dopo la chiamata con S. Figorilli (CREA) la dashboard segue gli stati macchina e gli stati
+della missione delle sue regole operative, e la gestione del lavoro passa alla dashboard (piano in
+`docs/piano-dashboard.md` del repository `medea_hmi`):
+
+- l'operatore deve capire a colpo d'occhio cosa fa il rover: prima c'erano due indicazioni (stato e
+  modalità) con parole tecniche, ora un solo stato colorato;
+- un solo modo di fermare il rover, che non fa mai perdere il lavoro: con *Pausa* e *Stop* affiancati
+  era facile chiudere il lavoro per sbaglio;
+- l'arresto di emergenza è il fungo elettrico: la dashboard lo mostra e spiega cosa fare, ma non lo
+  comanda; il pulsante rosso rotondo della registrazione si poteva scambiare per un arresto;
+- avanzamento in percentuale e lavoro completato/non completato sono richiesti esplicitamente dalle
+  regole operative;
+- satelliti e HDOP non dicono niente a un agricoltore; "RTK fisso" sì.
+
+---
+
 ## 2026-10-20
 
 ### Pulsanti del rover nella schermata Guida (FirmwarePlugin MEDEA)
