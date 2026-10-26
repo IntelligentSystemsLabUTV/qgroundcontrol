@@ -24,6 +24,9 @@ Item {
     property var    _rallyPointController:      planMasterController.rallyPointController
     property var    _guidedController:          globals.guidedControllerFlyView
     property var    _missionLineViewComponent
+    property bool   _hideWaypointMarkers:       _guidedController.roverJobUI && _missionController.visualItems.count > _maxRoverWaypointMarkers
+
+    readonly property int _maxRoverWaypointMarkers: 30
 
     property string fmode: vehicle.flightMode
 
@@ -34,6 +37,10 @@ Item {
         delegate: MissionItemMapVisual {
             map:        _map
             vehicle:    _vehicle
+            // MEDEA rover: a field job has hundreds of waypoints (turns included); with many of them only the start
+            // and the waypoint the rover drives to are marked, the path stays visible as a line
+            opacity:    _hideWaypointMarkers && object.sequenceNumber !== 0 && object.sequenceNumber !== _missionController.currentMissionIndex ? 0 : 1
+            interactive: !_hideWaypointMarkers
             onClicked:  _guidedController.confirmAction(_guidedController.actionSetWaypoint, Math.max(object.sequenceNumber, 1))
         }
     }
