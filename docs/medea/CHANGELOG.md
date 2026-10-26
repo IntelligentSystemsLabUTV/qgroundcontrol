@@ -61,6 +61,30 @@ c'è un planner): l'operatore deve indicare il campo e la coltura, non i singoli
 upstream non conosce file, capezzagna e raggio di sterzata, e le sue passate a zig-zag avrebbero fatto
 girare il rover sopra la coltura.
 
+### Lavoro in campo: impostazioni dell'operatore, voltate saltando file, rientro lungo la capezzagna
+
+**Cosa.**
+
+- L'editor ha tre sezioni: **Lavoro** (ambiente, tipo di lavoro, velocità), **Coltura e file**
+  (coltura, interfila, *File da lavorare*, prima fila dal bordo, capezzagna, *Voltate*) per l'operatore,
+  **Rover** (fascia coltivata, file per passata, raggio di sterzata) solo in modalità avanzata.
+- *File da lavorare* (nuovo): le prime N file dal lato giallo, 0 = tutte. Le statistiche distinguono *File
+  nel campo* e *File da lavorare*.
+- *Voltate* (nuovo): *Automatiche* (come prima) o *A U saltando file*: passate in gruppi intercalati così che
+  tutte le voltate siano a U.
+- **Rientro lungo la capezzagna:** finita l'ultima passata il percorso torna all'inizio della prima lungo la
+  capezzagna (e lungo la prima passata se serve); prima il ritorno alla partenza tagliava in diagonale sul
+  campo.
+- *Ricomincia il campo* diventa **Cancella gli angoli**, con una riga che spiega come prendere gli angoli
+  dal rover.
+- Un messaggio nuovo quando una voltata a goccia esce dal lato del campo (prima diceva di allargare la
+  capezzagna, che non serviva).
+- Test: file da lavorare, voltate saltando file, rientro lungo la capezzagna.
+
+**Perché.** Prova dell'utente: un agricoltore deve poter impostare quante file fare, la capezzagna e il tipo
+di voltata senza la modalità tecnico; i dati che dipendono dal rover restano al tecnico. Il rientro in
+diagonale sarebbe passato sopra la coltura.
+
 ### Schermata Guida del rover: stati, FERMA, avanzamento e avvisi
 
 **Cosa.**

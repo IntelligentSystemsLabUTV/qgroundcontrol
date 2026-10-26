@@ -233,14 +233,23 @@ non compaiono Decollo e Atterra, con un drone sì.
   obliqui.
 - **Passate:** a ogni passata il rover scavalca *File per passata* file, con la linea centrale in mezzo
   a esse; la *Carreggiata necessaria* è file per passata × interfila. Le passate si alternano di verso.
+- **File da lavorare:** le prime N file dal lato di riferimento (0 = tutte); le statistiche riportano anche
+  le file che stanno nel campo.
 - **Voltate:** tra una passata e la successiva, in capezzagna, con il *Raggio di sterzata* minimo:
   - **a U** (quarto di cerchio, tratto dritto, quarto di cerchio) se le passate distano almeno due
     raggi: occupa un raggio di capezzagna;
   - **a goccia** se sono più vicine: una breve curva verso l'esterno, un ampio giro, una breve curva
     verso la passata successiva. Occupa più capezzagna (circa 4,3 m con raggio 2 m e passate a 2,5 m).
 
-  Se una voltata esce dal campo il lavoro non si può salvare né caricare, e l'editor dice di quanta
-  capezzagna c'è bisogno.
+  Con *Voltate: A U saltando file* le passate si fanno in k gruppi intercalati (0, k, 2k... poi 1, k+1...),
+  con k il minimo che porta le passate consecutive ad almeno due raggi: tutte le voltate sono a U, e dal
+  gruppo successivo si riparte attraversando la capezzagna. Se una voltata esce dal campo il lavoro non si
+  può salvare né caricare: l'editor dice di quanta capezzagna c'è bisogno, oppure (voltate a goccia vicino
+  al lato del campo) suggerisce di allontanare la prima fila o di saltare file.
+- **Rientro:** dopo l'ultima passata il percorso torna al punto d'inizio della prima passata lungo la
+  capezzagna (a metà capezzagna, o al massimo un raggio dentro) e, se l'ultima passata finisce dall'altra
+  parte del campo, lungo la prima passata, che il rover scavalca: mai in diagonale sopra la coltura. Il
+  ritorno alla casetta (RTL) parte da lì: la partenza va messa vicino all'angolo da cui comincia il lavoro.
 - **Avvisi che bloccano il lavoro:** fascia coltivata larga quanto l'interfila (nessuno spazio per le
   ruote), nessuna fila nel campo, capezzagna troppo larga, voltate fuori dal campo, lato di riferimento
   più corto di 1 m.
@@ -252,7 +261,9 @@ non compaiono Decollo e Atterra, con un drone sì.
   percorso resta disegnato come linea.
 
 Valori predefiniti delle colture, **indicativi e da confermare con il CREA** (domanda 25 in
-`docs/domande-aperte.md` di `medea_hmi`); il tecnico li cambia in *Coltura e rover* (modalità avanzata):
+`docs/domande-aperte.md` di `medea_hmi`). Interfila, prima fila e capezzagna le corregge anche l'operatore
+(*Coltura e file*); fascia coltivata, file per passata e raggio di sterzata sono dati del rover e stanno in
+*Rover* (modalità avanzata):
 
 | Coltura | Interfila | Fascia coltivata | Capezzagna | Note |
 | --- | --- | --- | --- | --- |

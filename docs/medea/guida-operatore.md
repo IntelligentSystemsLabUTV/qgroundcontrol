@@ -109,28 +109,44 @@ della barra a sinistra.
 
 1. Scegli **Lavoro in campo**. In alto compaiono gli *Strumenti poligono*.
 2. Indica il campo, in uno di questi modi:
-   - **dal rover** (il più preciso): porta il rover in un angolo del campo e premi **Angolo dal rover**,
-     poi nell'angolo successivo e così via, girando intorno al campo. Con tre angoli il campo compare
-     sulla mappa. **Ricomincia il campo** cancella gli angoli;
+   - **dal rover** (il più preciso): premi **Cancella gli angoli**, porta il rover in un angolo del campo
+     e premi **Angolo dal rover**, poi nell'angolo successivo e così via, girando intorno al campo. Con
+     tre angoli il campo compare sulla mappa;
    - **sulla mappa**: **Base** crea un rettangolo da trascinare sui confini, **Traccia** permette di
      toccare gli angoli uno dopo l'altro (poi **Fine tracciamento**), **Carica KML/SHP...** carica un
      confine preparato con un altro programma. La mappa satellitare può essere spostata di qualche metro:
      controlla che le file cadano davvero sulle piante.
-3. Nel pannello a destra scegli:
+3. **Punto di partenza:** di solito un angolo del campo. Metti la casetta verde dove si trova il rover,
+   accanto all'angolo da cui deve cominciare: così il rover non attraversa il campo per arrivare alla prima
+   fila (con **Cambia punto di partenza** scegli l'angolo giusto).
+4. Nel pannello a destra, sotto **Lavoro**:
    - **Ambiente**: *Campo aperto* o *Serra*;
-   - **Coltura**: vigneto, frutteto, orticole in pieno campo, mais, orticole in serra. La coltura imposta
-     la distanza tra le file e lo spazio per girare a fine fila;
    - **Tipo di lavoro**: mappatura, rilevamento infestanti, diserbo, mappatura NDVI o NDRE, irrorazione;
    - **Velocità** in km/h (2,8 di solito, al massimo 3).
-4. Sulla mappa le **file** sono le linee verdi, il **lato giallo** del campo è quello a cui sono parallele.
-   Se le file vanno nell'altro verso premi **Cambia direzione delle file**. **Cambia punto di partenza**
-   sposta l'angolo da cui il rover comincia.
-5. Sotto *Statistiche* trovi quante file ci sono, la lunghezza del percorso e il **tempo stimato**.
+5. Sotto **Coltura e file**:
+   - **Coltura**: vigneto, frutteto, orticole in pieno campo, mais, orticole in serra. Propone da sola i
+     valori sotto, che puoi correggere;
+   - **Interfila**: distanza tra due file;
+   - **File da lavorare**: quante file fare, contate dal lato giallo (0 = tutte quelle del campo);
+   - **Prima fila dal bordo**: distanza della prima fila dal lato giallo;
+   - **Capezzagna**: lo spazio a fine fila dove il rover gira;
+   - **Voltate**: *Automatiche* (a U se le file sono abbastanza distanti, altrimenti a goccia) oppure
+     *A U saltando file*: il rover lavora una fila sì e una no e torna indietro per quelle saltate, così
+     gira sempre largo.
+6. Sulla mappa le **file** sono le linee verdi, il **lato giallo** del campo è quello a cui sono parallele.
+   Se le file vanno nell'altro verso premi **Cambia direzione delle file**.
+7. Sotto *Statistiche* trovi quante file ci sono nel campo e quante ne lavori, il tipo di voltata, la
+   lunghezza del percorso e il **tempo stimato**.
+
+Finito il lavoro il rover torna alla partenza **lungo la capezzagna** (e, se serve, lungo la prima fila),
+mai in diagonale sopra la coltura.
 
 Se compare un avviso rosso il lavoro non si può caricare sul rover. I casi più comuni:
 
-- *Le voltate a fine fila escono dal campo*: lo spazio a fine fila non basta per girare. Chiedi al tecnico
-  di controllare la capezzagna o il raggio di sterzata;
+- *Le voltate a fine fila escono dal campo*: lo spazio a fine fila non basta per girare. Aumenta la
+  **Capezzagna** se il campo lo permette, altrimenti chiedi al tecnico di controllare il raggio di sterzata;
+- *Una voltata vicino al lato del campo ne esce*: le voltate a goccia sporgono di lato. Scegli
+  **A U saltando file**, oppure aumenta **Prima fila dal bordo** o lavora una fila in meno;
 - *Nel campo non entra nessuna fila*: il campo è troppo piccolo o le file vanno nella direzione sbagliata
   (prova **Cambia direzione delle file**);
 - *La capezzagna è troppo larga per questo campo*: il campo è troppo stretto rispetto allo spazio a fine
