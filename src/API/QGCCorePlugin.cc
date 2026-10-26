@@ -21,11 +21,13 @@
 #include "VideoSettings.h"
 #include "SurveyPlanCreator.h"
 #include "CorridorScanPlanCreator.h"
+#include "FieldWorkPlanCreator.h"
 #include "PathPlanCreator.h"
 #include "PerimeterPlanCreator.h"
 #include "StructureScanPlanCreator.h"
 #include "SurveyComplexItem.h"
 #include "CorridorScanComplexItem.h"
+#include "FieldWorkComplexItem.h"
 #include "PathComplexItem.h"
 #include "PerimeterComplexItem.h"
 #include "StructureScanComplexItem.h"
@@ -462,6 +464,7 @@ QVariantList QGCCorePlugin::complexMissionItemNames(Vehicle *vehicle)
         items.append(makeEntry(StructureScanComplexItem::canonicalName, StructureScanComplexItem::tr(StructureScanComplexItem::canonicalName)));
     }
     if (vehicle->rover()) {
+        items.append(makeEntry(FieldWorkComplexItem::canonicalName, FieldWorkComplexItem::tr(FieldWorkComplexItem::canonicalName)));
         items.append(makeEntry(PathComplexItem::canonicalName, PathComplexItem::tr(PathComplexItem::canonicalName)));
         items.append(makeEntry(PerimeterComplexItem::canonicalName, PerimeterComplexItem::tr(PerimeterComplexItem::canonicalName)));
     }
@@ -472,6 +475,7 @@ QVariantList QGCCorePlugin::complexMissionItemNames(Vehicle *vehicle)
 QList<PlanCreator*> QGCCorePlugin::planCreators(PlanMasterController *planMasterController)
 {
     return {
+        new FieldWorkPlanCreator(planMasterController),
         new SurveyPlanCreator(planMasterController),
         new CorridorScanPlanCreator(planMasterController),
         new PathPlanCreator(planMasterController),
@@ -491,6 +495,8 @@ ComplexMissionItem *QGCCorePlugin::createComplexMissionItem(
         return new SurveyComplexItem(masterController, flyView, kmlOrShpFile);
     } else if (complexItemType == CorridorScanComplexItem::canonicalName || complexItemType == CorridorScanComplexItem::jsonComplexItemTypeValue) {
         return new CorridorScanComplexItem(masterController, flyView, kmlOrShpFile);
+    } else if (complexItemType == FieldWorkComplexItem::canonicalName || complexItemType == FieldWorkComplexItem::jsonComplexItemTypeValue) {
+        return new FieldWorkComplexItem(masterController, flyView, kmlOrShpFile);
     } else if (complexItemType == PathComplexItem::canonicalName || complexItemType == PathComplexItem::jsonComplexItemTypeValue) {
         return new PathComplexItem(masterController, flyView, kmlOrShpFile);
     } else if (complexItemType == PerimeterComplexItem::canonicalName || complexItemType == PerimeterComplexItem::jsonComplexItemTypeValue) {

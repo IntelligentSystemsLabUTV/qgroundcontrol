@@ -1091,7 +1091,7 @@ int TransectStyleComplexItem::lastSequenceNumber(void) const
             }
         }
 
-        return _sequenceNumber + itemCount - 1;
+        return _sequenceNumber + _entryMissionItemCount() + itemCount - 1;
     } else {
         // We can end up hear if we are follow terrain and the flight path isn't ready yet. So we just return an inaccurate number until
         // we know the real one.
@@ -1232,6 +1232,8 @@ void TransectStyleComplexItem::_buildAndAppendMissionItems(QList<MissionItem*>& 
     MAV_FRAME                   mavFrame    = MAV_FRAME_GLOBAL_RELATIVE_ALT;
 
     qCDebug(TransectStyleComplexItemLog) << "_buildAndAppendMissionItems";
+
+    _appendEntryMissionItems(items, missionItemParent, seqNum);
 
     switch (_cameraCalc.distanceMode()) {
     case QGroundControlQmlGlobal::AltitudeFrameRelative:

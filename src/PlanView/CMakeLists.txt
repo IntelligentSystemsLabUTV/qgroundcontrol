@@ -34,6 +34,8 @@ qt_add_qml_module(PlanViewModule
         MissionStats.qml
         PathEditor.qml
         PathMapVisual.qml
+        FieldWorkEditor.qml
+        FieldWorkMapVisual.qml
         PerimeterEditor.qml
         PerimeterMapVisual.qml
         PlanEditLayers.qml

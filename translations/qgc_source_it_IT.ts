@@ -6369,6 +6369,214 @@ Premi Ok per avviare l'auto-tuning.
     </message>
   </context>
   <context>
+    <name>FieldWorkComplexItem</name>
+    <message>
+      <location filename="../src/MissionManager/FieldWorkComplexItem.cc" line="370"/>
+      <source>%1 does not support loading this complex mission item type: %2:%3</source>
+      <translation>%1 non supporta il caricamento di questo tipo di elemento complesso della missione: %2:%3</translation>
+    </message>
+    <message>
+      <location filename="../src/MissionManager/FieldWorkComplexItem.cc" line="377"/>
+      <source>%1 complex item version %2 not supported</source>
+      <translation>Versione %2 dell&apos;elemento complesso %1 non supportata</translation>
+    </message>
+    <message>
+      <location filename="../src/MissionManager/FieldWorkComplexItem.h" line="131"/>
+      <location filename="../src/MissionManager/FieldWorkComplexItem.h" line="133"/>
+      <location filename="../src/MissionManager/FieldWorkComplexItem.h" line="141"/>
+      <source>Field work</source>
+      <translation>Lavoro in campo</translation>
+    </message>
+    <message>
+      <location filename="../src/MissionManager/FieldWorkComplexItem.h" line="135"/>
+      <source>F</source>
+      <translation>L</translation>
+    </message>
+    <message>
+      <location filename="../src/MissionManager/FieldWorkComplexItem.cc" line="549"/>
+      <source>The edge the rows are parallel to is too short: change the row direction.</source>
+      <translation>Il lato a cui sono parallele le file è troppo corto: cambia la direzione delle file.</translation>
+    </message>
+    <message>
+      <location filename="../src/MissionManager/FieldWorkComplexItem.cc" line="573"/>
+      <source>The crop band is as wide as the row spacing: no room is left for the wheels.</source>
+      <translation>La fascia coltivata è larga quanto l&apos;interfila: non resta spazio per le ruote.</translation>
+    </message>
+    <message>
+      <location filename="../src/MissionManager/FieldWorkComplexItem.cc" line="579"/>
+      <source>The headland is too wide for this field.</source>
+      <translation>La capezzagna è troppo larga per questo campo.</translation>
+    </message>
+    <message>
+      <location filename="../src/MissionManager/FieldWorkComplexItem.cc" line="600"/>
+      <source>No crop row fits in the field: check the row spacing, the first row and the headland.</source>
+      <translation>Nel campo non entra nessuna fila: controlla interfila, prima fila e capezzagna.</translation>
+    </message>
+    <message>
+      <location filename="../src/MissionManager/FieldWorkComplexItem.cc" line="673"/>
+      <source>The turns at the end of the rows leave the field: the headland must be at least %1 m, or the turning radius smaller.</source>
+      <translation>Le voltate a fine fila escono dal campo: serve una capezzagna di almeno %1 m, oppure un raggio di sterzata più piccolo.</translation>
+    </message>
+  </context>
+  <context>
+    <name>FieldWorkEditor</name>
+    <message>
+      <location filename="../src/PlanView/FieldWorkEditor.qml" line="46"/>
+      <source>%1 min</source>
+      <translation>%1 min</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/FieldWorkEditor.qml" line="48"/>
+      <source>%1 h %2 min</source>
+      <translation>%1 h %2 min</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/FieldWorkEditor.qml" line="63"/>
+      <source>Draw the field with the Polygon Tools, or drive the rover to each corner of the field and press Corner at the rover.</source>
+      <translation>Disegna il campo con gli strumenti poligono, oppure porta il rover in ogni angolo del campo e premi Angolo dal rover.</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/FieldWorkEditor.qml" line="75"/>
+      <source>Corner at the rover</source>
+      <translation>Angolo dal rover</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/FieldWorkEditor.qml" line="83"/>
+      <source>Start the field again</source>
+      <translation>Ricomincia il campo</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/FieldWorkEditor.qml" line="93"/>
+      <source>Corners of the field: %1</source>
+      <translation>Angoli del campo: %1</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/FieldWorkEditor.qml" line="93"/>
+      <source>The rover is not connected: draw the field on the map.</source>
+      <translation>Il rover non è collegato: disegna il campo sulla mappa.</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/FieldWorkEditor.qml" line="107"/>
+      <source>Environment</source>
+      <translation>Ambiente</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/FieldWorkEditor.qml" line="116"/>
+      <source>Crop</source>
+      <translation>Coltura</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/FieldWorkEditor.qml" line="125"/>
+      <source>Job</source>
+      <translation>Tipo di lavoro</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/FieldWorkEditor.qml" line="134"/>
+      <source>Speed</source>
+      <translation>Velocità</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/FieldWorkEditor.qml" line="146"/>
+      <source>The rows are parallel to the yellow edge of the field.</source>
+      <translation>Le file sono parallele al lato giallo del campo.</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/FieldWorkEditor.qml" line="155"/>
+      <source>Change row direction</source>
+      <translation>Cambia direzione delle file</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/FieldWorkEditor.qml" line="161"/>
+      <source>Change starting point</source>
+      <translation>Cambia punto di partenza</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/FieldWorkEditor.qml" line="179"/>
+      <source>Crop and rover</source>
+      <translation>Coltura e rover</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/FieldWorkEditor.qml" line="190"/>
+      <source>Row spacing</source>
+      <translation>Interfila</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/FieldWorkEditor.qml" line="197"/>
+      <source>Crop band width</source>
+      <translation>Larghezza fascia coltivata</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/FieldWorkEditor.qml" line="204"/>
+      <source>Rows per pass</source>
+      <translation>File per passata</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/FieldWorkEditor.qml" line="211"/>
+      <source>First row from the edge</source>
+      <translation>Prima fila dal bordo</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/FieldWorkEditor.qml" line="218"/>
+      <source>Headland</source>
+      <translation>Capezzagna</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/FieldWorkEditor.qml" line="225"/>
+      <source>Turning radius</source>
+      <translation>Raggio di sterzata</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/FieldWorkEditor.qml" line="236"/>
+      <source>Statistics</source>
+      <translation>Statistiche</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/FieldWorkEditor.qml" line="245"/>
+      <source>Crop rows</source>
+      <translation>File della coltura</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/FieldWorkEditor.qml" line="248"/>
+      <source>Passes</source>
+      <translation>Passate</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/FieldWorkEditor.qml" line="251"/>
+      <source>Track width needed</source>
+      <translation>Carreggiata necessaria</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/FieldWorkEditor.qml" line="254"/>
+      <source>Turns</source>
+      <translation>Voltate</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/FieldWorkEditor.qml" line="258"/>
+      <source>bulb (passes too close)</source>
+      <translation>a goccia (passate vicine)</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/FieldWorkEditor.qml" line="258"/>
+      <source>U</source>
+      <translation>a U</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/FieldWorkEditor.qml" line="261"/>
+      <source>Path length</source>
+      <translation>Lunghezza del percorso</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/FieldWorkEditor.qml" line="264"/>
+      <source>Estimated time</source>
+      <translation>Tempo stimato</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/FieldWorkEditor.qml" line="267"/>
+      <source>Area</source>
+      <translation>Area</translation>
+    </message>
+  </context>
+  <context>
     <name>FTPController</name>
     <message>
       <location filename="../src/Vehicle/FTPController.cc" line="38"/>

@@ -137,6 +137,11 @@ protected:
     bool    _hasTurnaround                  (void) const;
     double  _turnAroundDistance             (void) const;
     void    _appendWaypoint                 (QList<MissionItem*>& items, QObject* missionItemParent, int& seqNum, MAV_FRAME mavFrame, float holdTime, const QGeoCoordinate& coordinate);
+
+    /// Mission items a pattern puts before its first waypoint (for example a speed change) and their number, which
+    /// lastSequenceNumber() must know
+    virtual int     _entryMissionItemCount      (void) const { return 0; }
+    virtual void    _appendEntryMissionItems    (QList<MissionItem*>& /*items*/, QObject* /*missionItemParent*/, int& /*seqNum*/) {}
     void    _appendSinglePhotoCapture       (QList<MissionItem*>& items, QObject* missionItemParent, int& seqNum);
     void    _appendConditionGate            (QList<MissionItem*>& items, QObject* missionItemParent, int& seqNum, MAV_FRAME mavFrame, const QGeoCoordinate& coordinate);
     void    _appendCameraTriggerDistance    (QList<MissionItem*>& items, QObject* missionItemParent, int& seqNum, float triggerDistance);

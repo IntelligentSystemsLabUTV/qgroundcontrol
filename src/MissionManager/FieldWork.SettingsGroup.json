@@ -1,0 +1,99 @@
+{
+    "version":      1,
+    "fileType":  "FactMetaData",
+    "QGC.MetaData.Facts":
+[
+{
+    "name":             "CropType",
+    "shortDesc": "Crop grown in the field: it sets the row spacing, the width of the crop rows and the headland.",
+    "type":             "uint32",
+    "enumStrings":      "Vineyard,Orchard,Field vegetables,Maize,Greenhouse vegetables,Custom",
+    "enumValues":       "0,1,2,3,4,5",
+    "default":          0
+},
+{
+    "name":             "Environment",
+    "shortDesc": "Open field (GPS and UWB positioning) or greenhouse (UWB only).",
+    "type":             "uint32",
+    "enumStrings":      "Open field,Greenhouse",
+    "enumValues":       "0,1",
+    "default":          0
+},
+{
+    "name":             "JobType",
+    "shortDesc": "Work done along the rows: it tells the rover which instruments to use.",
+    "type":             "uint32",
+    "enumStrings":      "Mapping,Weed detection,Weed removal,NDVI mapping,NDRE mapping,Spraying,Other",
+    "enumValues":       "0,1,2,3,4,5,6",
+    "default":          0
+},
+{
+    "name":             "WorkSpeed",
+    "shortDesc": "Speed of the rover along the rows and in the turns.",
+    "type":             "double",
+    "units":            "m/s",
+    "min":              0.1,
+    "max":              0.8334,
+    "decimalPlaces":    1,
+    "default":          0.7778
+},
+{
+    "name":             "RowSpacing",
+    "shortDesc": "Distance between the centres of two neighbouring crop rows.",
+    "type":             "double",
+    "units":            "m",
+    "min":              0.1,
+    "max":              20,
+    "decimalPlaces":    2,
+    "default":          2.5
+},
+{
+    "name":             "RowWidth",
+    "shortDesc": "Width of the crop band of a row: the wheels must stay out of it.",
+    "type":             "double",
+    "units":            "m",
+    "min":              0,
+    "max":              20,
+    "decimalPlaces":    2,
+    "default":          0.6
+},
+{
+    "name":             "RowsPerPass",
+    "shortDesc": "Number of crop rows the rover straddles at each pass.",
+    "type":             "uint32",
+    "min":              1,
+    "max":              20,
+    "default":          1
+},
+{
+    "name":             "FirstRowOffset",
+    "shortDesc": "Distance of the first crop row from the edge of the field the rows are parallel to.",
+    "type":             "double",
+    "units":            "m",
+    "min":              0,
+    "max":              100,
+    "decimalPlaces":    2,
+    "default":          1.25
+},
+{
+    "name":             "Headland",
+    "shortDesc": "Space at the ends of the rows, inside the field, where the rover turns without driving over the crop.",
+    "type":             "double",
+    "units":            "m",
+    "min":              0,
+    "max":              100,
+    "decimalPlaces":    1,
+    "default":          6
+},
+{
+    "name":             "TurnRadius",
+    "shortDesc": "Smallest turning radius of the rover (both axles steering).",
+    "type":             "double",
+    "units":            "m",
+    "min":              0.5,
+    "max":              20,
+    "decimalPlaces":    1,
+    "default":          2
+}
+]
+}

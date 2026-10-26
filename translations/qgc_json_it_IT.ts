@@ -17,6 +17,90 @@
     </message>
   </context>
   <context>
+    <name>FieldWork.SettingsGroup.json</name>
+    <message>
+      <extracomment>.QGC.MetaData.Facts[CropType].shortDesc</extracomment>
+      <location filename="/home/runner/work/qgroundcontrol/qgroundcontrol/src/MissionManager/FieldWork.SettingsGroup.json"/>
+      <source>Crop grown in the field: it sets the row spacing, the width of the crop rows and the headland.</source>
+      <translation>Coltura del campo: imposta interfila, larghezza della fascia coltivata e capezzagna.</translation>
+    </message>
+    <message>
+      <extracomment>.QGC.MetaData.Facts[CropType].enumStrings</extracomment>
+      <translatorcomment>Only use english comma ',' to separate strings</translatorcomment>
+      <location filename="/home/runner/work/qgroundcontrol/qgroundcontrol/src/MissionManager/FieldWork.SettingsGroup.json"/>
+      <source>Vineyard,Orchard,Field vegetables,Maize,Greenhouse vegetables,Custom</source>
+      <translation>Vigneto,Frutteto,Orticole in pieno campo,Mais,Orticole in serra,Personalizzata</translation>
+    </message>
+    <message>
+      <extracomment>.QGC.MetaData.Facts[Environment].shortDesc</extracomment>
+      <location filename="/home/runner/work/qgroundcontrol/qgroundcontrol/src/MissionManager/FieldWork.SettingsGroup.json"/>
+      <source>Open field (GPS and UWB positioning) or greenhouse (UWB only).</source>
+      <translation>Campo aperto (posizione da GPS e UWB) o serra (solo UWB).</translation>
+    </message>
+    <message>
+      <extracomment>.QGC.MetaData.Facts[Environment].enumStrings</extracomment>
+      <translatorcomment>Only use english comma ',' to separate strings</translatorcomment>
+      <location filename="/home/runner/work/qgroundcontrol/qgroundcontrol/src/MissionManager/FieldWork.SettingsGroup.json"/>
+      <source>Open field,Greenhouse</source>
+      <translation>Campo aperto,Serra</translation>
+    </message>
+    <message>
+      <extracomment>.QGC.MetaData.Facts[JobType].shortDesc</extracomment>
+      <location filename="/home/runner/work/qgroundcontrol/qgroundcontrol/src/MissionManager/FieldWork.SettingsGroup.json"/>
+      <source>Work done along the rows: it tells the rover which instruments to use.</source>
+      <translation>Lavorazione lungo le file: indica al rover quali strumenti usare.</translation>
+    </message>
+    <message>
+      <extracomment>.QGC.MetaData.Facts[JobType].enumStrings</extracomment>
+      <translatorcomment>Only use english comma ',' to separate strings</translatorcomment>
+      <location filename="/home/runner/work/qgroundcontrol/qgroundcontrol/src/MissionManager/FieldWork.SettingsGroup.json"/>
+      <source>Mapping,Weed detection,Weed removal,NDVI mapping,NDRE mapping,Spraying,Other</source>
+      <translation>Mappatura,Rilevamento infestanti,Diserbo,Mappatura NDVI,Mappatura NDRE,Irrorazione,Altro</translation>
+    </message>
+    <message>
+      <extracomment>.QGC.MetaData.Facts[WorkSpeed].shortDesc</extracomment>
+      <location filename="/home/runner/work/qgroundcontrol/qgroundcontrol/src/MissionManager/FieldWork.SettingsGroup.json"/>
+      <source>Speed of the rover along the rows and in the turns.</source>
+      <translation>Velocità del rover lungo le file e nelle voltate.</translation>
+    </message>
+    <message>
+      <extracomment>.QGC.MetaData.Facts[RowSpacing].shortDesc</extracomment>
+      <location filename="/home/runner/work/qgroundcontrol/qgroundcontrol/src/MissionManager/FieldWork.SettingsGroup.json"/>
+      <source>Distance between the centres of two neighbouring crop rows.</source>
+      <translation>Distanza tra i centri di due file vicine (interfila).</translation>
+    </message>
+    <message>
+      <extracomment>.QGC.MetaData.Facts[RowWidth].shortDesc</extracomment>
+      <location filename="/home/runner/work/qgroundcontrol/qgroundcontrol/src/MissionManager/FieldWork.SettingsGroup.json"/>
+      <source>Width of the crop band of a row: the wheels must stay out of it.</source>
+      <translation>Larghezza della fascia coltivata di una fila: le ruote devono restarne fuori.</translation>
+    </message>
+    <message>
+      <extracomment>.QGC.MetaData.Facts[RowsPerPass].shortDesc</extracomment>
+      <location filename="/home/runner/work/qgroundcontrol/qgroundcontrol/src/MissionManager/FieldWork.SettingsGroup.json"/>
+      <source>Number of crop rows the rover straddles at each pass.</source>
+      <translation>Numero di file che il rover scavalca a ogni passata.</translation>
+    </message>
+    <message>
+      <extracomment>.QGC.MetaData.Facts[FirstRowOffset].shortDesc</extracomment>
+      <location filename="/home/runner/work/qgroundcontrol/qgroundcontrol/src/MissionManager/FieldWork.SettingsGroup.json"/>
+      <source>Distance of the first crop row from the edge of the field the rows are parallel to.</source>
+      <translation>Distanza della prima fila dal lato del campo a cui le file sono parallele.</translation>
+    </message>
+    <message>
+      <extracomment>.QGC.MetaData.Facts[Headland].shortDesc</extracomment>
+      <location filename="/home/runner/work/qgroundcontrol/qgroundcontrol/src/MissionManager/FieldWork.SettingsGroup.json"/>
+      <source>Space at the ends of the rows, inside the field, where the rover turns without driving over the crop.</source>
+      <translation>Spazio a fine fila, dentro il campo, dove il rover gira senza passare sulla coltura (capezzagna).</translation>
+    </message>
+    <message>
+      <extracomment>.QGC.MetaData.Facts[TurnRadius].shortDesc</extracomment>
+      <location filename="/home/runner/work/qgroundcontrol/qgroundcontrol/src/MissionManager/FieldWork.SettingsGroup.json"/>
+      <source>Smallest turning radius of the rover (both axles steering).</source>
+      <translation>Raggio di sterzata minimo del rover (con entrambi gli assi sterzanti).</translation>
+    </message>
+  </context>
+  <context>
     <name>Perimeter.SettingsGroup.json</name>
     <message>
       <extracomment>.QGC.MetaData.Facts[Inset].shortDesc</extracomment>

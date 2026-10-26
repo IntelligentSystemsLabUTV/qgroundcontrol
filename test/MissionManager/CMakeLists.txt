@@ -19,6 +19,7 @@ target_sources(${CMAKE_PROJECT_NAME}
         MissionItemTest.cc MissionItemTest.h
         MissionManagerTest.cc MissionManagerTest.h
         MissionSettingsTest.cc MissionSettingsTest.h
+        FieldWorkComplexItemTest.cc FieldWorkComplexItemTest.h
         PathComplexItemTest.cc PathComplexItemTest.h
         PerimeterComplexItemTest.cc PerimeterComplexItemTest.h
         PlanMasterControllerTest.cc PlanMasterControllerTest.h
@@ -92,6 +93,7 @@ add_qgc_test(MissionControllerTreeTest LABELS Integration MissionManager)
 add_qgc_test(MissionItemTest LABELS Unit MissionManager)
 add_qgc_test(MissionManagerTest LABELS Integration MissionManager)
 add_qgc_test(MissionSettingsTest LABELS Unit MissionManager)
+add_qgc_test(FieldWorkComplexItemTest LABELS Unit MissionManager RESOURCE_LOCK PlanViewSettings)
 add_qgc_test(PathComplexItemTest LABELS Unit MissionManager RESOURCE_LOCK PlanViewSettings)
 add_qgc_test(PerimeterComplexItemTest LABELS Unit MissionManager RESOURCE_LOCK PlanViewSettings)
 add_qgc_test(PlanMasterControllerTest LABELS Integration MissionManager)
