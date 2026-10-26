@@ -94,6 +94,25 @@
       <translation>Spazio a fine fila, dentro il campo, dove il rover gira senza passare sulla coltura (capezzagna).</translation>
     </message>
     <message>
+      <extracomment>.QGC.MetaData.Facts[RowsToWork].shortDesc</extracomment>
+      <location filename="/home/runner/work/qgroundcontrol/qgroundcontrol/src/MissionManager/FieldWork.SettingsGroup.json"/>
+      <source>Number of crop rows to work, starting from the edge the rows are parallel to (0: every row in the field).</source>
+      <translation>Numero di file da lavorare, contate dal lato a cui sono parallele (0: tutte le file del campo).</translation>
+    </message>
+    <message>
+      <extracomment>.QGC.MetaData.Facts[TurnPattern].shortDesc</extracomment>
+      <location filename="/home/runner/work/qgroundcontrol/qgroundcontrol/src/MissionManager/FieldWork.SettingsGroup.json"/>
+      <source>Turns at the end of the rows: automatic (U turns where they fit, bulb turns between close rows) or U turns skipping rows.</source>
+      <translation>Voltate a fine fila: automatiche (a U dove ci stanno, a goccia tra file vicine) o a U saltando file.</translation>
+    </message>
+    <message>
+      <extracomment>.QGC.MetaData.Facts[TurnPattern].enumStrings</extracomment>
+      <translatorcomment>Only use english comma ',' to separate strings</translatorcomment>
+      <location filename="/home/runner/work/qgroundcontrol/qgroundcontrol/src/MissionManager/FieldWork.SettingsGroup.json"/>
+      <source>Automatic,U turns skipping rows</source>
+      <translation>Automatiche,A U saltando file</translation>
+    </message>
+    <message>
       <extracomment>.QGC.MetaData.Facts[TurnRadius].shortDesc</extracomment>
       <location filename="/home/runner/work/qgroundcontrol/qgroundcontrol/src/MissionManager/FieldWork.SettingsGroup.json"/>
       <source>Smallest turning radius of the rover (both axles steering).</source>

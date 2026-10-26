@@ -15,7 +15,11 @@
 /// where the rover turns to the next pass without driving over the crop:
 ///     - U turn (two quarter circles of the smallest turning radius and a straight part) when the next pass is at
 ///       least two radii away,
-///     - otherwise a bulb turn (right, a wide left loop, right), which needs more headland.
+///     - otherwise a bulb turn (right, a wide left loop, right), which needs more headland,
+///     - or, if the operator prefers U turns, the passes are driven skipping rows (0, k, 2k... then back) so that
+///       consecutive passes are far enough apart.
+/// At the end the rover goes back to the start along the headland (and along the first pass if it ends at the other
+/// end of the field), never across the crop.
 /// The headland is a band along every edge the rows run into, so rows ending on an oblique edge stop at the same
 /// distance from it; edges parallel to the rows have no headland.
 /// The crop, the job type and the environment (open field or greenhouse) are saved with the plan; the work speed is
@@ -39,7 +43,11 @@ public:
     Q_PROPERTY(Fact* firstRowOffset READ firstRowOffset CONSTANT)
     Q_PROPERTY(Fact* headland READ headland CONSTANT)
     Q_PROPERTY(Fact* turnRadius READ turnRadius CONSTANT)
+    Q_PROPERTY(Fact* rowsToWork READ rowsToWork CONSTANT)
+    Q_PROPERTY(Fact* turnPattern READ turnPattern CONSTANT)
     Q_PROPERTY(int rowCount READ rowCount NOTIFY fieldChanged)
+    Q_PROPERTY(int rowsInField READ rowsInField NOTIFY fieldChanged)
+    Q_PROPERTY(int skippedPasses READ skippedPasses NOTIFY fieldChanged)
     Q_PROPERTY(int passCount READ passCount NOTIFY fieldChanged)
     Q_PROPERTY(bool bulbTurns READ bulbTurns NOTIFY fieldChanged)
     Q_PROPERTY(double pathLength READ pathLength NOTIFY fieldChanged)
@@ -80,8 +88,19 @@ public:
     Fact* headland() { return &_headlandFact; }
 
     Fact* turnRadius() { return &_turnRadiusFact; }
+    Fact* rowsToWork() { return &_rowsToWorkFact; }    ///< 0: every row that fits in the field
+    Fact* turnPattern() { return &_turnPatternFact; }  ///< TurnPattern
 
-    int rowCount() const { return _fieldPlan().rowCount; }
+    /// Values of the TurnPattern Fact
+    enum TurnPattern : uint8_t
+    {
+        AutomaticTurns,  ///< passes in order: U turns where they fit, bulb turns otherwise
+        SkipRowsTurns,   ///< passes in interleaved groups, so that the turns are U turns
+    };
+
+    int rowCount() const { return _fieldPlan().rowCount; }        ///< rows worked
+    int rowsInField() const { return _fieldPlan().rowsInField; }  ///< rows that fit in the field
+    int skippedPasses() const { return _fieldPlan().skippedPasses; }  ///< passes skipped at each U turn
 
     int passCount() const { return _fieldPlan().passCount; }
 
@@ -152,6 +171,8 @@ public:
     static constexpr const char* firstRowOffsetName = "FirstRowOffset";
     static constexpr const char* headlandName = "Headland";
     static constexpr const char* turnRadiusName = "TurnRadius";
+    static constexpr const char* rowsToWorkName = "RowsToWork";
+    static constexpr const char* turnPatternName = "TurnPattern";
 
 signals:
     /// Rows, passes, path or problem changed
@@ -176,11 +197,14 @@ private:
         QGeoCoordinate referenceEdgeStart;
         QGeoCoordinate referenceEdgeEnd;
         int rowCount = 0;
+        int rowsInField = 0;
         int passCount = 0;
+        int skippedPasses = 0;
         bool bulbTurns = false;
         QString problem;
     };
 
+    QList<Fact*> _allFacts();
     const FieldPlan& _fieldPlan() const;
     FieldPlan _computeFieldPlan() const;
 
@@ -200,6 +224,8 @@ private:
     SettingsFact _firstRowOffsetFact;
     SettingsFact _headlandFact;
     SettingsFact _turnRadiusFact;
+    SettingsFact _rowsToWorkFact;
+    SettingsFact _turnPatternFact;
 
     int _referenceEdge = 0;
     int _startCorner = 0;  ///< bit 0: start from the last pass, bit 1: start from the other end of the pass

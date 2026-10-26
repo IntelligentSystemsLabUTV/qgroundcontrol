@@ -5,9 +5,9 @@ import QGroundControl
 import QGroundControl.Controls
 import QGroundControl.FactControls
 
-// Editor for FieldWorkComplexItem. The operator draws the field (or takes its corners from the rover) and chooses
-// environment, crop, job and speed; the crop sets row spacing, crop band and headland, which only the technician
-// changes (Advanced Mode).
+// Editor for FieldWorkComplexItem. The operator draws the field (or takes its corners from the rover), then sets what a
+// farmer knows: environment, job, speed, crop, row spacing, how many rows, first row, headland, kind of turns. The data
+// of the rover (crop band width, rows per pass, turning radius) are for the technician (Advanced Mode).
 Rectangle {
     id:     _root
     height: editorColumn.height + (_margin * 2)
@@ -38,6 +38,14 @@ Rectangle {
             return (value / 1000).toLocaleString(Qt.locale(), "f", 1) + " km"
         }
         return value.toLocaleString(Qt.locale(), "f", 0) + " " + units
+    }
+
+    function _turnsText() {
+        if (missionItem.skippedPasses > 0) {
+            let rows = missionItem.skippedPasses * missionItem.rowsPerPass.rawValue
+            return missionItem.bulbTurns ? qsTr("U, skipping %1 rows (bulb between the groups)").arg(rows) : qsTr("U, skipping %1 rows").arg(rows)
+        }
+        return missionItem.bulbTurns ? qsTr("bulb (passes too close)") : qsTr("U")
     }
 
     function _timeText(seconds) {
@@ -80,7 +88,7 @@ Rectangle {
             QGCButton {
                 objectName:         "fieldWorkEditor_clearField"
                 Layout.fillWidth:   true
-                text:               qsTr("Start the field again")
+                text:               qsTr("Clear the corners")
                 enabled:            _root._polygon.count > 0
                 onClicked:          _root._polygon.clear()
             }
@@ -90,7 +98,9 @@ Rectangle {
             Layout.fillWidth:   true
             wrapMode:           Text.WordWrap
             font.pointSize:     ScreenTools.smallFontPointSize
-            text:               _root._roverPosition ? qsTr("Corners of the field: %1").arg(_root._polygon.count) : qsTr("The rover is not connected: draw the field on the map.")
+            text:               _root._roverPosition ?
+                                    qsTr("Corners of the field: %1. To take them from the rover: Clear the corners, then drive the rover to each corner and press Corner at the rover.").arg(_root._polygon.count) :
+                                    qsTr("The rover is not connected: draw the field on the map.")
         }
 
         ColumnLayout {
@@ -98,45 +108,114 @@ Rectangle {
             spacing:            _margin
             visible:            _root._fieldReady
 
+            SectionHeader {
+                id:                 jobHeader
+                Layout.fillWidth:   true
+                text:               qsTr("Job")
+            }
+
             GridLayout {
                 Layout.fillWidth:   true
                 columnSpacing:      _margin
                 rowSpacing:         _margin
                 columns:            2
+                visible:            jobHeader.checked
 
                 QGCLabel { text: qsTr("Environment") }
                 FactComboBox {
-                    objectName:         "fieldWorkEditor_environment"
+                    objectName:             "fieldWorkEditor_environment"
                     Layout.fillWidth:       true
                     Layout.preferredWidth:  ScreenTools.defaultFontPixelWidth * 12
-                    fact:               missionItem.environment
-                    indexModel:         false
+                    fact:                   missionItem.environment
+                    indexModel:             false
                 }
 
-                QGCLabel { text: qsTr("Crop") }
+                QGCLabel { text: qsTr("Job type") }
                 FactComboBox {
-                    objectName:         "fieldWorkEditor_crop"
+                    objectName:             "fieldWorkEditor_job"
                     Layout.fillWidth:       true
                     Layout.preferredWidth:  ScreenTools.defaultFontPixelWidth * 12
-                    fact:               missionItem.cropType
-                    indexModel:         false
-                }
-
-                QGCLabel { text: qsTr("Job") }
-                FactComboBox {
-                    objectName:         "fieldWorkEditor_job"
-                    Layout.fillWidth:       true
-                    Layout.preferredWidth:  ScreenTools.defaultFontPixelWidth * 12
-                    fact:               missionItem.jobType
-                    indexModel:         false
+                    fact:                   missionItem.jobType
+                    indexModel:             false
                 }
 
                 QGCLabel { text: qsTr("Speed") }
                 FactTextField {
-                    objectName:         "fieldWorkEditor_speed"
+                    objectName:             "fieldWorkEditor_speed"
                     Layout.fillWidth:       true
                     Layout.preferredWidth:  ScreenTools.defaultFontPixelWidth * 12
-                    fact:               missionItem.workSpeed
+                    fact:                   missionItem.workSpeed
+                }
+            }
+
+            SectionHeader {
+                id:                 cropHeader
+                Layout.fillWidth:   true
+                text:               qsTr("Crop and rows")
+            }
+
+            GridLayout {
+                Layout.fillWidth:   true
+                columnSpacing:      _margin
+                rowSpacing:         _margin
+                columns:            2
+                visible:            cropHeader.checked
+
+                QGCLabel { text: qsTr("Crop") }
+                FactComboBox {
+                    objectName:             "fieldWorkEditor_crop"
+                    Layout.fillWidth:       true
+                    Layout.preferredWidth:  ScreenTools.defaultFontPixelWidth * 12
+                    fact:                   missionItem.cropType
+                    indexModel:             false
+                }
+
+                QGCLabel { text: qsTr("Row spacing") }
+                FactTextField {
+                    objectName:             "fieldWorkEditor_rowSpacing"
+                    Layout.fillWidth:       true
+                    Layout.preferredWidth:  ScreenTools.defaultFontPixelWidth * 12
+                    fact:                   missionItem.rowSpacing
+                }
+
+                QGCLabel { text: qsTr("Rows to work") }
+                FactTextField {
+                    objectName:             "fieldWorkEditor_rowsToWork"
+                    Layout.fillWidth:       true
+                    Layout.preferredWidth:  ScreenTools.defaultFontPixelWidth * 12
+                    fact:                   missionItem.rowsToWork
+                }
+
+                QGCLabel {
+                    Layout.columnSpan:  2
+                    Layout.fillWidth:   true
+                    wrapMode:           Text.WordWrap
+                    font.pointSize:     ScreenTools.smallFontPointSize
+                    text:               qsTr("0 = every row of the field. The rows are counted from the yellow edge.")
+                }
+
+                QGCLabel { text: qsTr("First row from the edge") }
+                FactTextField {
+                    Layout.fillWidth:       true
+                    Layout.preferredWidth:  ScreenTools.defaultFontPixelWidth * 12
+                    fact:                   missionItem.firstRowOffset
+                }
+
+                QGCLabel { text: qsTr("Headland") }
+                FactTextField {
+                    objectName:             "fieldWorkEditor_headland"
+                    Layout.fillWidth:       true
+                    Layout.preferredWidth:  ScreenTools.defaultFontPixelWidth * 12
+                    fact:                   missionItem.headland
+                }
+
+                QGCLabel { text: qsTr("Turns") }
+                FactComboBox {
+                    objectName:             "fieldWorkEditor_turnPattern"
+                    Layout.fillWidth:       true
+                    Layout.preferredWidth:  ScreenTools.defaultFontPixelWidth * 12
+                    fact:                   missionItem.turnPattern
+                    indexModel:             false
                 }
             }
 
@@ -172,11 +251,11 @@ Rectangle {
                 visible:            text !== ""
             }
 
-            // Crop and rover details: set by the crop, changed only by the technician
+            // Data of the rover: for the technician
             SectionHeader {
-                id:                 detailsHeader
+                id:                 roverHeader
                 Layout.fillWidth:   true
-                text:               qsTr("Crop and rover")
+                text:               qsTr("Rover")
                 visible:            QGroundControl.corePlugin.showAdvancedUI
             }
 
@@ -185,48 +264,27 @@ Rectangle {
                 columnSpacing:      _margin
                 rowSpacing:         _margin
                 columns:            2
-                visible:            detailsHeader.visible && detailsHeader.checked
-
-                QGCLabel { text: qsTr("Row spacing") }
-                FactTextField {
-                    Layout.fillWidth:       true
-                    Layout.preferredWidth:  ScreenTools.defaultFontPixelWidth * 12
-                    fact:               missionItem.rowSpacing
-                }
+                visible:            roverHeader.visible && roverHeader.checked
 
                 QGCLabel { text: qsTr("Crop band width") }
                 FactTextField {
                     Layout.fillWidth:       true
                     Layout.preferredWidth:  ScreenTools.defaultFontPixelWidth * 12
-                    fact:               missionItem.rowWidth
+                    fact:                   missionItem.rowWidth
                 }
 
                 QGCLabel { text: qsTr("Rows per pass") }
                 FactTextField {
                     Layout.fillWidth:       true
                     Layout.preferredWidth:  ScreenTools.defaultFontPixelWidth * 12
-                    fact:               missionItem.rowsPerPass
-                }
-
-                QGCLabel { text: qsTr("First row from the edge") }
-                FactTextField {
-                    Layout.fillWidth:       true
-                    Layout.preferredWidth:  ScreenTools.defaultFontPixelWidth * 12
-                    fact:               missionItem.firstRowOffset
-                }
-
-                QGCLabel { text: qsTr("Headland") }
-                FactTextField {
-                    Layout.fillWidth:       true
-                    Layout.preferredWidth:  ScreenTools.defaultFontPixelWidth * 12
-                    fact:               missionItem.headland
+                    fact:                   missionItem.rowsPerPass
                 }
 
                 QGCLabel { text: qsTr("Turning radius") }
                 FactTextField {
                     Layout.fillWidth:       true
                     Layout.preferredWidth:  ScreenTools.defaultFontPixelWidth * 12
-                    fact:               missionItem.turnRadius
+                    fact:                   missionItem.turnRadius
                 }
             }
 
@@ -242,7 +300,10 @@ Rectangle {
                 columns:            2
                 visible:            statsHeader.checked && missionItem.problem === ""
 
-                QGCLabel { text: qsTr("Crop rows") }
+                QGCLabel { text: qsTr("Rows in the field") }
+                QGCLabel { text: missionItem.rowsInField }
+
+                QGCLabel { text: qsTr("Rows to work") }
                 QGCLabel { text: missionItem.rowCount }
 
                 QGCLabel { text: qsTr("Passes") }
@@ -255,7 +316,7 @@ Rectangle {
                 QGCLabel {
                     Layout.fillWidth:   true
                     wrapMode:           Text.WordWrap
-                    text:               missionItem.bulbTurns ? qsTr("bulb (passes too close)") : qsTr("U")
+                    text:               _root._turnsText()
                 }
 
                 QGCLabel { text: qsTr("Path length") }

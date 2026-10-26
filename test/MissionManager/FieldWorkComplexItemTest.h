@@ -26,6 +26,9 @@ private slots:
     void _testObliqueEdge();
     void _testCropPresets();
     void _testRowDirectionAndStartCorner();
+    void _testRowsToWork();
+    void _testSkipRowsTurns();
+    void _testReturnAlongHeadland();
     void _testSaveLoad();
 
 private:

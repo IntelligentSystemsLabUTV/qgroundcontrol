@@ -86,6 +86,22 @@
     "default":          6
 },
 {
+    "name":             "RowsToWork",
+    "shortDesc": "Number of crop rows to work, starting from the edge the rows are parallel to (0: every row in the field).",
+    "type":             "uint32",
+    "min":              0,
+    "max":              5000,
+    "default":          0
+},
+{
+    "name":             "TurnPattern",
+    "shortDesc": "Turns at the end of the rows: automatic (U turns where they fit, bulb turns between close rows) or U turns skipping rows.",
+    "type":             "uint32",
+    "enumStrings":      "Automatic,U turns skipping rows",
+    "enumValues":       "0,1",
+    "default":          0
+},
+{
     "name":             "TurnRadius",
     "shortDesc": "Smallest turning radius of the rover (both axles steering).",
     "type":             "double",

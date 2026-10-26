@@ -30,6 +30,8 @@ void FieldWorkComplexItemTest::init()
     _fieldItem->rowsPerPass()->setRawValue(1);
     _fieldItem->turnRadius()->setRawValue(2.0);
     _fieldItem->workSpeed()->setRawValue(0.78);
+    _fieldItem->rowsToWork()->setRawValue(0);
+    _fieldItem->turnPattern()->setRawValue(FieldWorkComplexItem::AutomaticTurns);
     _fieldItem->surveyAreaPolygon()->appendVertices(_polygonVertices);
     _fieldItem->setDirty(false);
 }
@@ -254,6 +256,76 @@ void FieldWorkComplexItemTest::_testRowDirectionAndStartCorner()
     }
     _fieldItem->rotateStartCorner();
     QVERIFY(_waypointCoordinates(_fieldItem).first().distanceTo(firstStart) < 0.1);
+}
+
+void FieldWorkComplexItemTest::_testRowsToWork()
+{
+    _fieldItem->rowsToWork()->setRawValue(10);
+    QCOMPARE(_fieldItem->rowsInField(), 24);
+    QCOMPARE(_fieldItem->rowCount(), 10);
+    QCOMPARE(_fieldItem->passCount(), 10);
+    QCOMPARE(_fieldItem->cropRows().count(), 10);
+
+    // More rows than the field holds: every row of the field
+    _fieldItem->rowsToWork()->setRawValue(100);
+    QCOMPARE(_fieldItem->rowCount(), 24);
+}
+
+void FieldWorkComplexItemTest::_testSkipRowsTurns()
+{
+    // Passes 2.5 m apart with a 2 m radius: U turns need to skip one pass (two groups: even passes, then odd ones)
+    _fieldItem->turnPattern()->setRawValue(FieldWorkComplexItem::SkipRowsTurns);
+    QCOMPARE(_fieldItem->skippedPasses(), 1);
+    QCOMPARE(_fieldItem->passCount(), 24);
+    QVERIFY(_fieldItem->problem().isEmpty());
+    // Every turn is a U turn, the move from the even passes to the odd ones too
+    QVERIFY(!_fieldItem->bulbTurns());
+
+    // The first two passes are on the first and the third row
+    const QList<QGeoCoordinate> coords = _waypointCoordinates(_fieldItem);
+    const QGeoCoordinate thirdRowNorth =
+        _polygonVertices[0].atDistanceAndAzimuth(_fieldLength - 6.0, 0).atDistanceAndAzimuth(1.25 + (2 * 2.5), 90);
+    QVERIFY(std::any_of(coords.cbegin(), coords.cbegin() + 30,
+                        [&thirdRowNorth](const QGeoCoordinate& coord) { return coord.distanceTo(thirdRowNorth) < 0.1; }));
+    for (const QGeoCoordinate& coord : coords) {
+        QVERIFY(_fieldItem->surveyAreaPolygon()->containsCoordinate(coord));
+    }
+
+    // Passes far enough apart already: nothing to skip
+    _fieldItem->rowsPerPass()->setRawValue(2);
+    QCOMPARE(_fieldItem->skippedPasses(), 0);
+}
+
+void FieldWorkComplexItemTest::_testReturnAlongHeadland()
+{
+    // Even number of passes: the last one ends at the starting end, the rover comes back along that headland.
+    // Odd number: it comes back along the far headland and then along the first pass. Never across the field.
+    for (const int rows : {6, 5}) {
+        _fieldItem->rowsToWork()->setRawValue(rows);
+        const QList<QGeoCoordinate> coords = _waypointCoordinates(_fieldItem);
+        QVERIFY(coords.last().distanceTo(coords.first()) < 0.1);
+
+        // After the last pass every point is in a headland or on the first pass, never between the rows
+        const QGeoCoordinate firstPassSouth = coords.first();
+        const double firstPassEast = 1.25;
+        bool returning = false;
+        int passEnds = 0;
+        for (qsizetype i = 1; i < coords.count(); i++) {
+            const double north = firstPassSouth.distanceTo(coords[i]) *
+                                 std::cos(qDegreesToRadians(firstPassSouth.azimuthTo(coords[i])));
+            const double east = (firstPassSouth.distanceTo(coords[i]) *
+                                 std::sin(qDegreesToRadians(firstPassSouth.azimuthTo(coords[i])))) + firstPassEast;
+            const bool inHeadland = (north < 0.05) || (north > _fieldLength - 12.0 - 0.05);
+            if (!returning && inHeadland && (std::abs(east - (firstPassEast + ((rows - 1) * 2.5))) < 0.1)) {
+                passEnds++;
+                returning = passEnds > 0;  // end of the last pass reached
+            }
+            if (returning) {
+                QVERIFY(inHeadland || (std::abs(east - firstPassEast) < 0.1));
+            }
+        }
+        QVERIFY(returning);
+    }
 }
 
 void FieldWorkComplexItemTest::_testSaveLoad()

@@ -261,7 +261,9 @@ FieldWorkComplexItem::FieldWorkComplexItem(PlanMasterController* masterControlle
       _rowsPerPassFact(settingsGroup, _metaDataMap[rowsPerPassName]),
       _firstRowOffsetFact(settingsGroup, _metaDataMap[firstRowOffsetName]),
       _headlandFact(settingsGroup, _metaDataMap[headlandName]),
-      _turnRadiusFact(settingsGroup, _metaDataMap[turnRadiusName])
+      _turnRadiusFact(settingsGroup, _metaDataMap[turnRadiusName]),
+      _rowsToWorkFact(settingsGroup, _metaDataMap[rowsToWorkName]),
+      _turnPatternFact(settingsGroup, _metaDataMap[turnPatternName])
 {
     _editorQml = "qrc:/qml/QGroundControl/PlanView/FieldWorkEditor.qml";
 
@@ -271,13 +273,11 @@ FieldWorkComplexItem::FieldWorkComplexItem(PlanMasterController* masterControlle
     _cameraCalc.distanceToSurface()->setRawValue(
         SettingsManager::instance()->appSettings()->defaultMissionItemAltitude()->rawValue());
 
-    for (Fact* const fact :
-         {&_cropTypeFact, &_environmentFact, &_jobTypeFact, &_workSpeedFact, &_rowSpacingFact, &_rowWidthFact,
-          &_rowsPerPassFact, &_firstRowOffsetFact, &_headlandFact, &_turnRadiusFact}) {
+    for (Fact* const fact : _allFacts()) {
         connect(fact, &Fact::valueChanged, this, &FieldWorkComplexItem::_setDirty);
     }
     for (Fact* const fact : {&_rowSpacingFact, &_rowWidthFact, &_rowsPerPassFact, &_firstRowOffsetFact, &_headlandFact,
-                             &_turnRadiusFact}) {
+                             &_turnRadiusFact, &_rowsToWorkFact, &_turnPatternFact}) {
         connect(fact, &Fact::valueChanged, this, &FieldWorkComplexItem::_rebuildTransects);
     }
     connect(&_workSpeedFact, &Fact::valueChanged, this, &FieldWorkComplexItem::fieldChanged);
@@ -296,6 +296,13 @@ FieldWorkComplexItem::FieldWorkComplexItem(PlanMasterController* masterControlle
         _surveyAreaPolygon.setDirty(false);
     }
     setDirty(false);
+}
+
+QList<Fact*> FieldWorkComplexItem::_allFacts()
+{
+    return {&_cropTypeFact,       &_environmentFact, &_jobTypeFact,    &_workSpeedFact,  &_rowSpacingFact,
+            &_rowWidthFact,       &_rowsPerPassFact, &_firstRowOffsetFact, &_headlandFact, &_turnRadiusFact,
+            &_rowsToWorkFact,     &_turnPatternFact};
 }
 
 std::optional<FieldWorkComplexItem::CropPreset> FieldWorkComplexItem::cropPreset(int crop)
@@ -334,9 +341,7 @@ void FieldWorkComplexItem::save(QJsonArray& planItems)
     saveObject[JsonParsing::jsonVersionKey] = 1;
     saveObject[VisualMissionItem::jsonTypeKey] = VisualMissionItem::jsonTypeComplexItemValue;
     saveObject[ComplexMissionItem::jsonComplexItemTypeKey] = jsonComplexItemTypeValue;
-    for (Fact* const fact :
-         {&_cropTypeFact, &_environmentFact, &_jobTypeFact, &_workSpeedFact, &_rowSpacingFact, &_rowWidthFact,
-          &_rowsPerPassFact, &_firstRowOffsetFact, &_headlandFact, &_turnRadiusFact}) {
+    for (Fact* const fact : _allFacts()) {
         saveObject[fact->name()] = QJsonValue::fromVariant(fact->rawValue());
     }
     saveObject[_jsonReferenceEdgeKey] = _referenceEdge;
@@ -360,6 +365,9 @@ bool FieldWorkComplexItem::load(const QJsonObject& complexObject, int sequenceNu
                                    rowWidthName, rowsPerPassName, firstRowOffsetName, headlandName, turnRadiusName}) {
         keyInfoList.append({name, QJsonValue::Double, true});
     }
+    // Added after the first version: optional, the default value is kept when missing
+    keyInfoList.append({rowsToWorkName, QJsonValue::Double, false});
+    keyInfoList.append({turnPatternName, QJsonValue::Double, false});
     if (!JsonParsing::validateKeys(complexObject, keyInfoList, errorString)) {
         return false;
     }
@@ -397,9 +405,10 @@ bool FieldWorkComplexItem::load(const QJsonObject& complexObject, int sequenceNu
     }
 
     // The crop goes first: its preset must not overwrite the values saved with the plan
-    for (Fact* const fact :
-         {&_cropTypeFact, &_environmentFact, &_jobTypeFact, &_workSpeedFact, &_rowSpacingFact, &_rowWidthFact,
-          &_rowsPerPassFact, &_firstRowOffsetFact, &_headlandFact, &_turnRadiusFact}) {
+    for (Fact* const fact : _allFacts()) {
+        if (!complexObject.contains(fact->name())) {
+            continue;
+        }
         const QJsonValue value = complexObject[fact->name()];
         fact->setRawValue((fact->type() == FactMetaData::valueTypeDouble) ? QVariant(value.toDouble())
                                                                           : QVariant(value.toInt()));
@@ -600,6 +609,11 @@ FieldWorkComplexItem::FieldPlan FieldWorkComplexItem::_computeFieldPlan() const
         plan.problem = tr("No crop row fits in the field: check the row spacing, the first row and the headland.");
         return plan;
     }
+    plan.rowsInField = static_cast<int>(rows.count());
+    const int rowsToWork = _rowsToWorkFact.rawValue().toInt();
+    if ((rowsToWork > 0) && (rowsToWork < rows.count())) {
+        rows = rows.mid(0, rowsToWork);  // the first rows from the reference edge
+    }
     plan.rowCount = static_cast<int>(rows.count());
     for (const Row& row : rows) {
         plan.cropRows.append(
@@ -624,10 +638,30 @@ FieldWorkComplexItem::FieldPlan FieldWorkComplexItem::_computeFieldPlan() const
             passes.append({s, start, end});
         }
     }
-    if (_startCorner & 1) {
-        std::reverse(passes.begin(), passes.end());
-    }
     plan.passCount = static_cast<int>(passes.count());
+
+    // U turns skipping rows: the passes are driven in k interleaved groups (0, k, 2k..., then 1, k+1, 2k+1...), so that
+    // consecutive passes are at least two turning radii apart. From a group to the next the rover crosses the headland
+    // back to the first side, with a long U turn.
+    QList<Row> passesInOrder = passes;
+    if ((_turnPatternFact.rawValue().toInt() == SkipRowsTurns) && (passes.count() > 2)) {
+        const double passSpacing = std::abs(passes[1].s - passes[0].s);
+        const int groups = passSpacing > 0 ? static_cast<int>(std::ceil(((2 * radius) - kTolerance) / passSpacing)) : 1;
+        if ((groups > 1) && (groups < passes.count())) {
+            passesInOrder.clear();
+            for (int group = 0; group < groups; group++) {
+                QList<Row> groupPasses;
+                for (qsizetype i = group; i < passes.count(); i += groups) {
+                    groupPasses.append(passes[i]);
+                }
+                passesInOrder.append(groupPasses);
+            }
+            plan.skippedPasses = groups - 1;
+        }
+    }
+    if (_startCorner & 1) {
+        std::reverse(passesInOrder.begin(), passesInOrder.end());
+    }
 
     // Passes in driving order: alternating direction, ends along t
     struct DrivenPass
@@ -639,12 +673,12 @@ FieldWorkComplexItem::FieldPlan FieldWorkComplexItem::_computeFieldPlan() const
     };
 
     QList<DrivenPass> driven;
-    driven.reserve(passes.count());
+    driven.reserve(passesInOrder.count());
     const double firstDirection = (_startCorner & 2) ? -1.0 : 1.0;
-    for (qsizetype i = 0; i < passes.count(); i++) {
+    for (qsizetype i = 0; i < passesInOrder.count(); i++) {
+        const Row& pass = passesInOrder[i];
         const double direction = (i % 2 == 0) ? firstDirection : -firstDirection;
-        driven.append({passes[i].s, direction, direction > 0 ? passes[i].start : passes[i].end,
-                       direction > 0 ? passes[i].end : passes[i].start});
+        driven.append({pass.s, direction, direction > 0 ? pass.start : pass.end, direction > 0 ? pass.end : pass.start});
     }
 
     // Turns in the headland: both passes are brought to the same depth, then joined by the turn
@@ -670,9 +704,15 @@ FieldWorkComplexItem::FieldPlan FieldWorkComplexItem::_computeFieldPlan() const
         }
         if (!std::all_of(turn.cbegin(), turn.cend(),
                          [&polygon](const QPointF& point) { return insidePolygon(point, polygon); })) {
-            plan.problem = tr("The turns at the end of the rows leave the field: the headland must be at least %1 m, "
-                              "or the turning radius smaller.")
-                               .arg(QString::number(std::ceil(depth * 10) / 10, 'f', 1));
+            if (headland < depth - kTolerance) {
+                plan.problem = tr("The turns at the end of the rows leave the field: the headland must be at least %1 m, "
+                                  "or the turning radius smaller.")
+                                   .arg(QString::number(std::ceil(depth * 10) / 10, 'f', 1));
+            } else {
+                // A bulb turn bulges sideways beyond the passes it joins: the rows close to the side of the field
+                plan.problem = tr("A turn next to the side of the field leaves it: move the first row away from the edge, "
+                                  "work one row less or choose U turns skipping rows.");
+            }
             return plan;
         }
         plan.bulbTurns = plan.bulbTurns || bulb;
@@ -690,6 +730,36 @@ FieldWorkComplexItem::FieldPlan FieldWorkComplexItem::_computeFieldPlan() const
             path.append(turns[i]);
         }
     }
+
+    // Back to the start without crossing the crop: along the headland to the first pass, then, if the rover is at the
+    // other end of the field, along the first pass (it straddles the rows, it does not drive over them)
+    const DrivenPass& firstPass = driven.first();
+    const DrivenPass& lastPass = driven.last();
+    const double side = lastPass.direction;
+    const double laneOffset = side * std::min(headland / 2, radius);
+    QList<Row> lanePasses;
+    for (const Row& pass : passes) {
+        if ((pass.s - lastPass.s) * (pass.s - firstPass.s) <= kTolerance) {
+            lanePasses.append(pass);  // between the last and the first pass
+        }
+    }
+    if (lastPass.s > firstPass.s) {
+        std::reverse(lanePasses.begin(), lanePasses.end());
+    }
+    auto appendPoint = [&path](const QPointF& point) {
+        if (path.isEmpty() || (length(point - path.last()) > kTolerance)) {
+            path.append(point);
+        }
+    };
+    for (const Row& pass : lanePasses) {
+        const QPointF lanePoint = axes.point((side > 0 ? pass.end : pass.start) + laneOffset, pass.s);
+        appendPoint(insidePolygon(lanePoint, polygon) ? lanePoint
+                                                      : axes.point(side > 0 ? pass.end : pass.start, pass.s));
+    }
+    if (firstPass.direction == side) {
+        appendPoint(axes.point(firstPass.end, firstPass.s));
+    }
+    appendPoint(axes.point(firstPass.start, firstPass.s));
 
     for (const QPointF& point : path) {
         plan.path.append(fromLocalPlane(point, origin));
