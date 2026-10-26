@@ -24,6 +24,43 @@ Guide d'uso: [guida per l'operatore](guida-operatore.md), [guida per il tecnico]
 
 ## 2026-10-26
 
+### Lavoro in campo nella Pianificazione
+
+**Cosa.**
+
+- Nuovo modello di piano e pattern **Lavoro in campo** (`FieldWorkComplexItem`, primo tra i modelli per
+  i rover): il rover lavora lungo le file di una coltura, con le voltate in capezzagna.
+  - **Campo** disegnato sulla mappa o preso dal rover: *Angolo dal rover* aggiunge come angolo la
+    posizione attuale del rover (RTK, più precisa della mappa satellitare), *Ricomincia il campo*.
+  - **Operatore:** ambiente (campo aperto / serra), coltura (vigneto, frutteto, orticole in pieno campo,
+    mais, orticole in serra, personalizzata), tipo di lavoro (mappatura, rilevamento infestanti,
+    diserbo, NDVI, NDRE, irrorazione), velocità in km/h (2,8 di serie, massimo 3), direzione delle file
+    (parallele al lato evidenziato in giallo), punto di partenza.
+  - **Tecnico** (modalità avanzata, *Coltura e rover*): interfila, larghezza della fascia coltivata, file
+    per passata, prima fila dal bordo, capezzagna, raggio di sterzata. La coltura propone i primi quattro
+    (valori indicativi da confermare con il CREA).
+  - **Percorso:** passate alternate al centro delle file scavalcate; capezzagna come fascia lungo ogni
+    lato incontrato dalle file (anche obliquo); voltate a U se le passate distano almeno due raggi,
+    altrimenti a goccia, campionate circa ogni metro. Se una voltata esce dal campo, se la fascia
+    coltivata non lascia spazio alle ruote o se nel campo non entra nessuna fila, il lavoro non si può
+    salvare né caricare e l'editor spiega perché.
+  - **Statistiche:** file, passate, carreggiata necessaria, tipo di voltata, lunghezza, tempo stimato,
+    area. Sulla mappa le file in verde.
+  - Al rover arriva un `MAV_CMD_DO_CHANGE_SPEED` con la velocità di lavoro prima del primo waypoint;
+    ambiente, coltura e tipo di lavoro restano nel file `.plan`.
+- `TransectStyleComplexItem` (upstream): due metodi virtuali (`_entryMissionItemCount`,
+  `_appendEntryMissionItems`) per gli elementi di missione che un pattern mette prima del primo waypoint.
+- **Fly View:** con il rover e più di 30 punti si vedono solo la partenza e il punto in corso, non
+  centinaia di numeri.
+- **Test:** `FieldWorkComplexItemTest` (file e voltate a goccia e a U, velocità prima del primo punto,
+  capezzagna troppo stretta o troppo larga, fascia troppo larga, preset delle colture, lato obliquo,
+  direzione e partenza, salvataggio e caricamento).
+
+**Perché.** Dopo la chiamata con il CREA il percorso nel campo lo calcola la dashboard (sul rover non
+c'è un planner): l'operatore deve indicare il campo e la coltura, non i singoli punti. Il Survey di
+upstream non conosce file, capezzagna e raggio di sterzata, e le sue passate a zig-zag avrebbero fatto
+girare il rover sopra la coltura.
+
 ### Schermata Guida del rover: stati, FERMA, avanzamento e avvisi
 
 **Cosa.**

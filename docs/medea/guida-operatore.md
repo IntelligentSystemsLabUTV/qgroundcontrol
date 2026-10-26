@@ -91,18 +91,52 @@ Sotto *Modelli di piano* scegli:
 
 | Tipo di lavoro | Quando usarlo |
 | --- | --- |
+| **Lavoro in campo** | Il rover lavora lungo le file di una coltura, con le voltate in capezzagna. È il lavoro di tutti i giorni. |
 | **Percorso** | Il rover segue una strada, un filare o una linea che disegni tu. |
 | **Perimetro** | Il rover gira lungo il bordo di un campo o di un'area. |
-| **Survey** | Il rover copre tutta un'area con passate parallele (in futuro si chiamerà diversamente). |
+| **Survey** | Copertura di un'area con passate parallele, pensata per i droni: per il rover usa *Lavoro in campo*. |
 | **Nessun modello** | Piano vuoto: aggiungi tu i punti da raggiungere, uno per uno. |
 
 *Scansione corridoio* è pensata per i droni: per ora non serve per il rover.
 
-Percorso, Perimetro e Survey aggiungono alla fine **Ritorno alla partenza**: finito il lavoro, il
+Lavoro in campo, Percorso, Perimetro e Survey aggiungono alla fine **Ritorno alla partenza**: finito il lavoro, il
 rover torna al punto di partenza. Con *Nessun modello* lo aggiungi tu con il pulsante **Rientra**
 della barra a sinistra.
 
-### 3a. Percorso
+### 3a. Lavoro in campo
+
+![Un lavoro in campo su un frutteto](img/operatore-campo.jpg)
+
+1. Scegli **Lavoro in campo**. In alto compaiono gli *Strumenti poligono*.
+2. Indica il campo, in uno di questi modi:
+   - **dal rover** (il più preciso): porta il rover in un angolo del campo e premi **Angolo dal rover**,
+     poi nell'angolo successivo e così via, girando intorno al campo. Con tre angoli il campo compare
+     sulla mappa. **Ricomincia il campo** cancella gli angoli;
+   - **sulla mappa**: **Base** crea un rettangolo da trascinare sui confini, **Traccia** permette di
+     toccare gli angoli uno dopo l'altro (poi **Fine tracciamento**), **Carica KML/SHP...** carica un
+     confine preparato con un altro programma. La mappa satellitare può essere spostata di qualche metro:
+     controlla che le file cadano davvero sulle piante.
+3. Nel pannello a destra scegli:
+   - **Ambiente**: *Campo aperto* o *Serra*;
+   - **Coltura**: vigneto, frutteto, orticole in pieno campo, mais, orticole in serra. La coltura imposta
+     la distanza tra le file e lo spazio per girare a fine fila;
+   - **Tipo di lavoro**: mappatura, rilevamento infestanti, diserbo, mappatura NDVI o NDRE, irrorazione;
+   - **Velocità** in km/h (2,8 di solito, al massimo 3).
+4. Sulla mappa le **file** sono le linee verdi, il **lato giallo** del campo è quello a cui sono parallele.
+   Se le file vanno nell'altro verso premi **Cambia direzione delle file**. **Cambia punto di partenza**
+   sposta l'angolo da cui il rover comincia.
+5. Sotto *Statistiche* trovi quante file ci sono, la lunghezza del percorso e il **tempo stimato**.
+
+Se compare un avviso rosso il lavoro non si può caricare sul rover. I casi più comuni:
+
+- *Le voltate a fine fila escono dal campo*: lo spazio a fine fila non basta per girare. Chiedi al tecnico
+  di controllare la capezzagna o il raggio di sterzata;
+- *Nel campo non entra nessuna fila*: il campo è troppo piccolo o le file vanno nella direzione sbagliata
+  (prova **Cambia direzione delle file**);
+- *La capezzagna è troppo larga per questo campo*: il campo è troppo stretto rispetto allo spazio a fine
+  fila.
+
+### 3b. Percorso
 
 ![Un percorso con andata e ritorno](img/operatore-percorso.jpg)
 
@@ -121,7 +155,7 @@ della barra a sinistra.
 
    Sotto *Statistiche* trovi la lunghezza del percorso e la distanza totale da percorrere.
 
-### 3b. Perimetro
+### 3c. Perimetro
 
 ![Un perimetro con distanza dal bordo di 20 m](img/operatore-perimetro.jpg)
 
@@ -140,17 +174,16 @@ della barra a sinistra.
 Se la distanza dal bordo è troppo grande per l'area compare un avviso: riducila, altrimenti il lavoro
 non si può salvare né caricare sul rover.
 
-### 3c. Punti a mano (waypoint)
+### 3d. Punti a mano (waypoint)
 
 1. Scegli **Nessun modello**.
 2. Premi **Waypoint** nella barra a sinistra e tocca sulla mappa i punti da raggiungere, in ordine.
    Ogni tocco aggiunge un punto numerato. Premi di nuovo **Waypoint** per smettere di aggiungere punti.
 
-### 3d. Survey (copertura di un'area)
+### Survey
 
-Disegna l'area come per il perimetro. Il rover la percorre con passate parallele: **Passo** è la
-distanza tra una passata e l'altra, **Angolo** è la direzione delle passate. Questa schermata ha
-ancora molte opzioni da drone e verrà semplificata.
+È il modello per coprire un'area con un drone. Per il rover usa **Lavoro in campo**, che conosce le
+file della coltura e le voltate.
 
 ### 4. Salva il lavoro (facoltativo)
 

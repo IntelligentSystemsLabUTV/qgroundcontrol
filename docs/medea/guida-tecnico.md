@@ -205,22 +205,66 @@ non compaiono Decollo e Atterra, con un drone sì.
 
 | Modello | Cosa genera |
 | --- | --- |
+| **Lavoro in campo** | Un cambio di velocità (`MAV_CMD_DO_CHANGE_SPEED`), poi i waypoint delle passate lungo le file, con le voltate in capezzagna campionate ogni metro circa. |
 | **Percorso** | I punti della linea disegnata, in ordine; con *Andata e ritorno* anche il ritorno lungo la stessa linea; il tutto ripetuto *Ripetizioni* volte. |
 | **Perimetro** | Gli angoli dell'area, spostati verso l'interno della *Distanza dal bordo*, fino a richiudere il giro; il tutto ripetuto *Giri* volte. |
-| **Survey** | Passate parallele sull'area (pattern di upstream, ancora con le opzioni da drone). |
+| **Survey** | Passate parallele sull'area (pattern di upstream, pensato per i droni). |
 | **Nessun modello** | Piano vuoto, i waypoint si aggiungono a mano. |
 
-- Percorso e Perimetro generano solo waypoint (`MAV_CMD_NAV_WAYPOINT`); i modelli aggiungono alla fine
-  il ritorno alla partenza (RTL). L'altitudine dei punti è quella predefinita della missione e per il
-  rover non ha effetto.
-- Gli ultimi valori usati (distanza dal bordo, giri, ripetizioni...) diventano i valori proposti per il
-  lavoro successivo.
-- I piani si salvano in file `.plan` (JSON). Un file che contiene Percorso o Perimetro si apre solo con
-  questa versione di QGroundControl.
-- La velocità usata per stimare la durata della missione è 1 m/s (in modalità avanzata:
-  *Plan View → Predefiniti*).
+- I modelli aggiungono alla fine il ritorno alla partenza (RTL). L'altitudine dei punti è quella
+  predefinita della missione e per il rover non ha effetto.
+- Gli ultimi valori usati (coltura, interfila, distanza dal bordo, giri...) diventano i valori proposti
+  per il lavoro successivo.
+- I piani si salvano in file `.plan` (JSON). Un file che contiene Lavoro in campo, Percorso o Perimetro
+  si apre solo con questa versione di QGroundControl.
+- La velocità usata per stimare la durata della missione è 2,8 km/h (in modalità avanzata:
+  *Plan View → Predefiniti*). Il Lavoro in campo usa la propria velocità.
 - I valori mostrati in basso a destra nella Fly View si possono cambiare: tasto destro (o pressione
   prolungata) sulla griglia, poi il lucchetto per chiudere.
+
+### Lavoro in campo: come si costruisce il percorso
+
+- **Campo:** il poligono degli angoli (di solito quattro). Gli angoli si possono prendere dalla posizione
+  del rover (*Angolo dal rover*), più precisa della mappa satellitare.
+- **File:** parallele al *lato di riferimento* (giallo sulla mappa; *Cambia direzione delle file* passa
+  al lato successivo). La prima fila è a *Prima fila dal bordo* da quel lato, le altre ogni *Interfila*.
+- **Capezzagna:** una fascia larga *Capezzagna* lungo ogni lato del campo che le file incontrano (i lati
+  paralleli alle file, entro 2°, non ne hanno). Le file finiscono dove comincia la fascia, anche sui lati
+  obliqui.
+- **Passate:** a ogni passata il rover scavalca *File per passata* file, con la linea centrale in mezzo
+  a esse; la *Carreggiata necessaria* è file per passata × interfila. Le passate si alternano di verso.
+- **Voltate:** tra una passata e la successiva, in capezzagna, con il *Raggio di sterzata* minimo:
+  - **a U** (quarto di cerchio, tratto dritto, quarto di cerchio) se le passate distano almeno due
+    raggi: occupa un raggio di capezzagna;
+  - **a goccia** se sono più vicine: una breve curva verso l'esterno, un ampio giro, una breve curva
+    verso la passata successiva. Occupa più capezzagna (circa 4,3 m con raggio 2 m e passate a 2,5 m).
+
+  Se una voltata esce dal campo il lavoro non si può salvare né caricare, e l'editor dice di quanta
+  capezzagna c'è bisogno.
+- **Avvisi che bloccano il lavoro:** fascia coltivata larga quanto l'interfila (nessuno spazio per le
+  ruote), nessuna fila nel campo, capezzagna troppo larga, voltate fuori dal campo, lato di riferimento
+  più corto di 1 m.
+- **Al rover:** arrivano la velocità (`MAV_CMD_DO_CHANGE_SPEED`) e i waypoint. Ambiente, coltura e tipo
+  di lavoro per ora restano nel file `.plan`: come passarli al rover dipende dall'interfaccia ROS ancora
+  da concordare. La direzione in ogni punto (richiesta dalla logica di Giorgio) la ricava il bridge dalla
+  sequenza dei punti.
+- **Fly View:** con più di 30 punti si vedono solo la partenza e il punto verso cui va il rover; il
+  percorso resta disegnato come linea.
+
+Valori predefiniti delle colture, **indicativi e da confermare con il CREA** (domanda 25 in
+`docs/domande-aperte.md` di `medea_hmi`); il tecnico li cambia in *Coltura e rover* (modalità avanzata):
+
+| Coltura | Interfila | Fascia coltivata | Capezzagna | Note |
+| --- | --- | --- | --- | --- |
+| Vigneto | 2,5 m | 0,6 m | 6 m | |
+| Frutteto | 4,5 m | 1,5 m | 7 m | |
+| Orticole in pieno campo | 1,5 m | 0,4 m | 5 m | |
+| Mais | 0,75 m | 0,25 m | 6 m | |
+| Orticole in serra | 1,2 m | 0,4 m | 3 m | imposta anche *Serra* |
+| Personalizzata | — | — | — | restano i valori del tecnico |
+
+La prima fila è sempre a metà interfila dal lato di riferimento. Raggio di sterzata (2 m) e file per
+passata (1) non dipendono dalla coltura: sono dati del rover.
 
 ## Preconfigurare una postazione
 
