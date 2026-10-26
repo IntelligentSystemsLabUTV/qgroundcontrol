@@ -87,9 +87,26 @@ Item {
         property real rightEdgeBottomInset:     width + _layoutMargin
     }
 
-    // MEDEA rover: big buttons to start, pause, resume, stop the job and send the rover home
+    // MEDEA rover: big buttons to start, stop, resume and end the job and to send the rover home
     RoverJobControls {
         anchors.bottom:             parent.bottom
+        anchors.horizontalCenter:   parent.horizontalCenter
+        z:                          QGroundControl.zOrderWidgets
+    }
+
+    // MEDEA rover: progress of the job and event log
+    RoverJobPanel {
+        anchors.margins:    _toolsMargin
+        anchors.left:       toolStrip.visible ? toolStrip.right : parent.left
+        anchors.top:        parent.top
+        z:                  QGroundControl.zOrderWidgets
+    }
+
+    // MEDEA rover: emergency stop, fault, end of the job. Below the area where QGroundControl pops up the vehicle
+    // errors, which would otherwise cover it
+    RoverStatusBanner {
+        anchors.topMargin:          ScreenTools.defaultFontPixelHeight * 6
+        anchors.top:                parent.top
         anchors.horizontalCenter:   parent.horizontalCenter
         z:                          QGroundControl.zOrderWidgets
     }

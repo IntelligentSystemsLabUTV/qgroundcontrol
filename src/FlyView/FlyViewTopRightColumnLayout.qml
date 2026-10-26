@@ -20,6 +20,9 @@ ColumnLayout {
         id:                 photoVideoControlLoader
         Layout.alignment:   Qt.AlignRight
         sourceComponent:    globals.activeVehicle && globals.activeVehicle.cameraManager ? photoVideoControlComponent : undefined
+        // MEDEA rover in operator mode: the big red record button looks like an emergency stop, and recording is a
+        // technician's task
+        visible:            !globals.guidedControllerFlyView.roverJobUI || QGroundControl.corePlugin.showAdvancedUI
 
         property real rightEdgeCenterInset: visible ? parent.width - x : 0
 

@@ -24,11 +24,18 @@ Item {
     // These should only be used by MainRootWindow
     property var planController:    _planController
     property var guidedController:  _guidedController
+    property var roverJobStatus:    _roverJobStatus
 
     PlanMasterController {
         id:                     _planController
         flyView:                true
         Component.onCompleted:  start()
+    }
+
+    // MEDEA rover: machine state, job progress and outcome, shared by the toolbar and the rover widgets
+    MedeaRoverJobStatus {
+        id:         _roverJobStatus
+        vehicle:    QGroundControl.multiVehicleManager.activeVehicle
     }
 
     property bool   _mainWindowIsMap:       mapControl.pipState.state === mapControl.pipState.fullState

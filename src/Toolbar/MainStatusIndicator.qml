@@ -17,6 +17,9 @@ RowLayout {
     property bool   _vehicleFlies:      _activeVehicle ? _activeVehicle.airShip || _activeVehicle.fixedWing || _activeVehicle.vtol || _activeVehicle.multiRotor : false
     property var    _vehicleInAir:      _activeVehicle ? _activeVehicle.flying || _activeVehicle.landing : false
     property bool   _vtolInFWDFlight:   _activeVehicle ? _activeVehicle.vtolInFwdFlight : false
+    // MEDEA rover: the machine state of the rover replaces the generic status and the flight mode
+    property var    _roverJobStatus:    globals.roverJobStatusFlyView
+    property bool   _roverJobUI:        globals.guidedControllerFlyView.roverJobUI
 
     function dropMainStatusIndicator() {
         let overallStatusComponent = _activeVehicle ? overallStatusIndicatorPage : overallStatusOfflineIndicatorPage
@@ -25,9 +28,39 @@ RowLayout {
 
     QGCPalette { id: qgcPal }
 
+    // MEDEA rover: the machine state as a coloured pill, readable at a glance
+    Rectangle {
+        id:                     roverStatePill
+        objectName:             "toolbar_roverStatePill"
+        Layout.alignment:       Qt.AlignVCenter
+        Layout.preferredWidth:  roverStateLabel.contentWidth + ScreenTools.defaultFontPixelWidth * 3
+        Layout.preferredHeight: ScreenTools.defaultFontPixelHeight * 2
+        radius:                 height / 2
+        color:                  _roverJobStatus.stateColor
+        border.color:           "white"
+        border.width:           1
+        visible:                _activeVehicle && _roverJobUI
+
+        QGCLabel {
+            id:                 roverStateLabel
+            anchors.centerIn:   parent
+            text:               _roverJobStatus.stateText
+            color:              "white"
+            font.pointSize:     ScreenTools.largeFontPointSize
+            font.bold:          true
+        }
+
+        QGCMouseArea {
+            anchors.fill:   parent
+            enabled:        QGroundControl.corePlugin.showAdvancedUI
+            onClicked:      dropMainStatusIndicator()
+        }
+    }
+
     QGCLabel {
         id:                 mainStatusLabel
         Layout.fillHeight:  true
+        visible:            !roverStatePill.visible
         Layout.preferredWidth: contentWidth + (vehicleMessagesIcon.visible ? vehicleMessagesIcon.width + control.spacing : 0)
         verticalAlignment:  Text.AlignVCenter
         text:               mainStatusText()
@@ -45,6 +78,10 @@ RowLayout {
 
         function mainStatusText() {
             var statusText
+            if (_activeVehicle && _roverJobUI) {
+                _mainStatusBGColor = _roverJobStatus.stateColor
+                return _roverJobStatus.stateText
+            }
             if (_activeVehicle) {
                 if (_communicationLost) {
                     _mainStatusBGColor = "red"

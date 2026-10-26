@@ -100,7 +100,8 @@ Item {
                     FlightModeIndicator {
                         objectName:         "toolbar_flightModeIndicator"
                         Layout.fillHeight:  true
-                        visible:            _activeVehicle
+                        // MEDEA rover in operator mode: the main status already says the rover state
+                        visible:            _activeVehicle && (!_guidedController.roverJobUI || QGroundControl.corePlugin.showAdvancedUI)
                     }
                 }
             }

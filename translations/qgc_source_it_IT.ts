@@ -12700,34 +12700,57 @@ VTOL</translation>
   <context>
     <name>MedeaRoverFirmwarePlugin</name>
     <message>
+      <location filename="../src/FirmwarePlugin/MedeaRover/MedeaRoverFirmwarePlugin.cc" line="15"/>
+      <source>Ready</source>
+      <translation>Pronto</translation>
+    </message>
+    <message>
       <location filename="../src/FirmwarePlugin/MedeaRover/MedeaRoverFirmwarePlugin.cc" line="17"/>
-      <source>Stopped</source>
-      <translation>Fermo</translation>
+      <source>Working</source>
+      <translation>Al lavoro</translation>
     </message>
     <message>
       <location filename="../src/FirmwarePlugin/MedeaRover/MedeaRoverFirmwarePlugin.cc" line="19"/>
-      <source>Working</source>
-      <translation>Lavoro</translation>
+      <source>Paused</source>
+      <translation>In pausa</translation>
     </message>
     <message>
       <location filename="../src/FirmwarePlugin/MedeaRover/MedeaRoverFirmwarePlugin.cc" line="21"/>
-      <source>Paused</source>
-      <translation>Pausa</translation>
-    </message>
-    <message>
-      <location filename="../src/FirmwarePlugin/MedeaRover/MedeaRoverFirmwarePlugin.cc" line="23"/>
       <source>Returning</source>
       <translation>Rientro</translation>
     </message>
     <message>
+      <location filename="../src/FirmwarePlugin/MedeaRover/MedeaRoverFirmwarePlugin.cc" line="23"/>
+      <source>Manual driving</source>
+      <translation>Guida manuale</translation>
+    </message>
+    <message>
       <location filename="../src/FirmwarePlugin/MedeaRover/MedeaRoverFirmwarePlugin.cc" line="25"/>
-      <source>Manual</source>
-      <translation>Manuale</translation>
+      <source>Emergency stop</source>
+      <translation>Arresto di emergenza</translation>
     </message>
     <message>
       <location filename="../src/FirmwarePlugin/MedeaRover/MedeaRoverFirmwarePlugin.cc" line="27"/>
-      <source>Emergency</source>
-      <translation>Emergenza</translation>
+      <source>Starting up</source>
+      <translation>Avvio in corso</translation>
+    </message>
+    <message>
+      <location filename="../src/FirmwarePlugin/MedeaRover/MedeaRoverFirmwarePlugin.cc" line="29"/>
+      <source>Fault</source>
+      <translation>Guasto</translation>
+    </message>
+  </context>
+  <context>
+    <name>MedeaRoverJobStatus</name>
+    <message>
+      <location filename="../src/FirmwarePlugin/MedeaRover/MedeaRoverJobStatus.cc" line="83"/>
+      <source>Not connected</source>
+      <translation>Non collegato</translation>
+    </message>
+    <message>
+      <location filename="../src/FirmwarePlugin/MedeaRover/MedeaRoverJobStatus.cc" line="210"/>
+      <source>emergency stop</source>
+      <translation>arresto di emergenza</translation>
     </message>
   </context>
   <context>
@@ -19278,49 +19301,178 @@ Premi &apos;Ok&apos; per caricare comunque il piano.</translation>
   <context>
     <name>RoverJobControls</name>
     <message>
-      <location filename="../src/FlyView/RoverJobControls.qml" line="44"/>
+      <location filename="../src/FlyView/RoverJobControls.qml" line="49"/>
       <source>The rover is not connected</source>
       <translation>Il rover non è collegato</translation>
     </message>
     <message>
-      <location filename="../src/FlyView/RoverJobControls.qml" line="47"/>
+      <location filename="../src/FlyView/RoverJobControls.qml" line="51"/>
+      <source>The rover is starting up: wait until it is ready</source>
+      <translation>Il rover si sta avviando: attendi che sia pronto</translation>
+    </message>
+    <message>
+      <location filename="../src/FlyView/RoverJobControls.qml" line="53"/>
+      <source>Manual driving: the rover is driven with the remote control</source>
+      <translation>Guida manuale: il rover è guidato con il comando a mano</translation>
+    </message>
+    <message>
+      <location filename="../src/FlyView/RoverJobControls.qml" line="55"/>
       <source>No job on the rover: prepare it in Plan and upload it</source>
       <translation>Nessun lavoro sul rover: preparalo in Pianifica e caricalo</translation>
     </message>
     <message>
-      <location filename="../src/FlyView/RoverJobControls.qml" line="85"/>
+      <location filename="../src/FlyView/RoverJobControls.qml" line="57"/>
+      <source>The job is suspended</source>
+      <translation>Il lavoro è sospeso</translation>
+    </message>
+    <message>
+      <location filename="../src/FlyView/RoverJobControls.qml" line="98"/>
       <source>Start work</source>
       <translation>Avvia lavoro</translation>
     </message>
     <message>
-      <location filename="../src/FlyView/RoverJobControls.qml" line="90"/>
+      <location filename="../src/FlyView/RoverJobControls.qml" line="103"/>
       <source>The rover starts moving and carries out the job loaded on it. Make sure nobody is in the work area.</source>
       <translation>Il rover si mette in movimento ed esegue il lavoro caricato. Controlla che nessuno sia nell&apos;area di lavoro.</translation>
     </message>
     <message>
-      <location filename="../src/FlyView/RoverJobControls.qml" line="96"/>
-      <source>Pause</source>
-      <translation>Pausa</translation>
+      <location filename="../src/FlyView/RoverJobControls.qml" line="112"/>
+      <source>Stop</source>
+      <translation>Ferma</translation>
     </message>
     <message>
-      <location filename="../src/FlyView/RoverJobControls.qml" line="104"/>
+      <location filename="../src/FlyView/RoverJobControls.qml" line="121"/>
       <source>Resume</source>
       <translation>Riprendi</translation>
     </message>
     <message>
-      <location filename="../src/FlyView/RoverJobControls.qml" line="112"/>
-      <source>Return home</source>
-      <translation>Torna alla partenza</translation>
+      <location filename="../src/FlyView/RoverJobControls.qml" line="129"/>
+      <source>Return to base</source>
+      <translation>Torna alla base</translation>
     </message>
     <message>
-      <location filename="../src/FlyView/RoverJobControls.qml" line="116"/>
+      <location filename="../src/FlyView/RoverJobControls.qml" line="133"/>
       <source>The rover stops the job and drives back to its starting point.</source>
       <translation>Il rover interrompe il lavoro e torna al punto di partenza.</translation>
     </message>
     <message>
-      <location filename="../src/FlyView/RoverJobControls.qml" line="122"/>
-      <source>Stop</source>
-      <translation>Stop</translation>
+      <location filename="../src/FlyView/RoverJobControls.qml" line="140"/>
+      <source>End work</source>
+      <translation>Termina lavoro</translation>
+    </message>
+    <message>
+      <location filename="../src/FlyView/RoverJobControls.qml" line="144"/>
+      <source>The job is closed and cannot be resumed: it can only be started again from the beginning. The rover stays where it is.</source>
+      <translation>Il lavoro viene chiuso e non si potrà riprendere: si potrà solo ricominciare da capo. Il rover resta dov&apos;è.</translation>
+    </message>
+  </context>
+  <context>
+    <name>RoverJobPanel</name>
+    <message>
+      <location filename="../src/FlyView/RoverJobPanel.qml" line="45"/>
+      <source>less than a minute</source>
+      <translation>meno di un minuto</translation>
+    </message>
+    <message>
+      <location filename="../src/FlyView/RoverJobPanel.qml" line="48"/>
+      <source>about %1 min</source>
+      <translation>circa %1 min</translation>
+    </message>
+    <message>
+      <location filename="../src/FlyView/RoverJobPanel.qml" line="50"/>
+      <source>about %1 h %2 min</source>
+      <translation>circa %1 h %2 min</translation>
+    </message>
+    <message>
+      <location filename="../src/FlyView/RoverJobPanel.qml" line="57"/>
+      <source>Still to go: %1</source>
+      <translation>Mancano: %1</translation>
+    </message>
+    <message>
+      <location filename="../src/FlyView/RoverJobPanel.qml" line="73"/>
+      <source>Job</source>
+      <translation>Lavoro</translation>
+    </message>
+    <message>
+      <location filename="../src/FlyView/RoverJobPanel.qml" line="103"/>
+      <source>Point %1 of %2</source>
+      <translation>Punto %1 di %2</translation>
+    </message>
+    <message>
+      <location filename="../src/FlyView/RoverJobPanel.qml" line="116"/>
+      <source>Speed: %1 %2</source>
+      <translation>Velocità: %1 %2</translation>
+    </message>
+    <message>
+      <location filename="../src/FlyView/RoverJobPanel.qml" line="122"/>
+      <source>Hide event log</source>
+      <translation>Nascondi registro eventi</translation>
+    </message>
+    <message>
+      <location filename="../src/FlyView/RoverJobPanel.qml" line="122"/>
+      <source>Event log</source>
+      <translation>Registro eventi</translation>
+    </message>
+  </context>
+  <context>
+    <name>RoverPositionIndicator</name>
+    <message>
+      <location filename="../src/Toolbar/RoverPositionIndicator.qml" line="30"/>
+      <source>RTK fixed</source>
+      <translation>RTK fisso</translation>
+    </message>
+    <message>
+      <location filename="../src/Toolbar/RoverPositionIndicator.qml" line="32"/>
+      <source>RTK float</source>
+      <translation>RTK float</translation>
+    </message>
+    <message>
+      <location filename="../src/Toolbar/RoverPositionIndicator.qml" line="34"/>
+      <source>GPS without RTK</source>
+      <translation>GPS senza RTK</translation>
+    </message>
+    <message>
+      <location filename="../src/Toolbar/RoverPositionIndicator.qml" line="36"/>
+      <source>No position</source>
+      <translation>Nessuna posizione</translation>
+    </message>
+  </context>
+  <context>
+    <name>RoverStatusBanner</name>
+    <message>
+      <location filename="../src/FlyView/RoverStatusBanner.qml" line="31"/>
+      <source>Emergency stop. Check the rover and release the mushroom button on board: the dashboard cannot restart it.</source>
+      <translation>Arresto di emergenza. Controlla il rover e sblocca il fungo a bordo: la dashboard non può riattivarlo.</translation>
+    </message>
+    <message>
+      <location filename="../src/FlyView/RoverStatusBanner.qml" line="34"/>
+      <source>Fault: %1</source>
+      <translation>Guasto: %1</translation>
+    </message>
+    <message>
+      <location filename="../src/FlyView/RoverStatusBanner.qml" line="34"/>
+      <source>Fault: the rover reports a problem. Call the technician.</source>
+      <translation>Guasto: il rover segnala un problema. Chiama il tecnico.</translation>
+    </message>
+    <message>
+      <location filename="../src/FlyView/RoverStatusBanner.qml" line="38"/>
+      <source>Job completed</source>
+      <translation>Lavoro completato</translation>
+    </message>
+    <message>
+      <location filename="../src/FlyView/RoverStatusBanner.qml" line="41"/>
+      <source>Job not completed: %1</source>
+      <translation>Lavoro non completato: %1</translation>
+    </message>
+    <message>
+      <location filename="../src/FlyView/RoverStatusBanner.qml" line="41"/>
+      <source>Job not completed</source>
+      <translation>Lavoro non completato</translation>
+    </message>
+    <message>
+      <location filename="../src/FlyView/RoverStatusBanner.qml" line="61"/>
+      <source>Close</source>
+      <translation>Chiudi</translation>
     </message>
   </context>
   <context>

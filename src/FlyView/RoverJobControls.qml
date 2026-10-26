@@ -5,27 +5,29 @@ import QtQuick.Layouts
 import QGroundControl
 import QGroundControl.Controls
 
-// Big buttons to run a job on the MEDEA rover (MedeaRoverFirmwarePlugin). Only the commands that make sense in
-// the current state are shown; the ones that set the rover moving ask for confirmation, the ones that stop it
-// act at once.
+// Big buttons to run a job on the MEDEA rover (MedeaRoverFirmwarePlugin). Only the commands that make sense in the
+// current machine state are shown. There is a single way to stop the rover, Stop, and it never loses the job: the
+// job stays suspended until the operator resumes it or ends it. The commands that set the rover moving or close the
+// job ask for confirmation, Stop acts at once. The emergency stop is the mushroom button on the rover, not here.
 Rectangle {
     id:         control
     width:      mainLayout.width + _margins * 2
     height:     mainLayout.height + _margins * 2
     radius:     _margins
     color:      qgcPal.windowTransparent
-    visible:    _guidedController.roverJobUI
+    visible:    _guidedController.roverJobUI && (_hint() !== "" || _hasButtons)
 
     property var    _guidedController:  globals.guidedControllerFlyView
     property var    _missionController: globals.planMasterControllerFlyView.missionController
+    property var    _jobStatus:         globals.roverJobStatusFlyView
     property var    _activeVehicle:     QGroundControl.multiVehicleManager.activeVehicle
-    property string _flightMode:        _activeVehicle ? _activeVehicle.flightMode : ""
-    property bool   _working:           _activeVehicle ? _flightMode === _activeVehicle.missionFlightMode : false
-    property bool   _paused:            _activeVehicle ? _flightMode === _activeVehicle.pauseFlightMode : false
-    property bool   _returning:         _activeVehicle ? _flightMode === _activeVehicle.rtlFlightMode : false
-    property bool   _armed:             _activeVehicle ? _activeVehicle.armed : false
-    property bool   _communicationLost: _activeVehicle ? _activeVehicle.vehicleLinkManager.communicationLost : true
+    property int    _state:             _jobStatus.state
+    property bool   _ready:             _state === MedeaRoverJobStatus.Ready
+    property bool   _working:           _state === MedeaRoverJobStatus.Working
+    property bool   _paused:            _state === MedeaRoverJobStatus.Paused
+    property bool   _returning:         _state === MedeaRoverJobStatus.Returning
     property bool   _jobLoaded:         _missionController.containsItems
+    property bool   _hasButtons:        _ready || _working || _paused || _returning
     property real   _margins:           ScreenTools.defaultFontPixelWidth
     property real   _buttonWidth:       ScreenTools.defaultFontPixelWidth * 20
     property real   _buttonHeight:      ScreenTools.defaultFontPixelHeight * 2.5
@@ -39,21 +41,29 @@ Rectangle {
         QGroundControl.showMessageDialog(control, title, text, Dialog.Yes | Dialog.No, action)
     }
 
+    // What the operator can do when no button is shown, or why a button is not available. The emergency stop and the
+    // fault are explained by RoverStatusBanner
     function _hint() {
-        if (_communicationLost) {
+        switch (_state) {
+        case MedeaRoverJobStatus.NotConnected:
             return qsTr("The rover is not connected")
-        }
-        if (!_jobLoaded && !_working && !_paused && !_returning) {
-            return qsTr("No job on the rover: prepare it in Plan and upload it")
+        case MedeaRoverJobStatus.Starting:
+            return qsTr("The rover is starting up: wait until it is ready")
+        case MedeaRoverJobStatus.Manual:
+            return qsTr("Manual driving: the rover is driven with the remote control")
+        case MedeaRoverJobStatus.Ready:
+            return _jobLoaded ? "" : qsTr("No job on the rover: prepare it in Plan and upload it")
+        case MedeaRoverJobStatus.Paused:
+            return qsTr("The job is suspended")
         }
         return ""
     }
 
     // Dark tones: white text stays readable in the sun
     readonly property color _startColor:    "#2e7d32"
-    readonly property color _pauseColor:    "#e65100"
     readonly property color _returnColor:   "#1565c0"
     readonly property color _stopColor:     "#c62828"
+    readonly property color _endColor:      "#616161"
 
     component JobButton: QGCButton {
         Layout.preferredWidth:  Math.max(control._buttonWidth, implicitWidth)
@@ -61,7 +71,6 @@ Rectangle {
         pointSize:              ScreenTools.largeFontPointSize
         fontWeight:             Font.DemiBold
         textColor:              "white"
-        enabled:                !control._communicationLost
         opacity:                enabled ? 1 : 0.4
     }
 
@@ -71,32 +80,40 @@ Rectangle {
         spacing:            control._margins
 
         QGCLabel {
-            Layout.alignment:   Qt.AlignHCenter
-            text:               control._hint()
-            visible:            text !== ""
+            Layout.alignment:       Qt.AlignHCenter
+            Layout.maximumWidth:    ScreenTools.defaultFontPixelWidth * 60
+            horizontalAlignment:    Text.AlignHCenter
+            wrapMode:               Text.WordWrap
+            text:                   control._hint()
+            visible:                text !== ""
         }
 
         RowLayout {
             Layout.alignment:   Qt.AlignHCenter
             spacing:            control._margins
+            visible:            control._hasButtons
 
             JobButton {
                 objectName:         "roverJob_start"
                 text:               qsTr("Start work")
                 backgroundColor:    control._startColor
-                visible:            !control._working && !control._paused && !control._returning
-                enabled:            control._jobLoaded && !control._communicationLost
+                visible:            control._ready
+                enabled:            control._jobLoaded
                 onClicked: control._confirm(qsTr("Start work"),
                                             qsTr("The rover starts moving and carries out the job loaded on it. Make sure nobody is in the work area."),
                                             function() { control._activeVehicle.startMission() })
             }
 
+            // The only stop of the dashboard: the rover stops and switches the motors off, the job stays suspended
             JobButton {
-                objectName:         "roverJob_pause"
-                text:               qsTr("Pause")
-                backgroundColor:    control._pauseColor
-                visible:            control._working || control._returning
-                onClicked:          control._activeVehicle.pauseVehicle()
+                objectName:             "roverJob_stop"
+                Layout.preferredWidth:  Math.max(control._buttonWidth * 1.5, implicitWidth)
+                Layout.preferredHeight: control._buttonHeight * 1.2
+                text:                   qsTr("Stop").toUpperCase()
+                pointSize:              ScreenTools.largeFontPointSize * 1.3
+                backgroundColor:        control._stopColor
+                visible:                control._working || control._returning
+                onClicked:              control._activeVehicle.pauseVehicle()
             }
 
             JobButton {
@@ -109,20 +126,23 @@ Rectangle {
 
             JobButton {
                 objectName:         "roverJob_return"
-                text:               qsTr("Return home")
+                text:               qsTr("Return to base")
                 backgroundColor:    control._returnColor
-                visible:            !control._returning
-                onClicked: control._confirm(qsTr("Return home"),
+                visible:            control._ready || control._working || control._paused
+                onClicked: control._confirm(qsTr("Return to base"),
                                             qsTr("The rover stops the job and drives back to its starting point."),
                                             function() { control._activeVehicle.guidedModeRTL(false) })
             }
 
+            // The STOP of the operating rules: the job is closed and can only be started again from the beginning
             JobButton {
-                objectName:         "roverJob_stop"
-                text:               qsTr("Stop")
-                backgroundColor:    control._stopColor
-                visible:            control._armed
-                onClicked:          control._activeVehicle.sendCommand(control._autopilotComponentId, control._mavCmdArmDisarm, false /* showError */, 0)
+                objectName:         "roverJob_end"
+                text:               qsTr("End work")
+                backgroundColor:    control._endColor
+                visible:            control._paused
+                onClicked: control._confirm(qsTr("End work"),
+                                            qsTr("The job is closed and cannot be resumed: it can only be started again from the beginning. The rover stays where it is."),
+                                            function() { control._activeVehicle.sendCommand(control._autopilotComponentId, control._mavCmdArmDisarm, false /* showError */, 0) })
             }
         }
     }
