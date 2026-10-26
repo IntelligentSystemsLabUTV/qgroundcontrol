@@ -44,11 +44,17 @@ void MedeaRoverFirmwarePluginTest::_testModes()
     QCOMPARE(plugin.flightMode(customModeFlag, MedeaRoverFirmwarePlugin::PausedMode), plugin.pauseFlightMode());
     QCOMPARE(plugin.flightMode(customModeFlag, MedeaRoverFirmwarePlugin::ReturnMode), plugin.rtlFlightMode());
 
-    // Manual and emergency are shown but cannot be chosen from the GCS
+    // Manual driving, emergency stop, starting up and fault are shown but cannot be chosen from the GCS
     const QStringList selectable = plugin.flightModes(nullptr);
     QCOMPARE(selectable.count(), 4);
     QVERIFY(selectable.contains(plugin.missionFlightMode()));
-    QVERIFY(!selectable.contains(plugin.flightMode(customModeFlag, MedeaRoverFirmwarePlugin::EmergencyMode)));
+    for (const uint32_t mode : {MedeaRoverFirmwarePlugin::ManualMode, MedeaRoverFirmwarePlugin::EmergencyMode,
+                                MedeaRoverFirmwarePlugin::StartingMode, MedeaRoverFirmwarePlugin::FaultMode}) {
+        const QString name = plugin.flightMode(customModeFlag, mode);
+        QCOMPARE(name, MedeaRoverFirmwarePlugin::modeName(mode));
+        QVERIFY(!selectable.contains(name));
+    }
+    QVERIFY(MedeaRoverFirmwarePlugin::modeName(42).isEmpty());
 
     uint8_t baseMode = 0;
     uint32_t customMode = 0;
@@ -70,7 +76,7 @@ void MedeaRoverFirmwarePluginTest::_testAnnouncedModesKeepTranslatedNames()
     // AVAILABLE_MODES from the bridge: the names of the known modes do not change (the Fly View compares them with
     // missionFlightMode() and the others), an unknown mode keeps the name announced by the rover
     FlightModeList announced = {
-        FirmwareFlightMode(QStringLiteral("Lavoro"), static_cast<uint32_t>(MedeaRoverFirmwarePlugin::MissionMode),
+        FirmwareFlightMode(QStringLiteral("Al lavoro"), static_cast<uint32_t>(MedeaRoverFirmwarePlugin::MissionMode),
                            true),
         FirmwareFlightMode(QStringLiteral("Irrigazione"), 9u, true),
     };

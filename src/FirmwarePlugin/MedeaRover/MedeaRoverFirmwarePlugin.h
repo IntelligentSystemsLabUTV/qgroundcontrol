@@ -3,12 +3,12 @@
 #include "FirmwarePlugin.h"
 
 /// Firmware plugin for the MEDEA rover: a MAVLink ground rover with a generic autopilot, reached through
-/// the Kafka <-> MAVLink bridge (src/medea_bridge in the medea_hmi repository). The rover modes have fixed
-/// custom_mode numbers and the operator commands are standard MAVLink commands (medea_bridge/PROTOCOLLO.md):
+/// the ROS 2 <-> MAVLink bridge (src/medea_bridge in the medea_hmi repository). The rover modes are the machine
+/// states of the rover and have fixed custom_mode numbers; the operator commands are standard MAVLink commands:
 ///     start work      MAV_CMD_MISSION_START
-///     pause / resume  MAV_CMD_DO_PAUSE_CONTINUE 0 / 1
+///     stop / resume   MAV_CMD_DO_PAUSE_CONTINUE 0 / 1 (the job stays suspended and can be resumed)
 ///     return home     MAV_CMD_NAV_RETURN_TO_LAUNCH
-///     stop            MAV_CMD_COMPONENT_ARM_DISARM 0 (sent by the Fly View rover controls)
+///     end work        MAV_CMD_COMPONENT_ARM_DISARM 0 (sent by the Fly View rover controls)
 /// The rover arms itself when it starts working, so starting never requires a separate arm step.
 class MedeaRoverFirmwarePlugin : public FirmwarePlugin
 {
@@ -26,7 +26,12 @@ public:
         ReturnMode = 4,
         ManualMode = 5,
         EmergencyMode = 6,
+        StartingMode = 7,
+        FaultMode = 8,
     };
+
+    /// Translated name of a known mode, empty for the others
+    static QString modeName(uint32_t customMode);
 
     [[nodiscard]] bool isCapable(const Vehicle* vehicle, FirmwareCapabilities capabilities) const override;
     [[nodiscard]] QStringList flightModes(Vehicle* vehicle) const override;

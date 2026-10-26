@@ -7,30 +7,30 @@
 
 QGC_LOGGING_CATEGORY(MedeaRoverFirmwarePluginLog, "FirmwarePlugin.MedeaRoverFirmwarePlugin")
 
-namespace {
-
-/// Translated name of a known mode, empty for the others
-QString modeName(uint32_t customMode)
+QString MedeaRoverFirmwarePlugin::modeName(uint32_t customMode)
 {
+    // The machine states of the rover (docs/piano-dashboard.md in medea_hmi), as the operator reads them
     switch (customMode) {
-        case MedeaRoverFirmwarePlugin::IdleMode:
-            return MedeaRoverFirmwarePlugin::tr("Stopped");
-        case MedeaRoverFirmwarePlugin::MissionMode:
-            return MedeaRoverFirmwarePlugin::tr("Working");
-        case MedeaRoverFirmwarePlugin::PausedMode:
-            return MedeaRoverFirmwarePlugin::tr("Paused");
-        case MedeaRoverFirmwarePlugin::ReturnMode:
-            return MedeaRoverFirmwarePlugin::tr("Returning");
-        case MedeaRoverFirmwarePlugin::ManualMode:
-            return MedeaRoverFirmwarePlugin::tr("Manual");
-        case MedeaRoverFirmwarePlugin::EmergencyMode:
-            return MedeaRoverFirmwarePlugin::tr("Emergency");
+        case IdleMode:
+            return tr("Ready");
+        case MissionMode:
+            return tr("Working");
+        case PausedMode:
+            return tr("Paused");
+        case ReturnMode:
+            return tr("Returning");
+        case ManualMode:
+            return tr("Manual driving");
+        case EmergencyMode:
+            return tr("Emergency stop");
+        case StartingMode:
+            return tr("Starting up");
+        case FaultMode:
+            return tr("Fault");
         default:
             return {};
     }
 }
-
-}  // namespace
 
 MedeaRoverFirmwarePlugin::MedeaRoverFirmwarePlugin(QObject* parent) : FirmwarePlugin(parent)
 {
@@ -42,6 +42,8 @@ MedeaRoverFirmwarePlugin::MedeaRoverFirmwarePlugin(QObject* parent) : FirmwarePl
         FirmwareFlightMode(modeName(ReturnMode), ReturnMode, true),
         FirmwareFlightMode(modeName(ManualMode), ManualMode, false),
         FirmwareFlightMode(modeName(EmergencyMode), EmergencyMode, false),
+        FirmwareFlightMode(modeName(StartingMode), StartingMode, false),
+        FirmwareFlightMode(modeName(FaultMode), FaultMode, false),
     };
     _updateFlightModeList(modes);
 }
@@ -149,10 +151,10 @@ void MedeaRoverFirmwarePlugin::guidedModeChangeAltitude(Vehicle* vehicle, double
 
 const QVariantList& MedeaRoverFirmwarePlugin::toolIndicators(const Vehicle* /*vehicle*/)
 {
-    // Only what the operator of the rover needs: position quality (RTK) and battery
+    // Only what the operator of the rover needs: position quality (RTK) and batteries
     if (_toolIndicatorList.isEmpty()) {
         _toolIndicatorList = QVariantList({
-            QVariant::fromValue(QUrl::fromUserInput("qrc:/qml/QGroundControl/Toolbar/VehicleGPSIndicator.qml")),
+            QVariant::fromValue(QUrl::fromUserInput("qrc:/qml/QGroundControl/Toolbar/RoverPositionIndicator.qml")),
             QVariant::fromValue(QUrl::fromUserInput("qrc:/qml/QGroundControl/Toolbar/BatteryIndicator.qml")),
         });
     }
