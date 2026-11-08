@@ -175,6 +175,7 @@ ColumnLayout {
                             id: transmitterModeComboBox
                             model: [ qsTr("Mode 1"), qsTr("Mode 2"), qsTr("Mode 3"), qsTr("Mode 4") ]
                             enabled: !controller.calibrating
+                            visible: !controller.joystickMode // MEDEA: gamepads always use mode 2
 
                             onActivated: (index) => controller.transmitterMode = index + 1
 

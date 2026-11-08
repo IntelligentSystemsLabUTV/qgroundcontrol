@@ -148,9 +148,10 @@ Joystick* (modalità tecnico).
 Ogni controller nuovo va **calibrato una volta** in *Configura → Joystick* (modalità tecnico, rover collegato): anche
 se la pagina dice "Pronto", QGroundControl non manda nulla da un joystick mai calibrato. Finché non lo è, il pannello
 mostra l'avviso e *Guida con il joystick* resta disattivato. Il "modo radiocomando" è sempre 2 (impostazione nascosta,
-torna a 2 a ogni avvio): con qualunque controller stick destro avanti/indietro, sinistro sterzo. Il bridge ignora il
-10% centrale della corsa degli stick (`manual.deadzone`), perché a stick lasciato i gamepad non tornano esattamente
-a zero. Se si stacca il controller con la pagina di calibrazione aperta QGroundControl non si chiude più (prima
+torna a 2 a ogni avvio, e la pagina Joystick non mostra più la scelta del modo): con qualunque controller stick
+destro avanti/indietro, sinistro sterzo. Il bridge ignora il 20% centrale della corsa degli stick (`manual.deadzone`),
+perché a stick lasciato i gamepad non tornano esattamente a zero (lo stick sinistro del PS4 di prova resta al 16%
+circa per un paio di secondi). Se si stacca il controller con la pagina di calibrazione aperta QGroundControl non si chiude più (prima
 andava in crash). La calibrazione si salva per quel modello di controller;
 alla fine QGroundControl propone di abilitarlo: non serve (lo abilita il pannello solo durante la guida manuale).
 
@@ -252,7 +253,6 @@ non compaiono Decollo e Atterra, con un drone sì.
 | **Lavoro in campo** | Un cambio di velocità (`MAV_CMD_DO_CHANGE_SPEED`), poi i waypoint delle passate lungo le file, con le voltate in capezzagna campionate ogni metro circa. |
 | **Percorso** | I punti della linea disegnata, in ordine; con *Andata e ritorno* anche il ritorno lungo la stessa linea; il tutto ripetuto *Ripetizioni* volte. |
 | **Perimetro** | Gli angoli dell'area, spostati verso l'interno della *Distanza dal bordo*, fino a richiudere il giro; il tutto ripetuto *Giri* volte. |
-| **Survey** | Passate parallele sull'area (pattern di upstream, pensato per i droni). |
 | **Nessun modello** | Piano vuoto, i waypoint si aggiungono a mano. |
 
 - I modelli aggiungono alla fine il ritorno alla partenza (RTL). L'altitudine dei punti è quella

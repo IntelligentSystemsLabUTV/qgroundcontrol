@@ -95,12 +95,9 @@ Sotto *Modelli di piano* scegli:
 | **Lavoro in campo** | Il rover lavora lungo le file di una coltura, con le voltate in capezzagna. È il lavoro di tutti i giorni. |
 | **Percorso** | Il rover segue una strada, un filare o una linea che disegni tu. |
 | **Perimetro** | Il rover gira lungo il bordo di un campo o di un'area. |
-| **Survey** | Copertura di un'area con passate parallele, pensata per i droni: per il rover usa *Lavoro in campo*. |
 | **Nessun modello** | Piano vuoto: aggiungi tu i punti da raggiungere, uno per uno. |
 
-*Scansione corridoio* è pensata per i droni: per ora non serve per il rover.
-
-Lavoro in campo, Percorso, Perimetro e Survey aggiungono alla fine **Ritorno alla partenza**: finito il lavoro, il
+Lavoro in campo, Percorso e Perimetro aggiungono alla fine **Ritorno alla partenza**: finito il lavoro, il
 rover torna al punto di partenza. Con *Nessun modello* lo aggiungi tu con il pulsante **Rientra**
 della barra a sinistra.
 
@@ -196,11 +193,6 @@ non si può salvare né caricare sul rover.
 1. Scegli **Nessun modello**.
 2. Premi **Waypoint** nella barra a sinistra e tocca sulla mappa i punti da raggiungere, in ordine.
    Ogni tocco aggiunge un punto numerato. Premi di nuovo **Waypoint** per smettere di aggiungere punti.
-
-### Survey
-
-È il modello per coprire un'area con un drone. Per il rover usa **Lavoro in campo**, che conosce le
-file della coltura e le voltate.
 
 ### 4. Salva il lavoro (facoltativo)
 

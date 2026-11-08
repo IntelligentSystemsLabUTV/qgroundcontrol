@@ -51,6 +51,10 @@ Guide d'uso: [guida per l'operatore](guida-operatore.md), [guida per il tecnico]
   - *Torna alla base* nascosto anche quando il rover è già entro 2 m dalla base (come il bridge, `job.at_home_m`);
   - icona del rover sulla mappa in scala (1,5 m, misurata sulla mappa con `fromCoordinate`), mai più piccola di una
     freccia leggibile né più grande di un quarto della mappa; prima restava grande a ogni zoom e copriva le file.
+- Dopo la seconda prova: la pagina *Configura → Joystick* non mostra più la scelta *Modalità 1-4* (confondeva, e il
+  modo è comunque sempre 2; resta per i radiocomandi); per un rover la Plan View non propone più **Survey** e
+  **Scansione corridoio** (modelli e pattern per droni, `QGCCorePlugin::planCreators` e `complexMissionItemNames`):
+  restano Lavoro in campo, Percorso, Perimetro e Nessun modello. I piani salvati con un Survey si aprono ancora.
 - Traduzioni italiane; `MedeaRoverFirmwarePluginTest` controlla i nuovi indicatori.
 
 **Perché.**

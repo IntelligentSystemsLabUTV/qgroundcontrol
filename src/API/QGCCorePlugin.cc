@@ -483,8 +483,11 @@ QVariantList QGCCorePlugin::complexMissionItemNames(Vehicle *vehicle)
     };
 
     QVariantList items;
-    items.append(makeEntry(SurveyComplexItem::canonicalName,       SurveyComplexItem::tr(SurveyComplexItem::canonicalName)));
-    items.append(makeEntry(CorridorScanComplexItem::canonicalName, CorridorScanComplexItem::tr(CorridorScanComplexItem::canonicalName)));
+    // MEDEA: camera survey and corridor scan are aerial patterns; the rover has field work, path and perimeter
+    if (!vehicle->rover()) {
+        items.append(makeEntry(SurveyComplexItem::canonicalName,       SurveyComplexItem::tr(SurveyComplexItem::canonicalName)));
+        items.append(makeEntry(CorridorScanComplexItem::canonicalName, CorridorScanComplexItem::tr(CorridorScanComplexItem::canonicalName)));
+    }
     if (vehicle->multiRotor() || vehicle->vtol()) {
         items.append(makeEntry(StructureScanComplexItem::canonicalName, StructureScanComplexItem::tr(StructureScanComplexItem::canonicalName)));
     }
@@ -499,6 +502,15 @@ QVariantList QGCCorePlugin::complexMissionItemNames(Vehicle *vehicle)
 
 QList<PlanCreator*> QGCCorePlugin::planCreators(PlanMasterController *planMasterController)
 {
+    // MEDEA: no aerial templates (survey, corridor scan) for the rover
+    if (planMasterController->managerVehicle()->rover()) {
+        return {
+            new FieldWorkPlanCreator(planMasterController),
+            new PathPlanCreator(planMasterController),
+            new PerimeterPlanCreator(planMasterController),
+            new BlankPlanCreator(planMasterController),
+        };
+    }
     return {
         new FieldWorkPlanCreator(planMasterController),
         new SurveyPlanCreator(planMasterController),
