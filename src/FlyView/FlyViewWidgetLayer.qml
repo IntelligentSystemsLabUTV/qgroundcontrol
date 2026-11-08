@@ -94,11 +94,11 @@ Item {
         z:                          QGroundControl.zOrderWidgets
     }
 
-    // MEDEA rover: manual driving with a gamepad connected to this computer
+    // MEDEA rover: manual driving with a gamepad connected to this computer, above the compass
     RoverManualDrivePanel {
         anchors.margins:    _toolsMargin
         anchors.right:      parent.right
-        anchors.bottom:     parent.bottom
+        anchors.bottom:     bottomRightRowLayout.top
         z:                  QGroundControl.zOrderWidgets
     }
 

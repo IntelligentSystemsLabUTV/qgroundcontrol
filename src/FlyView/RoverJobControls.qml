@@ -27,8 +27,13 @@ Rectangle {
     property bool   _paused:            _state === MedeaRoverJobStatus.Paused
     property bool   _returning:         _state === MedeaRoverJobStatus.Returning
     property bool   _jobLoaded:         _missionController.containsItems
-    // The bridge sends HOME_POSITION once a job has started: the starting point is where the rover was then
+    // The bridge sends HOME_POSITION once a job has started: the starting point is where the rover was then.
+    // Within _atHomeMeters of it the rover is already at base (the bridge refuses the return, as medea_bridge
+    // job.at_home_m)
     property bool   _hasHome:           _activeVehicle ? _activeVehicle.homePosition.isValid : false
+    property bool   _atHome:            _hasHome && _activeVehicle.coordinate.isValid
+                                        && _activeVehicle.coordinate.distanceTo(_activeVehicle.homePosition) <= _atHomeMeters
+    readonly property real _atHomeMeters: 2
     property bool   _hasButtons:        _ready || _working || _paused || _returning
     property real   _margins:           ScreenTools.defaultFontPixelWidth
     property real   _buttonWidth:       ScreenTools.defaultFontPixelWidth * 20
@@ -130,7 +135,7 @@ Rectangle {
                 objectName:         "roverJob_return"
                 text:               qsTr("Return to base")
                 backgroundColor:    control._returnColor
-                visible:            control._hasHome && (control._ready || control._working || control._paused)
+                visible:            control._hasHome && !control._atHome && (control._ready || control._working || control._paused)
                 onClicked: control._confirm(qsTr("Return to base"),
                                             qsTr("The rover stops the job and drives back to its starting point."),
                                             function() { control._activeVehicle.guidedModeRTL(false) })

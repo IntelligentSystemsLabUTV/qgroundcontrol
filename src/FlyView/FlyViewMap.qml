@@ -266,8 +266,25 @@ FlightMap {
             vehicle:        object
             coordinate:     object.coordinate
             map:            _root
-            size:           pipMode ? ScreenTools.defaultFontPixelHeight : ScreenTools.defaultFontPixelHeight * 3
+            size:           pipMode ? ScreenTools.defaultFontPixelHeight :
+                                      (_medeaRover ? Math.max(ScreenTools.defaultFontPixelHeight * 1.5, Math.min(_medeaRoverPixels, Math.min(_root.width, _root.height) / 4))
+                                                   : ScreenTools.defaultFontPixelHeight * 3)
             z:              QGroundControl.zOrderVehicles
+
+            // MEDEA rover: drawn to scale when zoomed in (about 1.5 m with the wheels, rover_description), never
+            // smaller than a readable arrow nor bigger than a quarter of the map (zoomed beyond the imagery). The scale
+            // is measured on the map itself (any map type, any screen)
+            readonly property bool _medeaRover:             object.rover && object.genericFirmware
+            readonly property real _medeaRoverSizeMeters:   1.5
+            readonly property real _medeaRoverPixels:       _medeaRover ? _pixelsFor(_medeaRoverSizeMeters, _root.zoomLevel) : 0
+
+            function _pixelsFor(meters, zoomLevel) {   // zoomLevel: re-evaluated when the map zooms
+                var center = _root.toCoordinate(Qt.point(_root.width / 2, _root.height / 2), false)
+                var a = _root.fromCoordinate(center, false)
+                var b = _root.fromCoordinate(center.atDistanceAndAzimuth(meters, 90), false)
+                var pixels = Math.abs(b.x - a.x)
+                return isNaN(pixels) ? 0 : pixels
+            }
         }
     }
     // Add distance sensor view

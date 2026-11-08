@@ -12,6 +12,7 @@
 #include "InstrumentValueData.h"
 #include "JoystickManager.h"
 #include "JoystickManagerSettings.h"
+#include "JoystickSettings.h"
 #include "MavlinkSettings.h"
 #include "QGCLoggingCategory.h"
 #include "QGCOptions.h"
@@ -182,6 +183,14 @@ void QGCCorePlugin::adjustSettingMetaData(const QString &settingsGroup, FactMeta
     // No joystick is enabled at start: it drives the MEDEA rover only after the operator enters manual driving
     // (RoverManualDrivePanel), so touching the controller at any other time does nothing
     if ((settingsGroup == JoystickManagerSettings::settingsGroup) && (metaData.name() == JoystickManagerSettings::joystickEnabledVehiclesIdsName)) {
+        userVisible = false;
+        return;
+    }
+
+    // Every gamepad drives the MEDEA rover the same way, as the rover's own joystick node and the manual driving panel
+    // say: right stick forward/back, left stick steering. That is transmitter mode 2; hiding the per-joystick setting
+    // forces it at every start, whatever mode was chosen in a calibration
+    if (settingsGroup.startsWith(QStringLiteral("JoystickSettingsV2/")) && (metaData.name() == JoystickSettings::transmitterModeName)) {
         userVisible = false;
         return;
     }
