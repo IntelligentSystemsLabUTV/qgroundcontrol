@@ -45,7 +45,8 @@ mappa. Quando il rover è acceso e collegato alla rete, il programma si collega 
    - **posizione**: *RTK fisso* (verde, la precisione giusta per lavorare), *RTK float* (giallo,
      aspetta che diventi fisso), *GPS senza RTK* (arancione, precisione di qualche metro), *Nessuna
      posizione* (rosso);
-   - **batteria** in percentuale (se il rover ne ha due, quella più scarica).
+   - **joystick**, solo se al computer è collegato un controller (verde mentre guida il rover). La batteria del
+     rover non compare: il rover non la misura, va controllata a bordo.
 4. **Riquadro del lavoro** (in alto a sinistra), quando sul rover c'è un lavoro: percentuale fatta,
    punto verso cui va il rover (*Punto 3 di 12*), quanto manca in metri e in minuti, velocità in km/h.
    **Registro eventi** apre, nello stesso riquadro, l'elenco dei messaggi del rover con l'ora (i più
@@ -242,6 +243,25 @@ Se il rover non può eseguire un comando, in alto compare un riquadro giallo con
 **FERMA** agisce subito, senza conferma, ed è l'unico modo di fermare il rover dalla dashboard: non fa
 mai perdere il lavoro. **Non è l'arresto di emergenza**: in caso di pericolo premi il fungo sul rover.
 
+### Guida manuale con il joystick
+
+Se al computer è collegato un controller PS4 o PS5, in alto compare l'icona del joystick e in basso a destra il
+pulsante **Guida con il joystick**.
+
+1. Premi **Guida con il joystick** e conferma: il lavoro in corso va in pausa e lo stato diventa *Guida manuale*.
+2. Tieni premuti **L1 e R1** (i due tasti dietro, in alto): stick destro avanti/indietro, stick sinistro per sterzare.
+   Se lasci L1 o R1 il rover si ferma.
+3. Premi **Termina guida manuale**: il rover si ferma e spegne i motori. Con **Riprendi** il lavoro continua da dove
+   si trova il rover.
+
+Fuori dalla guida manuale toccare il controller non fa nulla.
+
+### Se la dashboard si scollega
+
+Se il computer perde il collegamento con il rover (WiFi, programma chiuso) per più di 3 secondi, **il rover si
+ferma** e spegne i motori: il lavoro resta in pausa. Quando il collegamento torna compare l'avviso con l'ora in cui si
+è fermato; il rover **non riparte da solo**: premi **Riprendi**.
+
 ### Avvisi
 
 ![Avvisi: arresto di emergenza, lavoro non completato, lavoro completato](img/operatore-avvisi.jpg)
@@ -271,5 +291,4 @@ mai perdere il lavoro. **Non è l'arresto di emergenza**: in caso di pericolo pr
 | Riquadro giallo con un messaggio del rover | Leggi il motivo: il rover non ha eseguito il comando o segnala un problema. Toccalo per chiuderlo. |
 | *il rover non ha risposto* o *Il rover non è collegato* | Controlla che il rover sia acceso e in rete, poi riprova. Se il problema resta, chiama il tecnico. |
 | Avviso sulla distanza dal bordo (Perimetro) | Riduci la *Distanza dal bordo*. |
-| La batteria diventa rossa | Fai rientrare il rover e ricaricalo. |
 | Serve cambiare un'impostazione (video, collegamento, lingua...) | Chiama il tecnico: le impostazioni sono nascoste di proposito. |

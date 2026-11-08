@@ -22,6 +22,35 @@ Guide d'uso: [guida per l'operatore](guida-operatore.md), [guida per il tecnico]
 
 ---
 
+## 2026-11-08
+
+### Collegamento con il rover via ROS 2, sicurezza e guida manuale
+
+**Cosa.**
+
+- *Impostazioni → Telemetria → Emit heartbeat* (`sendGCSHeartbeat`) è nascosto e quindi sempre acceso
+  (`QGCCorePlugin::adjustSettingMetaData`).
+- Nessun joystick è abilitato all'avvio: `joystickEnabledVehiclesIds` è nascosto, quindi vuoto a ogni avvio.
+- Barra in alto del rover MEDEA: niente batteria; al suo posto `RoverJoystickIndicator.qml` (solo se un joystick è
+  collegato, verde mentre guida il rover; la pagina mostra modello e batteria del controller).
+- Schermata Guida: `RoverManualDrivePanel.qml` (in basso a destra), con *Guida con il joystick* (conferma, poi
+  modalità 5 del rover), istruzioni L1+R1, barre di velocità e sterzo, *Termina guida manuale*. Il joystick viene
+  abilitato per il veicolo solo mentre il rover è in *Guida manuale*.
+- Traduzioni italiane; `MedeaRoverFirmwarePluginTest` controlla i nuovi indicatori.
+
+**Perché.**
+
+- Il bridge (ora un nodo ROS 2 sulla Jetson, repository `medea_hmi`) ferma il rover quando QGroundControl smette di
+  mandare l'heartbeat: se il tecnico lo spegnesse, il rover non partirebbe o si fermerebbe subito.
+- Il rover non ha una scheda che misura le batterie: l'indicatore mostrava sempre un valore sconosciuto.
+- Guida manuale decisa con il CREA (D11): il controller sta al laptop, e deve comandare il rover solo quando
+  l'operatore lo ha chiesto esplicitamente, mai per un tocco accidentale.
+
+**Come si prova.** `bin/medea.sh` del repository `medea_hmi` (simulatore del rover + bridge + QGroundControl) e un
+controller PS4/PS5 collegato al PC.
+
+---
+
 ## 2026-10-26
 
 ### Lavoro in campo nella Pianificazione

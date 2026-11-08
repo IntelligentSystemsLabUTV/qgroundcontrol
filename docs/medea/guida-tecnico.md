@@ -4,10 +4,9 @@ Questa guida è per chi installa, configura e mantiene la dashboard del rover ME
 personalizzato). Per l'uso quotidiano vedi la [guida per l'operatore](guida-operatore.md); per
 l'elenco delle modifiche e i motivi vedi il [changelog](CHANGELOG.md).
 
-> **Bozza.** Descrive la versione in sviluppo (ottobre 2026). Il collegamento con il rover è in rifacimento
-> (novembre 2026): niente più Kafka, il bridge diventa un nodo ROS 2 che parla con il nuovo codice del rover
-> (`rovercrea-dua`) e gira a bordo, sulla Jetson del rover (deciso l'08/11); vedi `docs/integrazione-ros2.md` del repository
-> `medea_hmi`. Le parti sul bridge qui sotto descrivono ancora la versione di prova con Kafka e un rover simulato.
+> **Bozza.** Descrive la versione in sviluppo (novembre 2026). Il collegamento con il rover (bridge ROS 2 sulla
+> Jetson) è provato nel simulatore, non ancora sul rover vero; vedi `docs/integrazione-ros2.md` del repository
+> `medea_hmi`.
 
 ## Modalità tecnico (modalità avanzata)
 
@@ -42,8 +41,8 @@ In modalità avanzata tornano:
    italiano. Altrimenti *Impostazioni → Generali → Lingua → Italiano* e riavvia.
 2. **Collegamento con il rover:** il programma ascolta i veicoli MAVLink su UDP (porta 14550) e si
    collega da solo. La connessione automatica a Pixhawk, radio SiK e LibrePilot è disattivata. I dati
-   del rover arrivano dal [bridge](#collegamento-con-il-rover-bridge) (oggi la versione di prova con Kafka,
-   sullo stesso computer; con il rover vero gira sulla Jetson del rover e manda MAVLink via WiFi). Collegamenti manuali: *Impostazioni → Collegamenti*.
+   del rover arrivano dal [bridge](#collegamento-con-il-rover-bridge), che gira sulla Jetson del rover e manda
+   MAVLink via WiFi: serve un collegamento UDP verso la Jetson (vedi la sezione). Collegamenti manuali: *Impostazioni → Collegamenti*.
 3. **Video:** vedi la sezione [Video](#video).
 4. **Schermo:** unità europee (m, km/h, ettari, °C) e scala dell'interfaccia al 115% sono già
    impostate (*Impostazioni → Generali*). Per lavorare al sole scegli *Schema colori → Esterni*
@@ -107,34 +106,44 @@ gst-launch-1.0 videotestsrc is-live=true \
 
 ## Collegamento con il rover (bridge)
 
-> **In transizione (aggiornato all'08/11/2026).** La dashboard non passerà più da Kafka: il bridge diventerà un
-> nodo ROS 2 ↔ MAVLink che usa i servizi del nuovo codice del rover (`rovercrea-dua`: `path_planner`,
-> `rover_driver`), fa la gestione del lavoro e ferma il rover se la dashboard si scollega. Gira a bordo, sulla
-> Jetson (deciso l'08/11), e sul laptop resta solo QGroundControl. Specifica in `docs/integrazione-ros2.md` del
-> repository `medea_hmi`. Questa sezione descrive la versione attuale, ancora con Kafka; il lato MAVLink, cioè
-> quello che vede QGroundControl, resta lo stesso. Da riscrivere quando il bridge ROS 2 è pronto.
+QGroundControl parla solo MAVLink; il codice del rover (`rovercrea-dua`) è ROS 2. In mezzo c'è il **bridge**
+`medea_bridge` (repository `medea_hmi`, cartella `src/medea_bridge`, con il suo `README.md`), un nodo ROS 2 che
+**gira sulla Jetson del rover** insieme al nodo `medea_watchdog`. Sul WiFi passa solo MAVLink: sul laptop basta
+QGroundControl.
 
-Il rover pubblica i suoi dati su Kafka; QGroundControl parla solo MAVLink. In mezzo c'è il **bridge**
-(`medea-bridge`), un programma Python del repository `medea_hmi` (cartella `src/medea_bridge`, con
-istruzioni nel suo `README.md`) che gira sul computer della dashboard:
+- Legge posizione (odometria del rover, convertita in lat/lon con il punto di partenza del rover), stato e messaggi
+  del rover e li manda a QGroundControl.
+- Trasforma i pulsanti dell'operatore in comandi del rover (avvio, pausa, ripresa, rientro, fine lavoro) e risponde a
+  QGroundControl quando il rover li ha eseguiti.
+- Prova sul rover i lavori caricati con *Carica sul veicolo*: se il rover non riesce a costruire il percorso, il
+  caricamento fallisce con il motivo.
+- **Se QGroundControl si scollega per più di 3 s, il rover si ferma** (pausa e motori spenti) e non riparte da solo;
+  il watchdog lo ferma anche se il bridge si blocca.
 
-- legge da Kafka posizione, stato, batteria, RTK e messaggi del rover e li manda a QGroundControl;
-- trasforma i comandi dell'operatore in comandi Kafka con una **scadenza** (3 s): il rover non li
-  esegue se arrivano dopo, per esempio quando il WiFi torna dopo un'interruzione;
-- pubblica su Kafka i lavori caricati con *Carica sul veicolo*.
-
-Avvio: `medea-bridge --config config/bridge.yaml`. Il file `bridge.yaml` contiene indirizzo del
-broker, topic e campi dei messaggi: per collegarsi a un altro rover si modifica solo quello. Il formato
-proposto per i messaggi è in `src/medea_bridge/PROTOCOLLO.md`.
+Collegamento: sulla Jetson il bridge ascolta su UDP 14550. Sul laptop si crea una volta un collegamento
+*Impostazioni → Collegamenti → Aggiungi → UDP* verso `<IP della Jetson>:14550`, con *Collega automaticamente*.
+Configurazione del bridge: `src/medea_bridge/config/bridge.yaml` (dettagli nel `README.md` del bridge).
 
 Cosa si vede in QGroundControl:
 
-- se la telemetria del rover si interrompe per più di 3 s, il rover risulta *Non collegato*;
+- se il bridge non risponde per più di qualche secondo, il rover risulta *Non collegato*; se il bridge c'è ma il
+  software del rover non è ancora partito, *Avvio in corso*;
 - lo stato del rover (la modalità MAVLink) ha nomi italiani: *Pronto*, *Al lavoro*, *In pausa*,
   *Rientro*, *Guida manuale*, *Arresto di emergenza*, *Avvio in corso*, *Guasto*;
-- se il rover rifiuta un comando, il motivo compare in un riquadro giallo in alto (il bridge lo invia
-  come messaggio di errore del veicolo). Se non risponde in tempo il messaggio è *il rover non ha
-  risposto*.
+- se il rover rifiuta un comando, il motivo compare in un riquadro giallo in alto. Gli avvisi accaduti mentre
+  QGroundControl era scollegato arrivano alla riconnessione, con l'ora ("Alle 13:21:02: …");
+- l'invio dell'heartbeat di QGroundControl (*Impostazioni → Telemetria*) non si può spegnere: senza heartbeat il rover
+  si fermerebbe.
+
+### Guida manuale con il joystick
+
+Un controller PS4 o PS5 collegato al laptop (USB o Bluetooth) compare nella barra in alto (icona del joystick,
+verde mentre guida il rover). Nella schermata Guida compare il pannello **Guida con il joystick**: dopo la conferma il
+lavoro va in pausa e il rover si guida tenendo premuti **L1 e R1** (stick destro avanti/indietro, stick sinistro
+sterzo); **Termina guida manuale** spegne i motori, poi *Riprendi* continua il lavoro dalla nuova posizione. Fuori
+dalla guida manuale il joystick non comanda nulla. Se il rover va o sterza al contrario: `manual.invert_forward` /
+`manual.invert_steering` in `config/bridge.yaml` del bridge; i numeri dei pulsanti si vedono in *Configura →
+Joystick* (modalità tecnico).
 
 ### Pulsanti, stato e avanzamento del rover
 
@@ -317,32 +326,16 @@ solo estetico.
 
 ## Prove senza rover
 
-> **In transizione.** Con il bridge ROS 2 il rover finto e Kafka spariscono: le prove senza rover si faranno con il
-> simulatore del codice del rover (`rover_simulator` di `rovercrea-dua`, avviato da `bin/rover_sim.sh` del
-> repository `medea_hmi`), vedi `docs/integrazione-ros2.md` §10. Qui sotto la procedura attuale, con Kafka.
-
-Con il **rover finto** del bridge si prova tutta la catena: Kafka, bridge, QGroundControl, lavori e
-comandi. Il rover finto esegue davvero i lavori caricati, a 2,8 km/h come il rover vero (`--speed`
-in m/s per cambiare, per esempio `--speed 4` per prove veloci), e finito il lavoro torna alla partenza.
-All'accensione resta 8 s in *Avvio in corso* (`--startup-s`). Per provare gli avvisi:
+Il repository `medea_hmi` ha un **simulatore del rover** che usa il codice vero di rovercrea-dua (`rover_simulator` al
+posto dei motori e dei GPS, `path_planner` e `rover_ctrl` veri), con il punto di partenza del campo CREA:
 
 ```bash
-kill -USR1 $(pgrep -f "[m]edea-fake-rover")   # preme o sblocca il fungo di emergenza
-kill -USR2 $(pgrep -f "[m]edea-fake-rover")   # inizia o risolve un guasto (il GPS non risponde)
+bin/medea.sh        # simulatore + bridge + watchdog + QGroundControl sullo stesso PC; chiudendo QGC si ferma tutto
 ```
 
-Avvio (dettagli nel `README.md` di `src/medea_bridge`):
-
-```bash
-cd ~/workspace/src/medea_bridge
-./kafka/run_local.sh &                     # oppure: docker compose -f kafka/docker-compose.yaml up -d
-env -u PYTHONPATH .venv/bin/medea-fake-rover &
-env -u PYTHONPATH .venv/bin/medea-bridge --config config/bridge.yaml
-```
-
-Nel container DUA `env -u PYTHONPATH` evita che i pacchetti Python di ROS si mescolino a quelli del
-bridge. Il rover compare vicino a Monterotondo (`--lat`, `--lon` per spostarlo). Poi: *Pianifica* →
-lavoro → *Carica sul veicolo* → (la Guida si apre da sola) → **Avvia lavoro**.
+Poi: *Pianifica* → lavoro → *Carica sul veicolo* → (la Guida si apre da sola) → **Avvia lavoro**. Nel simulatore
+non ci sono fungo, paraurti né stato delle schede motori; la posizione è esatta (senza EKF finché manca il relativo
+modulo privato). Dettagli e prove automatiche: `docs/integrazione-ros2.md` §10 di `medea_hmi`.
 
 Nelle build di sviluppo (Debug) c'è anche il collegamento simulato di QGroundControl (*Impostazioni →
 Collegamento simulato*, *Veicolo APM ArduRover*): finge un rover ArduPilot, non si muove e mostra
