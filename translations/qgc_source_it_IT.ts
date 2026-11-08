@@ -19667,6 +19667,11 @@ Premi &apos;Ok&apos; per caricare comunque il piano.</translation>
       <translation>Guida con il joystick</translation>
     </message>
     <message>
+      <location filename="../src/FlyView/RoverManualDrivePanel.qml" line="122"/>
+      <source>The joystick has to be calibrated once, in Configure → Joystick (technician mode)</source>
+      <translation>Il joystick va calibrato una volta, in Configura → Joystick (modalità tecnico)</translation>
+    </message>
+    <message>
       <location filename="../src/FlyView/RoverManualDrivePanel.qml" line="53"/>
       <source>The job in progress is paused and the rover is driven with the joystick, holding L1 and R1. Make sure nobody is near the rover.</source>
       <translation>Il lavoro in corso viene messo in pausa e il rover si guida con il joystick, tenendo premuti L1 e R1. Assicurati che nessuno sia vicino al rover.</translation>

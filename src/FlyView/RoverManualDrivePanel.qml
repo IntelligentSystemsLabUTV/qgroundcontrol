@@ -24,6 +24,8 @@ Rectangle {
     property var    _activeVehicle:     QGroundControl.multiVehicleManager.activeVehicle
     property var    _joystick:          joystickManager.activeJoystick
     property bool   _gamepad:           _joystick !== null && _joystick !== undefined
+    // QGroundControl sends nothing from a joystick that was never calibrated, gamepads included
+    property bool   _calibrated:        _gamepad && _joystick.settings.calibrated.rawValue
     property int    _state:             _jobStatus.state
     property bool   _manual:            _state === MedeaRoverJobStatus.Manual
     property bool   _canEnter:          _state === MedeaRoverJobStatus.Ready || _state === MedeaRoverJobStatus.Working
@@ -109,7 +111,17 @@ Rectangle {
             Layout.preferredHeight: control._buttonHeight
             text:                   qsTr("Drive with the joystick")
             visible:                !control._manual
+            enabled:                control._calibrated
             onClicked:              control._enter()
+        }
+
+        QGCLabel {
+            Layout.alignment:       Qt.AlignHCenter
+            Layout.maximumWidth:    ScreenTools.defaultFontPixelWidth * 40
+            horizontalAlignment:    Text.AlignHCenter
+            wrapMode:               Text.WordWrap
+            text:                   qsTr("The joystick has to be calibrated once, in Configure → Joystick (technician mode)")
+            visible:                !control._manual && !control._calibrated
         }
 
         QGCLabel {
