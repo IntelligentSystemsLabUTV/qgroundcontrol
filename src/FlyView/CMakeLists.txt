@@ -66,6 +66,7 @@ qt_add_qml_module(FlyViewModule
         RoverChecklist.qml
         RoverJobControls.qml
         RoverJobPanel.qml
+        RoverManualDrivePanel.qml
         RoverStatusBanner.qml
         SubChecklist.qml
         TelemetryValuesBar.qml

@@ -19612,6 +19612,92 @@ Premi &apos;Ok&apos; per caricare comunque il piano.</translation>
     </message>
   </context>
   <context>
+    <name>RoverJoystickIndicator</name>
+    <message>
+      <location filename="../src/Toolbar/RoverJoystickIndicator.qml" line="28"/>
+      <source>Joystick</source>
+      <translation>Joystick</translation>
+    </message>
+    <message>
+      <location filename="../src/Toolbar/RoverJoystickIndicator.qml" line="34"/>
+      <source>Type:</source>
+      <translation>Tipo:</translation>
+    </message>
+    <message>
+      <location filename="../src/Toolbar/RoverJoystickIndicator.qml" line="36"/>
+      <source>Gamepad</source>
+      <translation>Gamepad</translation>
+    </message>
+    <message>
+      <location filename="../src/Toolbar/RoverJoystickIndicator.qml" line="39"/>
+      <source>Drives the rover:</source>
+      <translation>Guida il rover:</translation>
+    </message>
+    <message>
+      <location filename="../src/Toolbar/RoverJoystickIndicator.qml" line="41"/>
+      <source>Yes (manual driving)</source>
+      <translation>Sì (guida manuale)</translation>
+    </message>
+    <message>
+      <location filename="../src/Toolbar/RoverJoystickIndicator.qml" line="41"/>
+      <source>No</source>
+      <translation>No</translation>
+    </message>
+    <message>
+      <location filename="../src/Toolbar/RoverJoystickIndicator.qml" line="46"/>
+      <source>Battery:</source>
+      <translation>Batteria:</translation>
+    </message>
+    <message>
+      <location filename="../src/Toolbar/RoverJoystickIndicator.qml" line="50"/>
+      <source>%1%</source>
+      <translation>%1%</translation>
+    </message>
+    <message>
+      <location filename="../src/Toolbar/RoverJoystickIndicator.qml" line="59"/>
+      <source>This controller is not recognized as a gamepad: use a PS4 or PS5 controller.</source>
+      <translation>Questo controller non è riconosciuto come gamepad: usa un controller PS4 o PS5.</translation>
+    </message>
+  </context>
+  <context>
+    <name>RoverManualDrivePanel</name>
+    <message>
+      <location filename="../src/FlyView/RoverManualDrivePanel.qml" line="52"/>
+      <source>Drive with the joystick</source>
+      <translation>Guida con il joystick</translation>
+    </message>
+    <message>
+      <location filename="../src/FlyView/RoverManualDrivePanel.qml" line="53"/>
+      <source>The job in progress is paused and the rover is driven with the joystick, holding L1 and R1. Make sure nobody is near the rover.</source>
+      <translation>Il lavoro in corso viene messo in pausa e il rover si guida con il joystick, tenendo premuti L1 e R1. Assicurati che nessuno sia vicino al rover.</translation>
+    </message>
+    <message>
+      <location filename="../src/FlyView/RoverManualDrivePanel.qml" line="117"/>
+      <source>MANUAL DRIVING</source>
+      <translation>GUIDA MANUALE</translation>
+    </message>
+    <message>
+      <location filename="../src/FlyView/RoverManualDrivePanel.qml" line="128"/>
+      <source>Hold L1 and R1 to move the rover. Right stick: forward and back. Left stick: steering.</source>
+      <translation>Tieni premuti L1 e R1 per muovere il rover. Stick destro: avanti e indietro. Stick sinistro: sterzo.</translation>
+    </message>
+    <message>
+      <location filename="../src/FlyView/RoverManualDrivePanel.qml" line="135"/>
+      <source>Speed</source>
+      <translation>Velocità</translation>
+    </message>
+    <message>
+      <location filename="../src/FlyView/RoverManualDrivePanel.qml" line="142"/>
+      <source>Steering</source>
+      <translation>Sterzo</translation>
+    </message>
+    <message>
+      <location filename="../src/FlyView/RoverManualDrivePanel.qml" line="150"/>
+      <source>End manual driving</source>
+      <translation>Termina guida manuale</translation>
+    </message>
+  </context>
+  <context>
     <name>RoverJobPanel</name>
     <message>
       <location filename="../src/FlyView/RoverJobPanel.qml" line="45"/>

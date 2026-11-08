@@ -151,11 +151,12 @@ void MedeaRoverFirmwarePlugin::guidedModeChangeAltitude(Vehicle* vehicle, double
 
 const QVariantList& MedeaRoverFirmwarePlugin::toolIndicators(const Vehicle* /*vehicle*/)
 {
-    // Only what the operator of the rover needs: position quality (RTK) and batteries
+    // Only what the operator of the rover needs: position quality (RTK) and the gamepad for manual driving.
+    // No battery: no board on the rover measures it
     if (_toolIndicatorList.isEmpty()) {
         _toolIndicatorList = QVariantList({
             QVariant::fromValue(QUrl::fromUserInput("qrc:/qml/QGroundControl/Toolbar/RoverPositionIndicator.qml")),
-            QVariant::fromValue(QUrl::fromUserInput("qrc:/qml/QGroundControl/Toolbar/BatteryIndicator.qml")),
+            QVariant::fromValue(QUrl::fromUserInput("qrc:/qml/QGroundControl/Toolbar/RoverJoystickIndicator.qml")),
         });
     }
 

@@ -97,7 +97,10 @@ void MedeaRoverFirmwarePluginTest::_testCapabilities()
     QVERIFY(!plugin.isCapable(nullptr, FirmwarePlugin::TakeoffVehicleCapability));
     QVERIFY(!plugin.isCapable(nullptr, FirmwarePlugin::OrbitModeCapability));
     QVERIFY(plugin.MAV_CMD_DO_SET_MODE_is_supported());
-    QCOMPARE(plugin.toolIndicators(nullptr).count(), 2);
+    // Position (RTK) and gamepad; no battery, the rover does not measure it
+    const QVariantList indicators = plugin.toolIndicators(nullptr);
+    QCOMPARE(indicators.count(), 2);
+    QVERIFY(indicators.at(1).toUrl().toString().endsWith(QStringLiteral("RoverJoystickIndicator.qml")));
 }
 
 UT_REGISTER_TEST(MedeaRoverFirmwarePluginTest, TestLabel::Unit)
