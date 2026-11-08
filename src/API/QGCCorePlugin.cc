@@ -11,6 +11,8 @@
 #include "HorizontalFactValueGrid.h"
 #include "InstrumentValueData.h"
 #include "JoystickManager.h"
+#include "JoystickManagerSettings.h"
+#include "MavlinkSettings.h"
 #include "QGCLoggingCategory.h"
 #include "QGCOptions.h"
 #include "QmlComponentInfo.h"
@@ -168,6 +170,20 @@ void QGCCorePlugin::adjustSettingMetaData(const QString &settingsGroup, FactMeta
 #endif
             return;
         }
+    }
+
+    // The MEDEA rover stops when QGroundControl stops sending its heartbeat (medea_bridge, path_planner,
+    // medea_watchdog): the heartbeat must never be switched off. Hiding the setting forces its default (on)
+    if ((settingsGroup == MavlinkSettings::settingsGroup) && (metaData.name() == MavlinkSettings::sendGCSHeartbeatName)) {
+        userVisible = false;
+        return;
+    }
+
+    // No joystick is enabled at start: it drives the MEDEA rover only after the operator enters manual driving
+    // (RoverManualDrivePanel), so touching the controller at any other time does nothing
+    if ((settingsGroup == JoystickManagerSettings::settingsGroup) && (metaData.name() == JoystickManagerSettings::joystickEnabledVehiclesIdsName)) {
+        userVisible = false;
+        return;
     }
 
     // The video stream is always on (see VideoSettings): hiding the enable flags forces them to their defaults,
