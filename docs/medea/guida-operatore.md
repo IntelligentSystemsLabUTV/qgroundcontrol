@@ -229,7 +229,7 @@ segnato con un punto interrogativo rosso. Di solito manca da disegnare il percor
      perde: resta sospeso (*In pausa*);
    - **Torna alla base** (chiede conferma): il rover interrompe il lavoro, torna al punto di partenza
      (*Rientro*) e si ferma. Il punto di partenza è dove il rover si trovava all'avvio del lavoro: prima del
-     primo lavoro il pulsante non c'è.
+     primo lavoro, e quando il rover è già lì, il pulsante non c'è.
 4. Quando il rover è *In pausa* i pulsanti sono:
    - **Riprendi**: il rover riparte da dove si era fermato;
    - **Torna alla base**: come sopra;
@@ -246,14 +246,15 @@ mai perdere il lavoro. **Non è l'arresto di emergenza**: in caso di pericolo pr
 
 ### Guida manuale con il joystick
 
-Se al computer è collegato un controller PS4 o PS5, in alto compare l'icona del joystick e in basso a destra il
-pulsante **Guida con il joystick**.
+Se al computer è collegato un controller PS4 o PS5, in alto compare l'icona del joystick e in basso a destra, sopra
+la bussola, il pulsante **Guida con il joystick**.
 
 1. Premi **Guida con il joystick** e conferma: il lavoro in corso va in pausa e lo stato diventa *Guida manuale*.
 2. Tieni premuti **L1 e R1** (i due tasti dietro, in alto): stick destro avanti/indietro, stick sinistro per sterzare.
    Se lasci L1 o R1 il rover si ferma.
 3. Premi **Termina guida manuale**: il rover si ferma e spegne i motori. Con **Riprendi** il lavoro continua da dove
-   si trova il rover.
+   si trova il rover: i punti che hai già passato guidando a mano non vengono rifatti. Se a mano hai portato il
+   rover alla fine del lavoro (o alla base durante un rientro), il lavoro è concluso e il rover resta fermo.
 
 Fuori dalla guida manuale toccare il controller non fa nulla.
 

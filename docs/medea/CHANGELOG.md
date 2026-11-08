@@ -40,6 +40,17 @@ Guide d'uso: [guida per l'operatore](guida-operatore.md), [guida per il tecnico]
   non manda `MANUAL_CONTROL` da un joystick mai calibrato, nemmeno da un gamepad che la pagina dà per "Pronto".
 - *Torna alla base* compare solo quando il rover ha un punto di partenza (`Vehicle.homePosition` valida: il bridge
   manda `HOME_POSITION` dall'avvio del primo lavoro); prima il bridge lo rifiutava con un messaggio.
+- Dopo la prima prova con PS4 e PS5 veri:
+  - il "modo radiocomando" di ogni joystick (`JoystickSettingsV2/<nome>/transmitterMode`) è nascosto, quindi sempre 2
+    (`QGCCorePlugin::adjustSettingMetaData`): il PS5 era stato calibrato in modo 1 e guidava avanti e sterzo con lo
+    stesso stick;
+  - crash di QGroundControl staccando il controller con la pagina *Configura → Joystick* aperta
+    (`JoystickConfigController` teneva il puntatore al joystick cancellato da `JoystickManager`): ora si azzera con
+    `QObject::destroyed`;
+  - pannello *Guida con il joystick* sopra la bussola (prima la copriva);
+  - *Torna alla base* nascosto anche quando il rover è già entro 2 m dalla base (come il bridge, `job.at_home_m`);
+  - icona del rover sulla mappa in scala (1,5 m, misurata sulla mappa con `fromCoordinate`), mai più piccola di una
+    freccia leggibile né più grande di un quarto della mappa; prima restava grande a ogni zoom e copriva le file.
 - Traduzioni italiane; `MedeaRoverFirmwarePluginTest` controlla i nuovi indicatori.
 
 **Perché.**

@@ -147,7 +147,11 @@ Joystick* (modalità tecnico).
 
 Ogni controller nuovo va **calibrato una volta** in *Configura → Joystick* (modalità tecnico, rover collegato): anche
 se la pagina dice "Pronto", QGroundControl non manda nulla da un joystick mai calibrato. Finché non lo è, il pannello
-mostra l'avviso e *Guida con il joystick* resta disattivato. La calibrazione si salva per quel modello di controller;
+mostra l'avviso e *Guida con il joystick* resta disattivato. Il "modo radiocomando" è sempre 2 (impostazione nascosta,
+torna a 2 a ogni avvio): con qualunque controller stick destro avanti/indietro, sinistro sterzo. Il bridge ignora il
+10% centrale della corsa degli stick (`manual.deadzone`), perché a stick lasciato i gamepad non tornano esattamente
+a zero. Se si stacca il controller con la pagina di calibrazione aperta QGroundControl non si chiude più (prima
+andava in crash). La calibrazione si salva per quel modello di controller;
 alla fine QGroundControl propone di abilitarlo: non serve (lo abilita il pannello solo durante la guida manuale).
 
 **Prova di un controller** (PC, repository `medea_hmi`, simulatore):
@@ -158,7 +162,8 @@ alla fine QGroundControl propone di abilitarlo: non serve (lo abilita il pannell
    dice cosa il bridge manda al rover ("avanti 0.40 m/s, sterzo a sinistra 12°") e cosa fa il rover simulato; tutto
    viene registrato anche in `logs/bridge_sim/drive/<data>.csv`.
 3. Modalità tecnico → *Configura → Joystick*: muovere gli stick e premere L1 e R1, controllare che si muovano gli
-   indicatori giusti; poi *Calibra* e seguire il wizard (modo 2: stick sinistro gas/imbardata, destro beccheggio/rollio).
+   indicatori giusti; poi *Calibra* e seguire il wizard lasciando il modo 2 (stick sinistro gas/imbardata, destro
+   beccheggio/rollio).
 4. Schermata Guida, **senza** entrare in guida manuale: muovere il controller → il monitor dice "nessun comando dal
    joystick" e il rover resta fermo.
 5. *Guida con il joystick* → Sì. Senza L1+R1: "fermo". Con L1+R1 tenuti:
@@ -183,7 +188,7 @@ schermata Guida ha allora solo i pulsanti grandi in basso, mostrati secondo lo s
 | Avvia lavoro (con conferma) | *Pronto*, attivo se c'è un lavoro caricato | `MAV_CMD_MISSION_START` | `start_mission` |
 | **FERMA** | *Al lavoro*, *Rientro* | `MAV_CMD_DO_PAUSE_CONTINUE` (0) | `pause` (si ferma, motori spenti, lavoro sospeso) |
 | Riprendi | *In pausa* | `MAV_CMD_DO_PAUSE_CONTINUE` (1) | `resume` |
-| Torna alla base (con conferma) | *Pronto*, *Al lavoro*, *In pausa*, solo con un punto di partenza (`HOME_POSITION`) | `MAV_CMD_NAV_RETURN_TO_LAUNCH` | `return_home` |
+| Torna alla base (con conferma) | *Pronto*, *Al lavoro*, *In pausa*, solo con un punto di partenza (`HOME_POSITION`) e a più di 2 m da lì | `MAV_CMD_NAV_RETURN_TO_LAUNCH` | `return_home` |
 | Termina lavoro (con conferma) | *In pausa* | `MAV_CMD_COMPONENT_ARM_DISARM` (0) | `stop` (chiude il lavoro) |
 
 - *FERMA* è l'unico stop della dashboard e non fa perdere il lavoro; *Termina lavoro* è lo STOP delle
