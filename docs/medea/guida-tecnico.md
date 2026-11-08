@@ -145,6 +145,33 @@ dalla guida manuale il joystick non comanda nulla. Se il rover va o sterza al co
 `manual.invert_steering` in `config/bridge.yaml` del bridge; i numeri dei pulsanti si vedono in *Configura →
 Joystick* (modalità tecnico).
 
+Ogni controller nuovo va **calibrato una volta** in *Configura → Joystick* (modalità tecnico, rover collegato): anche
+se la pagina dice "Pronto", QGroundControl non manda nulla da un joystick mai calibrato. Finché non lo è, il pannello
+mostra l'avviso e *Guida con il joystick* resta disattivato. La calibrazione si salva per quel modello di controller;
+alla fine QGroundControl propone di abilitarlo: non serve (lo abilita il pannello solo durante la guida manuale).
+
+**Prova di un controller** (PC, repository `medea_hmi`, simulatore):
+
+1. Collegare il controller (USB, oppure Bluetooth: PS4 *share* + *PS*, PS5 *create* + *PS* tenuti premuti finché la
+   luce lampeggia). Deve comparire l'icona del joystick nella barra in alto.
+2. `bin/medea.sh` (simulatore + bridge + QGroundControl); in un altro terminale `bin/bridge_sim.sh drive`: una riga
+   dice cosa il bridge manda al rover ("avanti 0.40 m/s, sterzo a sinistra 12°") e cosa fa il rover simulato; tutto
+   viene registrato anche in `logs/bridge_sim/drive/<data>.csv`.
+3. Modalità tecnico → *Configura → Joystick*: muovere gli stick e premere L1 e R1, controllare che si muovano gli
+   indicatori giusti; poi *Calibra* e seguire il wizard (modo 2: stick sinistro gas/imbardata, destro beccheggio/rollio).
+4. Schermata Guida, **senza** entrare in guida manuale: muovere il controller → il monitor dice "nessun comando dal
+   joystick" e il rover resta fermo.
+5. *Guida con il joystick* → Sì. Senza L1+R1: "fermo". Con L1+R1 tenuti:
+   - stick destro **avanti** → "avanti", il rover sulla mappa va nella direzione della freccia;
+   - stick sinistro **a sinistra** → "sterzo a sinistra", il rover gira a sinistra (rotazione positiva).
+
+   Se uno dei due è al contrario: `manual.invert_forward` / `manual.invert_steering: true` in
+   `src/medea_bridge/config/bridge_sim.yaml` **e** in `bridge.yaml` (il rover vero), poi `bin/bridge_sim.sh build`,
+   `stop` e `start` (il YAML viene copiato in compilazione).
+6. Lasciare L1 o R1 durante la marcia → il rover si ferma subito. Spegnere il controller (tenere *PS* 10 s) durante la
+   guida → QGroundControl esce dalla guida manuale e il rover si disarma.
+7. *Termina guida manuale* → il rover si disarma; muovere il controller → nessun comando.
+
 ### Pulsanti, stato e avanzamento del rover
 
 Un rover MAVLink con autopilota generico (`MAV_AUTOPILOT_GENERIC`), come quello presentato dal bridge,
@@ -156,7 +183,7 @@ schermata Guida ha allora solo i pulsanti grandi in basso, mostrati secondo lo s
 | Avvia lavoro (con conferma) | *Pronto*, attivo se c'è un lavoro caricato | `MAV_CMD_MISSION_START` | `start_mission` |
 | **FERMA** | *Al lavoro*, *Rientro* | `MAV_CMD_DO_PAUSE_CONTINUE` (0) | `pause` (si ferma, motori spenti, lavoro sospeso) |
 | Riprendi | *In pausa* | `MAV_CMD_DO_PAUSE_CONTINUE` (1) | `resume` |
-| Torna alla base (con conferma) | *Pronto*, *Al lavoro*, *In pausa* | `MAV_CMD_NAV_RETURN_TO_LAUNCH` | `return_home` |
+| Torna alla base (con conferma) | *Pronto*, *Al lavoro*, *In pausa*, solo con un punto di partenza (`HOME_POSITION`) | `MAV_CMD_NAV_RETURN_TO_LAUNCH` | `return_home` |
 | Termina lavoro (con conferma) | *In pausa* | `MAV_CMD_COMPONENT_ARM_DISARM` (0) | `stop` (chiude il lavoro) |
 
 - *FERMA* è l'unico stop della dashboard e non fa perdere il lavoro; *Termina lavoro* è lo STOP delle

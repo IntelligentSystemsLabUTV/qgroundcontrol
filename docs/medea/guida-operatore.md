@@ -228,7 +228,8 @@ segnato con un punto interrogativo rosso. Di solito manca da disegnare il percor
    - **FERMA** (rosso, il più grande): il rover si ferma subito e spegne i motori. Il lavoro **non** si
      perde: resta sospeso (*In pausa*);
    - **Torna alla base** (chiede conferma): il rover interrompe il lavoro, torna al punto di partenza
-     (*Rientro*) e si ferma.
+     (*Rientro*) e si ferma. Il punto di partenza è dove il rover si trovava all'avvio del lavoro: prima del
+     primo lavoro il pulsante non c'è.
 4. Quando il rover è *In pausa* i pulsanti sono:
    - **Riprendi**: il rover riparte da dove si era fermato;
    - **Torna alla base**: come sopra;

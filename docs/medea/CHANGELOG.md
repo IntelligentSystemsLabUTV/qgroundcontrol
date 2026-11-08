@@ -36,6 +36,10 @@ Guide d'uso: [guida per l'operatore](guida-operatore.md), [guida per il tecnico]
 - Schermata Guida: `RoverManualDrivePanel.qml` (in basso a destra), con *Guida con il joystick* (conferma, poi
   modalità 5 del rover), istruzioni L1+R1, barre di velocità e sterzo, *Termina guida manuale*. Il joystick viene
   abilitato per il veicolo solo mentre il rover è in *Guida manuale*.
+- *Guida con il joystick* è disattivato, con un avviso, finché il controller non è stato calibrato: QGroundControl
+  non manda `MANUAL_CONTROL` da un joystick mai calibrato, nemmeno da un gamepad che la pagina dà per "Pronto".
+- *Torna alla base* compare solo quando il rover ha un punto di partenza (`Vehicle.homePosition` valida: il bridge
+  manda `HOME_POSITION` dall'avvio del primo lavoro); prima il bridge lo rifiutava con un messaggio.
 - Traduzioni italiane; `MedeaRoverFirmwarePluginTest` controlla i nuovi indicatori.
 
 **Perché.**
@@ -47,7 +51,8 @@ Guide d'uso: [guida per l'operatore](guida-operatore.md), [guida per il tecnico]
   l'operatore lo ha chiesto esplicitamente, mai per un tocco accidentale.
 
 **Come si prova.** `bin/medea.sh` del repository `medea_hmi` (simulatore del rover + bridge + QGroundControl) e un
-controller PS4/PS5 collegato al PC.
+controller PS4/PS5 collegato al PC; `bin/bridge_sim.sh drive` mostra i comandi che arrivano al rover (procedura nella
+[guida per il tecnico](guida-tecnico.md#guida-manuale-con-il-joystick)).
 
 ---
 
