@@ -4,9 +4,10 @@ Questa guida è per chi installa, configura e mantiene la dashboard del rover ME
 personalizzato). Per l'uso quotidiano vedi la [guida per l'operatore](guida-operatore.md); per
 l'elenco delle modifiche e i motivi vedi il [changelog](CHANGELOG.md).
 
-> **Bozza.** Descrive la versione in sviluppo (ottobre 2026). Il bridge Kafka ↔ MAVLink che collega la
-> dashboard al rover funziona con un rover simulato; i topic del rover reale sono da concordare con il
-> CREA.
+> **Bozza.** Descrive la versione in sviluppo (ottobre 2026). Il collegamento con il rover è in rifacimento
+> (novembre 2026): niente più Kafka, il bridge diventa un nodo ROS 2 che parla con il nuovo codice del rover
+> (`rovercrea-dua`) e gira a bordo, sulla Jetson del rover (deciso l'08/11); vedi `docs/integrazione-ros2.md` del repository
+> `medea_hmi`. Le parti sul bridge qui sotto descrivono ancora la versione di prova con Kafka e un rover simulato.
 
 ## Modalità tecnico (modalità avanzata)
 
@@ -41,8 +42,8 @@ In modalità avanzata tornano:
    italiano. Altrimenti *Impostazioni → Generali → Lingua → Italiano* e riavvia.
 2. **Collegamento con il rover:** il programma ascolta i veicoli MAVLink su UDP (porta 14550) e si
    collega da solo. La connessione automatica a Pixhawk, radio SiK e LibrePilot è disattivata. I dati
-   del rover arrivano dal [bridge Kafka](#collegamento-con-il-rover-bridge-kafka), che gira sullo
-   stesso computer. Collegamenti manuali: *Impostazioni → Collegamenti*.
+   del rover arrivano dal [bridge](#collegamento-con-il-rover-bridge) (oggi la versione di prova con Kafka,
+   sullo stesso computer; con il rover vero gira sulla Jetson del rover e manda MAVLink via WiFi). Collegamenti manuali: *Impostazioni → Collegamenti*.
 3. **Video:** vedi la sezione [Video](#video).
 4. **Schermo:** unità europee (m, km/h, ettari, °C) e scala dell'interfaccia al 115% sono già
    impostate (*Impostazioni → Generali*). Per lavorare al sole scegli *Schema colori → Esterni*
@@ -106,10 +107,12 @@ gst-launch-1.0 videotestsrc is-live=true \
 
 ## Collegamento con il rover (bridge)
 
-> **In transizione (26/10/2026).** La dashboard non passerà più da Kafka: il bridge diventerà un nodo
-> ROS 2 ↔ MAVLink sul computer della dashboard e farà anche la gestione del lavoro (piano in
-> `docs/piano-dashboard.md` del repository `medea_hmi`). Questa sezione descrive la versione attuale,
-> ancora con Kafka; il lato MAVLink, cioè quello che vede QGroundControl, resta lo stesso.
+> **In transizione (aggiornato all'08/11/2026).** La dashboard non passerà più da Kafka: il bridge diventerà un
+> nodo ROS 2 ↔ MAVLink che usa i servizi del nuovo codice del rover (`rovercrea-dua`: `path_planner`,
+> `rover_driver`), fa la gestione del lavoro e ferma il rover se la dashboard si scollega. Gira a bordo, sulla
+> Jetson (deciso l'08/11), e sul laptop resta solo QGroundControl. Specifica in `docs/integrazione-ros2.md` del
+> repository `medea_hmi`. Questa sezione descrive la versione attuale, ancora con Kafka; il lato MAVLink, cioè
+> quello che vede QGroundControl, resta lo stesso. Da riscrivere quando il bridge ROS 2 è pronto.
 
 Il rover pubblica i suoi dati su Kafka; QGroundControl parla solo MAVLink. In mezzo c'è il **bridge**
 (`medea-bridge`), un programma Python del repository `medea_hmi` (cartella `src/medea_bridge`, con
@@ -313,6 +316,10 @@ sia la sorgente sia l'URL del video), nella pagina resta il titolo del gruppo co
 solo estetico.
 
 ## Prove senza rover
+
+> **In transizione.** Con il bridge ROS 2 il rover finto e Kafka spariscono: le prove senza rover si faranno con il
+> simulatore del codice del rover (`rover_simulator` di `rovercrea-dua`, avviato da `bin/rover_sim.sh` del
+> repository `medea_hmi`), vedi `docs/integrazione-ros2.md` §10. Qui sotto la procedura attuale, con Kafka.
 
 Con il **rover finto** del bridge si prova tutta la catena: Kafka, bridge, QGroundControl, lavori e
 comandi. Il rover finto esegue davvero i lavori caricati, a 2,8 km/h come il rover vero (`--speed`
