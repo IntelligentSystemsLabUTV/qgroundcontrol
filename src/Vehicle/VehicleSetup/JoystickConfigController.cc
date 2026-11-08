@@ -60,6 +60,8 @@ void JoystickConfigController::_setJoystick(Joystick* joystick)
     }
 
     _joystick = joystick;
+    // The joystick is deleted when it is unplugged (JoystickManager), possibly while this page is open
+    connect(_joystick, &QObject::destroyed, this, [this]() { _joystick = nullptr; });
     _readStoredCalibrationValues();
     connect(_joystick, &Joystick::rawChannelValuesChanged, this, &JoystickConfigController::_rawChannelValuesChanged);
 
@@ -181,6 +183,9 @@ bool JoystickConfigController::_stickFunctionEnabled(StickFunction stickFunction
 {
     if (RemoteControlCalibrationController::_stickFunctionEnabled(stickFunction)) {
         return true;
+    }
+    if (!_joystick) {
+        return false;
     }
 
     switch (stickFunction) {
