@@ -24,6 +24,16 @@ Guide d'uso: [guida per l'operatore](guida-operatore.md), [guida per il tecnico]
 
 ## 2026-11-11
 
+### Lavoro in campo: comincia e finisce nello stesso punto, ritorno lungo la capezzagna
+
+**Perché.** *Torna alla base* andava dritto dall'uscita dalle file alla base: su terreno che nessuno ha controllato
+(una recinzione, un fosso). Il rover deve tornare solo dove può andare: il lavoro e la strada fatta all'andata.
+
+**Cosa.** Il lavoro comincia e finisce nello stesso punto della capezzagna, sulla linea della prima passata, e finisce
+lungo la capezzagna della partenza oltre la fine di tutte le file (dopo una voltata sulla passata più vicina se l'ultima
+finisce dall'altra parte). Il bridge registra la strada dell'andata e, a lavoro finito o con *Torna alla base*, la
+rifà al contrario, prendendo se serve il tratto in capezzagna come scorciatoia.
+
 ### Lavoro in campo: entrare nelle file dritti e finire fuori dal campo
 
 **Perché.** Nel simulatore *Torna alla base* a fine lavoro faceva un giro sopra le file (il lavoro finiva all'inizio

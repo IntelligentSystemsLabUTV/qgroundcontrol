@@ -320,11 +320,13 @@ a goccia che va circa 5,5 m oltre il punto. Agli angoli il rover passa quindi un
   3 m (*Dritto prima delle file* nelle statistiche) l'editor avvisa senza bloccare: allargare la capezzagna o ridurre
   il raggio. Con un lato del campo obliquo la voltata a U, che attraversa la capezzagna perpendicolare alle file, ha
   meno spazio dove il lato si avvicina.
-- **Fine del lavoro:** in capezzagna dal lato della partenza, rivolto fuori dal campo. Se l'ultima passata finisce da
-  quel lato il rover ne esce e si ferma; altrimenti gira nella capezzagna opposta sulla prima passata (a U, oltre
-  l'estremità più lontana delle file in mezzo), la ripercorre (la scavalca, non ci passa sopra) ed esce. Se non sta nel
-  campo: "Il rientro alla partenza esce dal campo". *Torna alla base* (RTL) parte da lì; durante un lavoro il bridge
-  prima finisce la fila ed esce dal lato della partenza.
+- **Inizio e fine del lavoro: lo stesso punto**, in capezzagna sulla linea della prima passata, così il rover torna alla
+  base per la strada fatta all'andata. Il lavoro finisce lungo la capezzagna della partenza, oltre la fine di tutte le
+  file (1 m oltre la più lunga, poi un quarto di curva, un tratto dritto, un quarto di curva; una S se le passate sono
+  vicine): direttamente dall'ultima passata se finisce da quel lato, altrimenti dopo una voltata nella capezzagna
+  opposta sulla passata più vicina dove una voltata a U ci sta, ripercorsa (la scavalca, non ci passa sopra). Se quel
+  tratto non sta nel campo (a 0,65 m dal bordo) il lavoro comincia poco prima della prima passata e finisce tornando
+  lungo di essa. *Torna alla base* durante il lavoro usa lo stesso tratto in capezzagna come scorciatoia.
 - **Avvisi che bloccano il lavoro:** fascia coltivata larga quanto l'interfila (nessuno spazio per le
   ruote), nessuna fila nel campo, capezzagna troppo larga, voltate fuori dal campo, lato di riferimento
   più corto di 1 m.

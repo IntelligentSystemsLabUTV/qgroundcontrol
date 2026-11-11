@@ -137,7 +137,7 @@ Rectangle {
                 backgroundColor:    control._returnColor
                 visible:            control._hasHome && !control._atHome && (control._ready || control._working || control._paused)
                 onClicked: control._confirm(qsTr("Return to base"),
-                                            qsTr("The rover stops the job and drives back to its starting point: it cannot turn inside a row, so it first finishes the row it is on and leaves the field on the starting side."),
+                                            qsTr("The rover stops the job and drives back to its starting point: it cannot turn inside a row, so it first finishes the row it is on, leaves the field on the starting side and goes back the way it came."),
                                             function() { control._activeVehicle.guidedModeRTL(false) })
             }
 

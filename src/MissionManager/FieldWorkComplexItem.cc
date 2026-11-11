@@ -800,6 +800,81 @@ FieldWorkComplexItem::FieldPlan FieldWorkComplexItem::_computeFieldPlan() const
         return std::make_pair(bulb, turnT);
     };
 
+    // Where the job starts and ends: the same point in the headland on the starting side, on the line of the first
+    // pass, so that the rover goes back to base the way it came, without turning over the crop and without cutting
+    // across ground nobody checked. The job ends along the headland of the starting side, beyond the end of every row,
+    // to that point (a quarter turn, a straight bit, a quarter turn, or an S when the passes are close): straight from
+    // the last pass if it ends on that side, otherwise after a turn in the far headland onto the nearest pass where
+    // a U turn fits, driven back. The rover can also take that way along the headland to go back to base in the
+    // middle of the job.
+    const DrivenPass& firstPass = driven.first();
+    const DrivenPass& lastPass = driven.last();
+    const double out = -firstPass.direction;  // from the rows into the headland where the job started
+    double exitS = lastPass.s;                // the pass the rover leaves the rows from, on the starting side
+    if (lastPass.direction != out) {
+        exitS = firstPass.s;
+        double best = std::numeric_limits<double>::max();
+        for (const Row& pass : passes) {
+            const double gap = std::abs(pass.s - lastPass.s);
+            if (((pass.s - firstPass.s) * (pass.s - lastPass.s) <= kTolerance) && (gap >= (2 * radius) - kTolerance) &&
+                (gap < best)) {
+                best = gap;
+                exitS = pass.s;
+            }
+        }
+    }
+    QList<PathPoint> lane;  // from the end of the exit pass on the starting side to where the job started
+    QPointF startPoint;
+    bool startFound = false;
+    if (std::abs(exitS - firstPass.s) > kTolerance) {
+        const double sidewaysSign = (firstPass.s > exitS) ? 1.0 : -1.0;
+        const QPointF forward = out * axes.along;
+        const QPointF sideways = sidewaysSign * axes.across;
+        const double lateral = std::abs(firstPass.s - exitS);
+        const double rowsEnd = farthestEnd(exitS, firstPass.s, out);
+        for (const double clear : {1.0, 0.5}) {
+            const double arcT = rowsEnd + (out * clear);  // beyond every row end in between
+            const QPointF arcOrigin = axes.point(arcT, exitS);
+            QList<PathPoint> candidate{{arcOrigin, forward}};
+            QList<PathPoint> local;  // x out of the field from arcOrigin, y towards the first pass
+            if (lateral >= (2 * radius) - kTolerance) {
+                appendArc(local, QPointF(0, radius), radius, -kPi / 2, 0);
+                if (lateral - (2 * radius) > kTolerance) {
+                    local.append({QPointF(radius, lateral - radius), QPointF(0, 1)});
+                }
+                appendArc(local, QPointF(2 * radius, lateral - radius), radius, kPi, kPi / 2);
+            } else {
+                const double angle = std::acos(1 - (lateral / (2 * radius)));
+                appendArc(local, QPointF(0, radius), radius, -kPi / 2, -kPi / 2 + angle);
+                appendArc(local, QPointF(2 * radius * std::sin(angle), lateral - radius), radius, (kPi / 2) + angle,
+                          kPi / 2);
+            }
+            for (const PathPoint& point : local) {
+                candidate.append({arcOrigin + (point.point.x() * forward) + (point.point.y() * sideways),
+                                  (point.direction.x() * forward) + (point.direction.y() * sideways)});
+            }
+            if (allInside(candidate, kEdgeMargin)) {
+                lane = candidate;
+                startPoint = lane.last().point;
+                startFound = true;
+                break;
+            }
+        }
+    }
+    if (!startFound) {
+        // No room along the headland (or the exit pass is the first one): the job starts in the headland straight
+        // before the first pass and comes back along the first pass
+        exitS = firstPass.s;
+        startPoint = axes.point(firstPass.start, firstPass.s);
+        for (const double run : kRunIns) {
+            const QPointF runIn = axes.point(firstPass.start + (out * run), firstPass.s);
+            if ((run > 0) && insideWithMargin(runIn, polygon, kEdgeMargin)) {
+                startPoint = runIn;
+                break;
+            }
+        }
+    }
+
     // Path: each pass, then the turn to the next one. Every point has the direction of the path through it, exact
     // also in the turns: the rover planner needs it to follow the turns as drawn.
     QList<PathPoint> path;
@@ -807,13 +882,8 @@ FieldWorkComplexItem::FieldPlan FieldWorkComplexItem::_computeFieldPlan() const
         const DrivenPass& pass = driven[i];
         const QPointF forward = pass.direction * axes.along;
         if (i == 0) {
-            // The job starts in the headland: the rover enters the first row already straight
-            for (const double run : kRunIns) {
-                const QPointF runIn = axes.point(pass.start - (pass.direction * run), pass.s);
-                if ((run > 0) && insideWithMargin(runIn, polygon, kEdgeMargin)) {
-                    path.append({runIn, forward});
-                    break;
-                }
+            if (length(startPoint - axes.point(pass.start, pass.s)) > kTolerance) {
+                path.append({startPoint, forward});
             }
             path.append({axes.point(pass.start, pass.s), forward});
         }
@@ -834,36 +904,38 @@ FieldWorkComplexItem::FieldPlan FieldWorkComplexItem::_computeFieldPlan() const
         }
     }
 
-    // The end: in the headland on the side where the job started, heading out of the field, so that the rover can go
-    // back to base without turning over the crop. If the last pass ends on that side the rover just drives out of it;
-    // otherwise it turns in the far headland onto the first pass (the rover straddles its rows, it does not drive over
-    // them) and drives it back and out.
-    const DrivenPass& firstPass = driven.first();
-    const DrivenPass& lastPass = driven.last();
-    const double out = -firstPass.direction;  // from the rows into the headland where the job started
     QList<PathPoint> back;
-    double exitS = lastPass.s;
-    if (lastPass.direction != out) {
+    if ((lastPass.direction == out) && (std::abs(exitS - lastPass.s) <= kTolerance)) {
+        back = lane;  // out of the last pass and along the headland
+    } else if ((lastPass.direction == out) && !startFound) {
+        // No way along the headland: the job ends just out of the last row, heading out of the field
+        const double rowsEnd = farthestEnd(lastPass.s, lastPass.s, out);
+        for (const double run : kRunIns) {
+            const QPointF exit = axes.point(rowsEnd + (out * run), lastPass.s);
+            if ((run == 0.0) || insideWithMargin(exit, polygon, kEdgeMargin)) {
+                if (length(exit - path.last().point) > kTolerance) {
+                    back.append({exit, out * axes.along});
+                }
+                break;
+            }
+        }
+    } else {
+        // A turn in the far headland onto the exit pass, driven back towards the starting side
         QString backProblem;
         const double backT =
-            headlandTurn(lastPass.end, lastPass.s, lastPass.direction, firstPass.s, back, backProblem).second;
-        plan.shortestRunIn = std::min(plan.shortestRunIn, std::abs(backT - firstPass.end));
+            headlandTurn(lastPass.end, lastPass.s, lastPass.direction, exitS, back, backProblem).second;
         if (!backProblem.isEmpty()) {
             plan.problem =
                 tr("The way back to the start leaves the field: the headland must be wider, or the turning radius "
                    "smaller.");
             return plan;
         }
-        exitS = firstPass.s;
-    }
-    const double rowsEnd = farthestEnd(exitS, exitS, out);
-    for (const double run : kRunIns) {
-        const QPointF exit = axes.point(rowsEnd + (out * run), exitS);
-        if ((run == 0.0) || insideWithMargin(exit, polygon, kEdgeMargin)) {
-            if (length(exit - (back.isEmpty() ? path.last().point : back.last().point)) > kTolerance) {
-                back.append({exit, out * axes.along});
-            }
-            break;
+        plan.shortestRunIn =
+            std::min(plan.shortestRunIn, std::abs(backT - farthestEnd(exitS, exitS, lastPass.direction)));
+        if (startFound) {
+            back.append(lane);
+        } else {
+            back.append({startPoint, out * axes.along});
         }
     }
     path.append(back);

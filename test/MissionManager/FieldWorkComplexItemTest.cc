@@ -95,7 +95,10 @@ void FieldWorkComplexItemTest::_testRowsAndBulbTurns()
     const QGeoCoordinate firstRowSouth =
         _polygonVertices[0].atDistanceAndAzimuth(6.0, 0).atDistanceAndAzimuth(1.25, 90);
     const QGeoCoordinate firstRowNorth = firstRowSouth.atDistanceAndAzimuth(_fieldLength - 12.0, 0);
-    QVERIFY(coords[0].distanceTo(firstRowSouth.atDistanceAndAzimuth(4.0, 180)) < 0.1);  // 4 m at most
+    // The job starts (and ends) where the way along the headland back from the last pass gets onto the first one:
+    // 1 m beyond the row ends and two turning radii, 5 m into the 6 m headland
+    QVERIFY(coords[0].distanceTo(firstRowSouth.atDistanceAndAzimuth(5.0, 180)) < 0.1);
+    QVERIFY(coords.last().distanceTo(coords[0]) < 0.1);
     QVERIFY(coords[1].distanceTo(firstRowSouth) < 0.1);
     QVERIFY(coords[2].distanceTo(firstRowNorth) < 0.1);
 
@@ -321,9 +324,10 @@ void FieldWorkComplexItemTest::_testSkipRowsTurns()
 
 void FieldWorkComplexItemTest::_testReturnAlongHeadland()
 {
-    // The job ends in the south headland (where it started), heading out of the field (south), so that the rover can
-    // go back to base without turning over the crop. Even number of passes: the last one ends there and the rover just
-    // drives out of it. Odd number: it turns in the north headland onto the first pass and drives it back and out.
+    // The job ends in the south headland where it started, heading out of the field (south), so that the rover goes
+    // back to base the way it came. Even number of passes: the last one ends there and the rover goes along the
+    // headland, beyond the row ends, to the first pass. Odd number: it turns in the north headland onto the first
+    // pass and drives it back.
     // After the last pass every point is in a headland or on the first pass, never between the rows.
     _fieldItem->turnPattern()->setRawValue(FieldWorkComplexItem::BulbTurns);  // passes in order
     const QGeoCoordinate rowsSouth = _polygonVertices[0].atDistanceAndAzimuth(6.0, 0);
@@ -346,8 +350,8 @@ void FieldWorkComplexItemTest::_testReturnAlongHeadland()
         QVERIFY2((end.y() < -1.0) && (end.y() > -6.0), qPrintable(QString::number(end.y())));  // south headland
         QVERIFY(std::abs(std::remainder(waypoints.last()->param4() - 180.0, 360.0)) < 1e-6);   // heading south
         const double lastPassEast = 1.25 + ((rows - 1) * 2.5);
-        const double exitEast = (rows % 2 == 0) ? lastPassEast : 1.25;
-        QVERIFY2(std::abs(end.x() - exitEast) < 0.1, qPrintable(QString::number(end.x())));
+        QVERIFY2(std::abs(end.x() - 1.25) < 0.1, qPrintable(QString::number(end.x())));        // on the first pass
+        QVERIFY(waypoints.last()->coordinate().distanceTo(waypoints.first()->coordinate()) < 0.1);  // where it began
 
         // From the north end of the last pass on: headlands or the first pass only
         qsizetype lastPassEnd = -1;

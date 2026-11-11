@@ -138,7 +138,8 @@ della barra a sinistra.
    lunghezza del percorso e il **tempo stimato**.
 
 Finito il lavoro il rover torna dal lato della partenza **lungo la capezzagna** (e, se serve, lungo la prima
-fila), mai in diagonale sopra la coltura, e si ferma in capezzagna rivolto fuori dal campo. Prima e dopo ogni
+fila), mai in diagonale sopra la coltura, e si ferma nel punto della capezzagna dove il lavoro era cominciato,
+rivolto fuori dal campo. Prima e dopo ogni
 voltata percorre qualche metro dritto in capezzagna, per entrare nella fila già dritto.
 
 Se compare un avviso arancione (non rosso) il lavoro si può fare, ma con attenzione: *Dopo alcune voltate il rover ha solo
@@ -232,7 +233,9 @@ segnato con un punto interrogativo rosso. Di solito manca da disegnare il percor
      (*Rientro*) e si ferma. Il punto di partenza è dove il rover si trovava all'avvio del lavoro: prima del
      primo lavoro, e quando il rover è già lì, il pulsante non c'è. **Il rover non gira dentro le file**: finisce
      la fila che sta facendo e, se quella va verso il fondo del campo, anche la voltata e la fila successiva, finché
-     esce in capezzagna dal lato della partenza; da lì va alla base.
+     esce in capezzagna dal lato della partenza; poi va lungo la capezzagna fino al punto dove il lavoro era
+     cominciato e **torna alla base per la stessa strada fatta all'andata**, senza tagliare dritto su terreno che
+     non conosce (recinzioni, fossi). Se finire il lavoro è più corto, lo finisce.
 4. Quando il rover è *In pausa* i pulsanti sono:
    - **Riprendi**: il rover riparte da dove si era fermato;
    - **Torna alla base**: come sopra;
