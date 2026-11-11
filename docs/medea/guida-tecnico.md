@@ -362,8 +362,11 @@ Il repository `medea_hmi` ha un **simulatore del rover** che usa il codice vero 
 posto dei motori e dei GPS, `path_planner` e `rover_ctrl` veri), con il punto di partenza del campo CREA:
 
 ```bash
-bin/medea.sh        # simulatore + bridge + watchdog + QGroundControl sullo stesso PC; chiudendo QGC si ferma tutto
+bin/medea.sh        # dal PC: simulatore + bridge + watchdog + QGroundControl; chiudendo QGC si ferma tutto
 ```
+
+Va lanciato dal PC, non dal container. QGroundControl gira nel container di sviluppo, che lo script accende se è
+spento. La preparazione è descritta nel README di `medea_hmi`.
 
 Poi: *Pianifica* → lavoro → *Carica sul veicolo* → (la Guida si apre da sola) → **Avvia lavoro**. Nel simulatore
 non ci sono fungo, paraurti né stato delle schede motori; la posizione è esatta (senza EKF finché manca il relativo
