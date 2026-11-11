@@ -253,6 +253,12 @@ non compaiono Decollo e Atterra, con un drone sì.
 | **Lavoro in campo** | Un cambio di velocità (`MAV_CMD_DO_CHANGE_SPEED`), poi i waypoint delle passate lungo le file, con le voltate in capezzagna campionate ogni metro circa. Ogni waypoint ha in `param4` (yaw) la direzione del percorso in quel punto. |
 | **Percorso** | I punti della linea disegnata, in ordine; con *Andata e ritorno* anche il ritorno lungo la stessa linea; il tutto ripetuto *Ripetizioni* volte. |
 | **Perimetro** | Gli angoli dell'area, spostati verso l'interno della *Distanza dal bordo*, fino a richiudere il giro; il tutto ripetuto *Giri* volte. |
+
+Il rover non gira sul posto: con Waypoint, Percorso e Perimetro (punti senza direzione) il bridge sul rover raccorda
+ogni angolo con un arco di 2 m (più stretto se i tratti sono corti, almeno 1,1 m: sotto, il lavoro è rifiutato con il
+numero del punto) e trasforma un'inversione di marcia (oltre 150°, come la fine di *Andata e ritorno*) in una voltata
+a goccia che va circa 5,5 m oltre il punto. Agli angoli il rover passa quindi un po' all'interno della linea disegnata
+(0,6 m a un angolo retto): lasciare spazio oltre la fine di un *Andata e ritorno*.
 | **Nessun modello** | Piano vuoto, i waypoint si aggiungono a mano. |
 
 - I modelli aggiungono alla fine il ritorno alla partenza (RTL). L'altitudine dei punti è quella
