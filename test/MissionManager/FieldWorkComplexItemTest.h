@@ -29,6 +29,7 @@ private slots:
     void _testRowsToWork();
     void _testSkipRowsTurns();
     void _testReturnAlongHeadland();
+    void _testWaypointHeadings();
     void _testSaveLoad();
 
 private:

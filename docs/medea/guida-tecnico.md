@@ -214,7 +214,7 @@ schermata Guida ha allora solo i pulsanti grandi in basso, mostrati secondo lo s
   - l'avanzamento è la distanza percorsa lungo il lavoro caricato sul rover, dalla posizione di partenza
     (*home*) al punto in corso (`MISSION_CURRENT.seq`), sulla lunghezza totale. Il tempo rimanente usa
     la velocità media dell'ultimo minuto (all'inizio la velocità di crociera delle impostazioni,
-    2,8 km/h);
+    1,8 km/h);
   - lo stato del lavoro viene da `MISSION_CURRENT.mission_state`: *Lavoro completato* quando passa da
     attivo/in pausa a COMPLETE; *Lavoro non completato* se durante il lavoro il rover va in *Arresto di
     emergenza* o *Guasto* (con l'ultimo messaggio di errore del rover come motivo);
@@ -250,7 +250,7 @@ non compaiono Decollo e Atterra, con un drone sì.
 
 | Modello | Cosa genera |
 | --- | --- |
-| **Lavoro in campo** | Un cambio di velocità (`MAV_CMD_DO_CHANGE_SPEED`), poi i waypoint delle passate lungo le file, con le voltate in capezzagna campionate ogni metro circa. |
+| **Lavoro in campo** | Un cambio di velocità (`MAV_CMD_DO_CHANGE_SPEED`), poi i waypoint delle passate lungo le file, con le voltate in capezzagna campionate ogni metro circa. Ogni waypoint ha in `param4` (yaw) la direzione del percorso in quel punto. |
 | **Percorso** | I punti della linea disegnata, in ordine; con *Andata e ritorno* anche il ritorno lungo la stessa linea; il tutto ripetuto *Ripetizioni* volte. |
 | **Perimetro** | Gli angoli dell'area, spostati verso l'interno della *Distanza dal bordo*, fino a richiudere il giro; il tutto ripetuto *Giri* volte. |
 | **Nessun modello** | Piano vuoto, i waypoint si aggiungono a mano. |
@@ -261,7 +261,7 @@ non compaiono Decollo e Atterra, con un drone sì.
   per il lavoro successivo.
 - I piani si salvano in file `.plan` (JSON). Un file che contiene Lavoro in campo, Percorso o Perimetro
   si apre solo con questa versione di QGroundControl.
-- La velocità usata per stimare la durata della missione è 2,8 km/h (in modalità avanzata:
+- La velocità usata per stimare la durata della missione è 1,8 km/h (in modalità avanzata:
   *Plan View → Predefiniti*). Il Lavoro in campo usa la propria velocità.
 - I valori mostrati in basso a destra nella Fly View si possono cambiare: tasto destro (o pressione
   prolungata) sulla griglia, poi il lucchetto per chiudere.
@@ -279,20 +279,37 @@ non compaiono Decollo e Atterra, con un drone sì.
   a esse; la *Carreggiata necessaria* è file per passata × interfila. Le passate si alternano di verso.
 - **File da lavorare:** le prime N file dal lato di riferimento (0 = tutte); le statistiche riportano anche
   le file che stanno nel campo.
-- **Voltate:** tra una passata e la successiva, in capezzagna, con il *Raggio di sterzata* minimo:
+- **Raggio di sterzata:** il raggio delle voltate, almeno 1,2 m (di serie 2 m). Il rover non sterza più
+  stretto di circa 1 m (sterzano i due assi fino a 0,5 rad, passo 1,08 m) e il suo planner (`trackify`) unisce i
+  waypoint con archi un po' più stretti delle voltate (0,9 volte): con archi dello stesso raggio aggiunge giri
+  completi. Il bridge rifiuta un lavoro con voltate sotto 1,1 m.
+- **Direzione dei waypoint:** ogni waypoint porta in `param4` la direzione esatta del percorso (gradi bussola),
+  anche dentro le voltate. Il bridge la passa al rover: senza, `trackify` stimava le direzioni dai punti vicini e
+  nelle voltate faceva giri di 360° (lavoro interrotto "fuori traiettoria"). Aprendo un `.plan` salvato con una
+  versione precedente il percorso viene ricalcolato.
+- **Voltate:** tra una passata e la successiva, in capezzagna, con il *Raggio di sterzata*:
   - **a U** (quarto di cerchio, tratto dritto, quarto di cerchio) se le passate distano almeno due
     raggi: occupa un raggio di capezzagna;
   - **a goccia** se sono più vicine: una breve curva verso l'esterno, un ampio giro, una breve curva
     verso la passata successiva. Occupa più capezzagna (circa 4,3 m con raggio 2 m e passate a 2,5 m).
 
-  Con *Voltate: A U saltando file* le passate si fanno in k gruppi intercalati (0, k, 2k... poi 1, k+1...),
-  con k il minimo che porta le passate consecutive ad almeno due raggi: tutte le voltate sono a U, e dal
-  gruppo successivo si riparte attraversando la capezzagna. Se una voltata esce dal campo il lavoro non si
+  Con *Voltate: Automatiche* (o *A U saltando file*, uguale) e passate più vicine di due raggi, le passate si
+  fanno in k gruppi intercalati (0, k, 2k... poi 1, k+1...), con k il minimo che porta le passate consecutive ad
+  almeno due raggi: tutte le voltate sono a U, e dal gruppo successivo si riparte attraversando la capezzagna.
+  Con *A goccia* le passate restano in ordine e tra due passate vicine la voltata è a goccia (solo quando si
+  sceglie, o con due passate). Nel simulatore, a 2,8 km/h, il rover segue le voltate a goccia con fino a
+  0,74 m di scarto (il rover si ferma oltre 1 m): la curva si inverte di colpo.
+- **Velocità di lavoro di serie: 1,8 km/h (0,5 m/s).** Nel simulatore, con voltate di 2 m, lo scarto massimo
+  dalla traiettoria è 0,37 m a 1,8 km/h e 0,84 m a 2,8 km/h (il rover si ferma oltre 1 m). Si può alzare fino
+  a 3 km/h con voltate più larghe (raggio 3 m a 2,8 km/h: 0,54 m), da verificare sul rover vero. Il campo
+  ricorda l'ultima velocità usata: chi aveva già lavorato a 2,8 km/h la ritrova finché non la cambia.
+  Una voltata va sempre oltre l'estremità più lontana delle file che scavalca, mai sopra una fila. Se una voltata esce dal campo il lavoro non si
   può salvare né caricare: l'editor dice di quanta capezzagna c'è bisogno, oppure (voltate a goccia vicino
   al lato del campo) suggerisce di allontanare la prima fila o di saltare file.
-- **Rientro:** dopo l'ultima passata il percorso torna al punto d'inizio della prima passata lungo la
-  capezzagna (a metà capezzagna, o al massimo un raggio dentro) e, se l'ultima passata finisce dall'altra
-  parte del campo, lungo la prima passata, che il rover scavalca: mai in diagonale sopra la coltura. Il
+- **Rientro:** dopo l'ultima passata il percorso gira in capezzagna verso la prima passata, come una voltata
+  (a U, oltre l'estremità più lontana delle file in mezzo, senza angoli: il rover non può girare sul posto) e, se
+  l'ultima passata finisce dall'altra parte del campo, torna lungo la prima passata, che il rover scavalca: mai in
+  diagonale sopra la coltura. Se non sta nel campo: "Il rientro alla partenza esce dal campo". Il
   ritorno alla casetta (RTL) parte da lì: la partenza va messa vicino all'angolo da cui comincia il lavoro.
 - **Avvisi che bloccano il lavoro:** fascia coltivata larga quanto l'interfila (nessuno spazio per le
   ruote), nessuna fila nel campo, capezzagna troppo larga, voltate fuori dal campo, lato di riferimento

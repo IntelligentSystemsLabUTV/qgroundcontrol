@@ -35,7 +35,7 @@
     "min":              0.1,
     "max":              0.8334,
     "decimalPlaces":    1,
-    "default":          0.7778
+    "default":          0.5
 },
 {
     "name":             "RowSpacing",
@@ -95,18 +95,18 @@
 },
 {
     "name":             "TurnPattern",
-    "shortDesc": "Turns at the end of the rows: automatic (U turns where they fit, bulb turns between close rows) or U turns skipping rows.",
+    "shortDesc": "Turns at the end of the rows: automatic (U turns, skipping rows when the rows are too close) or bulb turns (the rover goes wide, then back into the next row).",
     "type":             "uint32",
-    "enumStrings":      "Automatic,U turns skipping rows",
-    "enumValues":       "0,1",
+    "enumStrings":      "Automatic,U turns skipping rows,Bulb turns",
+    "enumValues":       "0,1,2",
     "default":          0
 },
 {
     "name":             "TurnRadius",
-    "shortDesc": "Smallest turning radius of the rover (both axles steering).",
+    "shortDesc": "Radius of the turns at the end of the rows. The rover cannot turn tighter than 1 m (both axles steering) and its planner needs some margin: at least 1.2 m.",
     "type":             "double",
     "units":            "m",
-    "min":              0.5,
+    "min":              1.2,
     "max":              20,
     "decimalPlaces":    1,
     "default":          2

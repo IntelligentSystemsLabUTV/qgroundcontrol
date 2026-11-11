@@ -94,8 +94,9 @@ public:
     /// Values of the TurnPattern Fact
     enum TurnPattern : uint8_t
     {
-        AutomaticTurns,  ///< passes in order: U turns where they fit, bulb turns otherwise
-        SkipRowsTurns,   ///< passes in interleaved groups, so that the turns are U turns
+        AutomaticTurns,  ///< U turns, skipping rows (interleaved groups of passes) where the passes are too close
+        SkipRowsTurns,   ///< the same: kept for the plans saved when automatic turns were bulb turns
+        BulbTurns,       ///< passes in order: U turns where they fit, bulb turns between close passes
     };
 
     int rowCount() const { return _fieldPlan().rowCount; }        ///< rows worked
@@ -193,6 +194,7 @@ private:
     struct FieldPlan
     {
         QList<QGeoCoordinate> path;                             ///< waypoints, in driving order
+        QList<double> headings;                                 ///< compass heading of the path at each waypoint
         QList<QPair<QGeoCoordinate, QGeoCoordinate>> cropRows;  ///< ends of each crop row
         QGeoCoordinate referenceEdgeStart;
         QGeoCoordinate referenceEdgeEnd;
@@ -212,6 +214,8 @@ private:
     int _entryMissionItemCount() const final { return 1; }
 
     void _appendEntryMissionItems(QList<MissionItem*>& items, QObject* missionItemParent, int& seqNum) final;
+
+    double _waypointYaw(int coordIndex) const final;
 
     QMap<QString, FactMetaData*> _metaDataMap;
     SettingsFact _cropTypeFact;

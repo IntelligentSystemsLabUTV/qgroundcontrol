@@ -194,31 +194,41 @@ QList<QPointF> cultivatedArea(const QList<QPointF>& field, const FieldAxes& axes
     return area;
 }
 
-/// Arc of a turn in the turn frame (x forward, y towards the next pass), from angle a0 (excluded) to a1 (radians)
-void appendArc(QList<QPointF>& points, const QPointF& center, double radius, double a0, double a1)
+/// A point of the path with the direction the rover drives through it (unit vector)
+struct PathPoint
+{
+    QPointF point;
+    QPointF direction;
+};
+
+/// Arc of a turn in the turn frame (x forward, y towards the next pass), from angle a0 (excluded) to a1 (radians),
+/// with the tangent of the arc in the driving direction
+void appendArc(QList<PathPoint>& points, const QPointF& center, double radius, double a0, double a1)
 {
     const double sweep = a1 - a0;
+    const double turn = sweep > 0 ? 1.0 : -1.0;  // counter-clockwise or clockwise
     const int quarterSteps =
         std::max(kMinPointsPerQuarter, static_cast<int>(std::ceil((kPi / 2) * radius / kTurnPointSpacing)));
     const int steps = std::max(1, static_cast<int>(std::ceil(std::abs(sweep) / (kPi / 2) * quarterSteps)));
     for (int i = 1; i <= steps; i++) {
         const double angle = a0 + (sweep * i / steps);
-        points.append(center + (radius * QPointF(std::cos(angle), std::sin(angle))));
+        points.append({center + (radius * QPointF(std::cos(angle), std::sin(angle))),
+                       turn * QPointF(-std::sin(angle), std::cos(angle))});
     }
 }
 
 /// Turn in the turn frame from the end of a pass at (0, 0), heading +x, to the start of the next pass at (0, distance),
 /// heading -x, with the smallest turning radius. Returns the points after (0, 0), the last one being (0, distance).
-QList<QPointF> turnPoints(double distance, double radius, bool* bulb, double* depth)
+QList<PathPoint> turnPoints(double distance, double radius, bool* bulb, double* depth)
 {
-    QList<QPointF> points;
+    QList<PathPoint> points;
     if (distance >= (2 * radius) - kTolerance) {
         // U turn: quarter circle, straight across, quarter circle
         *bulb = false;
         *depth = radius;
         appendArc(points, QPointF(0, radius), radius, -kPi / 2, 0);
         if (distance - (2 * radius) > kTolerance) {
-            points.append(QPointF(radius, distance - radius));
+            points.append({QPointF(radius, distance - radius), QPointF(0, 1)});
         }
         appendArc(points, QPointF(0, distance - radius), radius, 0, kPi / 2);
     } else {
@@ -233,7 +243,7 @@ QList<QPointF> turnPoints(double distance, double radius, bool* bulb, double* de
         appendArc(points, QPointF(forward, distance / 2), radius, tangentAngle - kPi, kPi - tangentAngle);
         appendArc(points, QPointF(0, distance + radius), radius, -tangentAngle, -kPi / 2);
     }
-    points.last() = QPointF(0, distance);  // exact end, whatever the rounding
+    points.last() = {QPointF(0, distance), QPointF(-1, 0)};  // exact end, whatever the rounding
     return points;
 }
 
@@ -419,8 +429,10 @@ bool FieldWorkComplexItem::load(const QJsonObject& complexObject, int sequenceNu
     _ignoreRecalc = false;
     _loading = false;
 
-    _invalidateFieldPlan();
-    _recalcComplexDistance();
+    // The path is computed again instead of using the saved mission items: plans saved by an older version get the
+    // current turns and the headings of the waypoints
+    _rebuildTransects();
+    setDirty(false);
 
     return true;
 }
@@ -642,9 +654,10 @@ FieldWorkComplexItem::FieldPlan FieldWorkComplexItem::_computeFieldPlan() const
 
     // U turns skipping rows: the passes are driven in k interleaved groups (0, k, 2k..., then 1, k+1, 2k+1...), so that
     // consecutive passes are at least two turning radii apart. From a group to the next the rover crosses the headland
-    // back to the first side, with a long U turn.
+    // back to the first side, with a long U turn. Automatic turns do this whenever the passes are too close for a
+    // U turn; bulb turns only when asked (or with two passes, where nothing can be skipped).
     QList<Row> passesInOrder = passes;
-    if ((_turnPatternFact.rawValue().toInt() == SkipRowsTurns) && (passes.count() > 2)) {
+    if ((_turnPatternFact.rawValue().toInt() != BulbTurns) && (passes.count() > 2)) {
         const double passSpacing = std::abs(passes[1].s - passes[0].s);
         const int groups = passSpacing > 0 ? static_cast<int>(std::ceil(((2 * radius) - kTolerance) / passSpacing)) : 1;
         if ((groups > 1) && (groups < passes.count())) {
@@ -678,91 +691,108 @@ FieldWorkComplexItem::FieldPlan FieldWorkComplexItem::_computeFieldPlan() const
     for (qsizetype i = 0; i < passesInOrder.count(); i++) {
         const Row& pass = passesInOrder[i];
         const double direction = (i % 2 == 0) ? firstDirection : -firstDirection;
-        driven.append({pass.s, direction, direction > 0 ? pass.start : pass.end, direction > 0 ? pass.end : pass.start});
+        driven.append(
+            {pass.s, direction, direction > 0 ? pass.start : pass.end, direction > 0 ? pass.end : pass.start});
     }
 
-    // Turns in the headland: both passes are brought to the same depth, then joined by the turn
-    QList<QList<QPointF>> turns;
-    for (qsizetype i = 0; i + 1 < driven.count(); i++) {
-        const DrivenPass& pass = driven[i];
-        const DrivenPass& next = driven[i + 1];
-        const QPointF forward = pass.direction * axes.along;
-        const QPointF sideways = ((next.s > pass.s) ? 1.0 : -1.0) * axes.across;
-        const double turnT = pass.direction > 0 ? std::max(pass.end, next.start) : std::min(pass.end, next.start);
-        QList<QPointF> turn;
-        if (std::abs(turnT - pass.end) > kTolerance) {
-            turn.append(axes.point(turnT, pass.s));
+    // Farthest end towards one headland (side +1: along t, -1: against it) of the passes between two passes, both
+    // included: a turn or a crossing of the headland goes beyond it, never over the end of a row in between
+    const auto farthestEnd = [&passes](double s1, double s2, double side) {
+        double t = side > 0 ? std::numeric_limits<double>::lowest() : std::numeric_limits<double>::max();
+        for (const Row& pass : passes) {
+            if ((pass.s - s1) * (pass.s - s2) <= kTolerance) {
+                t = side > 0 ? std::max(t, pass.end) : std::min(t, pass.start);
+            }
+        }
+        return t;
+    };
+
+    // A turn in the headland from the end of a pass (at t = from, heading `direction` along t) onto the line s = toS,
+    // heading the other way: straight to the depth of the farthest row end in between, then the turn. Returns the
+    // points after the pass end; problem set if it leaves the field.
+    const auto headlandTurn = [&](double fromT, double fromS, double direction, double toS, QList<PathPoint>& turn,
+                                  QString& problem) {
+        const QPointF forward = direction * axes.along;
+        const double sidewaysSign =
+            (toS > fromS) ? 1.0 : ((toS < fromS) ? -1.0 : (fromS > fieldWidth / 2 ? -1.0 : 1.0));
+        const QPointF sideways = sidewaysSign * axes.across;
+        const double far = farthestEnd(fromS, toS, direction);
+        const double turnT = direction > 0 ? std::max(fromT, far) : std::min(fromT, far);
+        if (std::abs(turnT - fromT) > kTolerance) {
+            turn.append({axes.point(turnT, fromS), forward});
         }
         bool bulb = false;
         double depth = 0;
-        const QPointF turnOrigin = axes.point(turnT, pass.s);
-        for (const QPointF& turnPoint : turnPoints(std::abs(next.s - pass.s), radius, &bulb, &depth)) {
-            turn.append(turnOrigin + (turnPoint.x() * forward) + (turnPoint.y() * sideways));
-        }
-        if (std::abs(turnT - next.start) > kTolerance) {
-            turn.append(axes.point(next.start, next.s));
+        const QPointF turnOrigin = axes.point(turnT, fromS);
+        for (const PathPoint& turnPoint : turnPoints(std::abs(toS - fromS), radius, &bulb, &depth)) {
+            turn.append({turnOrigin + (turnPoint.point.x() * forward) + (turnPoint.point.y() * sideways),
+                         (turnPoint.direction.x() * forward) + (turnPoint.direction.y() * sideways)});
         }
         if (!std::all_of(turn.cbegin(), turn.cend(),
-                         [&polygon](const QPointF& point) { return insidePolygon(point, polygon); })) {
+                         [&polygon](const PathPoint& point) { return insidePolygon(point.point, polygon); })) {
             if (headland < depth - kTolerance) {
-                plan.problem = tr("The turns at the end of the rows leave the field: the headland must be at least %1 m, "
-                                  "or the turning radius smaller.")
-                                   .arg(QString::number(std::ceil(depth * 10) / 10, 'f', 1));
+                problem = tr("The turns at the end of the rows leave the field: the headland must be at least %1 m, "
+                             "or the turning radius smaller.")
+                              .arg(QString::number(std::ceil(depth * 10) / 10, 'f', 1));
             } else {
                 // A bulb turn bulges sideways beyond the passes it joins: the rows close to the side of the field
-                plan.problem = tr("A turn next to the side of the field leaves it: move the first row away from the edge, "
-                                  "work one row less or choose U turns skipping rows.");
+                problem =
+                    tr("A turn next to the side of the field leaves it: move the first row away from the edge, "
+                       "work one row less or choose U turns skipping rows.");
             }
-            return plan;
         }
-        plan.bulbTurns = plan.bulbTurns || bulb;
-        turns.append(turn);
-    }
+        return std::make_pair(bulb, turnT);
+    };
 
-    // Path: each pass, then the turn to the next one
-    QList<QPointF> path;
+    // Path: each pass, then the turn to the next one. Every point has the direction of the path through it, exact
+    // also in the turns: the rover planner needs it to follow the turns as drawn.
+    QList<PathPoint> path;
     for (qsizetype i = 0; i < driven.count(); i++) {
+        const DrivenPass& pass = driven[i];
+        const QPointF forward = pass.direction * axes.along;
         if (i == 0) {
-            path.append(axes.point(driven[i].start, driven[i].s));
+            path.append({axes.point(pass.start, pass.s), forward});
         }
-        path.append(axes.point(driven[i].end, driven[i].s));
-        if (i < turns.count()) {
-            path.append(turns[i]);
+        path.append({axes.point(pass.end, pass.s), forward});
+        if (i + 1 < driven.count()) {
+            const DrivenPass& next = driven[i + 1];
+            QList<PathPoint> turn;
+            const auto [bulb, turnT] = headlandTurn(pass.end, pass.s, pass.direction, next.s, turn, plan.problem);
+            if (!plan.problem.isEmpty()) {
+                return plan;
+            }
+            if (std::abs(turnT - next.start) > kTolerance) {
+                turn.append({axes.point(next.start, next.s), next.direction * axes.along});
+            }
+            plan.bulbTurns = plan.bulbTurns || bulb;
+            path.append(turn);
         }
     }
 
-    // Back to the start without crossing the crop: along the headland to the first pass, then, if the rover is at the
-    // other end of the field, along the first pass (it straddles the rows, it does not drive over them)
+    // Back to the start without crossing the crop: a turn in the headland beyond every row end, from the last pass
+    // onto the first one, then along the first pass (the rover straddles its rows, it does not drive over them) to
+    // where the job started. The rover ends there heading into the field.
     const DrivenPass& firstPass = driven.first();
     const DrivenPass& lastPass = driven.last();
-    const double side = lastPass.direction;
-    const double laneOffset = side * std::min(headland / 2, radius);
-    QList<Row> lanePasses;
-    for (const Row& pass : passes) {
-        if ((pass.s - lastPass.s) * (pass.s - firstPass.s) <= kTolerance) {
-            lanePasses.append(pass);  // between the last and the first pass
-        }
+    QList<PathPoint> back;
+    QString backProblem;
+    headlandTurn(lastPass.end, lastPass.s, lastPass.direction, firstPass.s, back, backProblem);
+    if (!backProblem.isEmpty()) {
+        plan.problem =
+            tr("The way back to the start leaves the field: the headland must be wider, or the turning radius "
+               "smaller.");
+        return plan;
     }
-    if (lastPass.s > firstPass.s) {
-        std::reverse(lanePasses.begin(), lanePasses.end());
+    if (length(back.last().point - axes.point(firstPass.start, firstPass.s)) > kTolerance) {
+        back.append({axes.point(firstPass.start, firstPass.s), -lastPass.direction * axes.along});
     }
-    auto appendPoint = [&path](const QPointF& point) {
-        if (path.isEmpty() || (length(point - path.last()) > kTolerance)) {
-            path.append(point);
-        }
-    };
-    for (const Row& pass : lanePasses) {
-        const QPointF lanePoint = axes.point((side > 0 ? pass.end : pass.start) + laneOffset, pass.s);
-        appendPoint(insidePolygon(lanePoint, polygon) ? lanePoint
-                                                      : axes.point(side > 0 ? pass.end : pass.start, pass.s));
-    }
-    if (firstPass.direction == side) {
-        appendPoint(axes.point(firstPass.end, firstPass.s));
-    }
-    appendPoint(axes.point(firstPass.start, firstPass.s));
+    path.append(back);
 
-    for (const QPointF& point : path) {
-        plan.path.append(fromLocalPlane(point, origin));
+    for (const PathPoint& point : path) {
+        plan.path.append(fromLocalPlane(point.point, origin));
+        // Compass heading of the direction (east, north) of the local plane
+        const double heading = std::atan2(point.direction.x(), point.direction.y()) * 180.0 / kPi;
+        plan.headings.append(std::fmod(heading + 360.0, 360.0));
     }
     qCDebug(FieldWorkComplexItemLog) << "rows" << plan.rowCount << "passes" << plan.passCount << "waypoints"
                                      << plan.path.count();
@@ -813,6 +843,16 @@ void FieldWorkComplexItem::_appendEntryMissionItems(QList<MissionItem*>& items, 
                                  true,   // autoContinue
                                  false,  // isCurrentItem
                                  missionItemParent));
+}
+
+double FieldWorkComplexItem::_waypointYaw(int coordIndex) const
+{
+    // One waypoint per point of the path (no terrain points, no turnarounds): the heading of the path there
+    const QList<double>& headings = _fieldPlan().headings;
+    if ((_rgFlightPathCoordInfo.count() != headings.count()) || (coordIndex < 0) || (coordIndex >= headings.count())) {
+        return std::numeric_limits<double>::quiet_NaN();
+    }
+    return headings[coordIndex];
 }
 
 void FieldWorkComplexItem::_recalcCameraShots()

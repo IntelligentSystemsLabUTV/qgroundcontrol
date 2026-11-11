@@ -120,7 +120,7 @@ della barra a sinistra.
 4. Nel pannello a destra, sotto **Lavoro**:
    - **Ambiente**: *Campo aperto* o *Serra*;
    - **Tipo di lavoro**: mappatura, rilevamento infestanti, diserbo, mappatura NDVI o NDRE, irrorazione;
-   - **Velocità** in km/h (2,8 di solito, al massimo 3).
+   - **Velocità** in km/h (1,8 di solito, al massimo 3; più veloce il rover segue peggio le voltate).
 5. Sotto **Coltura e file**:
    - **Coltura**: vigneto, frutteto, orticole in pieno campo, mais, orticole in serra. Propone da sola i
      valori sotto, che puoi correggere;
@@ -128,9 +128,10 @@ della barra a sinistra.
    - **File da lavorare**: quante file fare, contate dal lato giallo (0 = tutte quelle del campo);
    - **Prima fila dal bordo**: distanza della prima fila dal lato giallo;
    - **Capezzagna**: lo spazio a fine fila dove il rover gira;
-   - **Voltate**: *Automatiche* (a U se le file sono abbastanza distanti, altrimenti a goccia) oppure
-     *A U saltando file*: il rover lavora una fila sì e una no e torna indietro per quelle saltate, così
-     gira sempre largo.
+   - **Voltate**: *Automatiche* (a U; se le file sono troppo vicine per girare, il rover lavora una fila sì e
+     una no e torna indietro per quelle saltate, così gira sempre largo; *A U saltando file* fa lo stesso)
+     oppure *A goccia*: le file in ordine, e tra due file vicine il rover si allarga in capezzagna e rientra
+     nella fila accanto (curva più difficile da seguire per il rover).
 6. Sulla mappa le **file** sono le linee verdi, il **lato giallo** del campo è quello a cui sono parallele.
    Se le file vanno nell'altro verso premi **Cambia direzione delle file**.
 7. Sotto *Statistiche* trovi quante file ci sono nel campo e quante ne lavori, il tipo di voltata, la
@@ -144,7 +145,9 @@ Se compare un avviso rosso il lavoro non si può caricare sul rover. I casi più
 - *Le voltate a fine fila escono dal campo*: lo spazio a fine fila non basta per girare. Aumenta la
   **Capezzagna** se il campo lo permette, altrimenti chiedi al tecnico di controllare il raggio di sterzata;
 - *Una voltata vicino al lato del campo ne esce*: le voltate a goccia sporgono di lato. Scegli
-  **A U saltando file**, oppure aumenta **Prima fila dal bordo** o lavora una fila in meno;
+  **Automatiche**, oppure aumenta **Prima fila dal bordo** o lavora una fila in meno;
+- *Il rientro alla partenza esce dal campo*: dopo l'ultima fila il rover torna girando in capezzagna e lo
+  spazio non basta. Aumenta la **Capezzagna**;
 - *Nel campo non entra nessuna fila*: il campo è troppo piccolo o le file vanno nella direzione sbagliata
   (prova **Cambia direzione delle file**);
 - *La capezzagna è troppo larga per questo campo*: il campo è troppo stretto rispetto allo spazio a fine

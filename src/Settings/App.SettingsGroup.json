@@ -47,7 +47,7 @@
             "shortDesc": "Offline editing cruise speed",
             "longDesc": "This value defines the default speed for calculating mission statistics for vehicles which do not support hover or VTOL vehicles in fixed wing mode. It does not modify the flight speed for a specific flight plan.",
             "type": "double",
-            "default": 0.78,
+            "default": 0.5,
             "min": 0.1,
             "units": "m/s",
             "decimalPlaces": 2,

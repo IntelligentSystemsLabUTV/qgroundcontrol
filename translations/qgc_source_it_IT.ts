@@ -6422,6 +6422,11 @@ Premi Ok per avviare l'auto-tuning.
       <source>The turns at the end of the rows leave the field: the headland must be at least %1 m, or the turning radius smaller.</source>
       <translation>Le voltate a fine fila escono dal campo: serve una capezzagna di almeno %1 m, oppure un raggio di sterzata più piccolo.</translation>
     </message>
+    <message>
+      <location filename="../src/MissionManager/FieldWorkComplexItem.cc" line="770"/>
+      <source>The way back to the start leaves the field: the headland must be wider, or the turning radius smaller.</source>
+      <translation>Il rientro alla partenza esce dal campo: serve una capezzagna più larga, oppure un raggio di sterzata più piccolo.</translation>
+    </message>
   </context>
   <context>
     <name>FieldWorkEditor</name>

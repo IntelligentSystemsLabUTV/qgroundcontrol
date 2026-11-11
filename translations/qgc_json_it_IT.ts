@@ -102,21 +102,21 @@
     <message>
       <extracomment>.QGC.MetaData.Facts[TurnPattern].shortDesc</extracomment>
       <location filename="/home/runner/work/qgroundcontrol/qgroundcontrol/src/MissionManager/FieldWork.SettingsGroup.json"/>
-      <source>Turns at the end of the rows: automatic (U turns where they fit, bulb turns between close rows) or U turns skipping rows.</source>
-      <translation>Voltate a fine fila: automatiche (a U dove ci stanno, a goccia tra file vicine) o a U saltando file.</translation>
+      <source>Turns at the end of the rows: automatic (U turns, skipping rows when the rows are too close) or bulb turns (the rover goes wide, then back into the next row).</source>
+      <translation>Voltate a fine fila: automatiche (a U, saltando file quando le file sono troppo vicine) o a goccia (il rover si allarga e poi rientra nella fila accanto).</translation>
     </message>
     <message>
       <extracomment>.QGC.MetaData.Facts[TurnPattern].enumStrings</extracomment>
       <translatorcomment>Only use english comma ',' to separate strings</translatorcomment>
       <location filename="/home/runner/work/qgroundcontrol/qgroundcontrol/src/MissionManager/FieldWork.SettingsGroup.json"/>
-      <source>Automatic,U turns skipping rows</source>
-      <translation>Automatiche,A U saltando file</translation>
+      <source>Automatic,U turns skipping rows,Bulb turns</source>
+      <translation>Automatiche,A U saltando file,A goccia</translation>
     </message>
     <message>
       <extracomment>.QGC.MetaData.Facts[TurnRadius].shortDesc</extracomment>
       <location filename="/home/runner/work/qgroundcontrol/qgroundcontrol/src/MissionManager/FieldWork.SettingsGroup.json"/>
-      <source>Smallest turning radius of the rover (both axles steering).</source>
-      <translation>Raggio di sterzata minimo del rover (con entrambi gli assi sterzanti).</translation>
+      <source>Radius of the turns at the end of the rows. The rover cannot turn tighter than 1 m (both axles steering) and its planner needs some margin: at least 1.2 m.</source>
+      <translation>Raggio delle voltate a fine fila. Il rover non sterza più stretto di 1 m (con entrambi gli assi) e il suo planner vuole un po' di margine: almeno 1,2 m.</translation>
     </message>
   </context>
   <context>

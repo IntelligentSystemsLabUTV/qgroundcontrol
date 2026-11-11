@@ -22,6 +22,40 @@ Guide d'uso: [guida per l'operatore](guida-operatore.md), [guida per il tecnico]
 
 ---
 
+## 2026-11-11
+
+### Lavoro in campo: voltate che il rover può seguire
+
+**Perché.** Nel simulatore un lavoro in campo si fermava dopo un minuto con "Lavoro interrotto: rover fuori
+traiettoria" e la traccia mostrava giri completi e angoli stretti. Il planner del rover (`trackify`) unisce ogni
+coppia di waypoint con archi e tratti dritti: dalle direzioni stimate dai punti vicini, nelle voltate campionate ogni
+metro, aggiungeva giri di 360° (967 m di traiettoria per un lavoro di 164 m), che calpesterebbero le file e su cui il
+rover si ferma. Il rientro alla partenza aveva poi due angoli vivi (74° e 106°), impossibili per il rover.
+
+**Cosa.**
+
+- Ogni waypoint del Lavoro in campo porta in `param4` la **direzione esatta del percorso** (gradi bussola), anche
+  nelle voltate (`FieldWorkComplexItem::_waypointYaw`, nuovo metodo virtuale `_waypointYaw` di
+  `TransectStyleComplexItem`, NaN per gli altri pattern come prima). Con queste direzioni il planner segue le voltate
+  a pochi centimetri.
+- **Rientro alla partenza** come una voltata in capezzagna (a U o a goccia, oltre l'estremità più lontana delle file
+  in mezzo), poi lungo la prima passata: niente più angoli vivi. Avviso nuovo se non sta nel campo.
+- Le voltate (anche *A U saltando file*) vanno oltre l'estremità più lontana delle file che scavalcano.
+- **Voltate automatiche = a U saltando file** quando le passate sono più vicine di due raggi; nuova scelta *A goccia*
+  (le voltate automatiche di prima). *A U saltando file* resta per i piani già salvati.
+- *Raggio di sterzata*: minimo 1,2 m (il rover non gira più stretto di circa 1 m e il planner vuole margine).
+- Aprendo un `.plan` il percorso del Lavoro in campo viene ricalcolato invece di riusare i waypoint salvati.
+- **Velocità di serie 1,8 km/h (0,5 m/s)** invece di 2,8 km/h, per il Lavoro in campo e per le statistiche della
+  missione: nel simulatore, con voltate di 2 m, lo scarto massimo dalla traiettoria scende da 0,84 m a 0,37 m (il
+  rover si ferma oltre 1 m).
+- Test: `_testWaypointHeadings` (la corda tra due waypoint sta a metà delle loro direzioni), voltate automatiche che
+  saltano file, capezzagna per le voltate a U e a goccia.
+
+Il bridge, dalla sua parte, passa queste direzioni al rover, usa archi a 0,9 volte la voltata più stretta e rifiuta un
+lavoro se il percorso calcolato dal rover si allontana di più di 1 m dal disegno.
+
+---
+
 ## 2026-11-08
 
 ### Collegamento con il rover via ROS 2, sicurezza e guida manuale

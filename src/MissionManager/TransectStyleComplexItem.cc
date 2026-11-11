@@ -1131,7 +1131,7 @@ void TransectStyleComplexItem::appendMissionItems(QList<MissionItem*>& items, QO
     }
 }
 
-void TransectStyleComplexItem::_appendWaypoint(QList<MissionItem*>& items, QObject* missionItemParent, int& seqNum, MAV_FRAME mavFrame, float holdTime, const QGeoCoordinate& coordinate)
+void TransectStyleComplexItem::_appendWaypoint(QList<MissionItem*>& items, QObject* missionItemParent, int& seqNum, MAV_FRAME mavFrame, float holdTime, const QGeoCoordinate& coordinate, double yaw)
 {
     double altitude = _cameraCalc.distanceMode() == QGroundControlQmlGlobal::AltitudeFrameCalcAboveTerrain ? coordinate.altitude() : _cameraCalc.distanceToSurface()->rawValue().toDouble();
 
@@ -1141,7 +1141,7 @@ void TransectStyleComplexItem::_appendWaypoint(QList<MissionItem*>& items, QObje
                                         holdTime,
                                         0.0,                                         // No acceptance radius specified
                                         0.0,                                         // Pass through waypoint
-                                        std::numeric_limits<double>::quiet_NaN(),    // Yaw unchanged
+                                        yaw,                                         // NaN: yaw unchanged
                                         coordinate.latitude(),
                                         coordinate.longitude(),
                                         altitude,
@@ -1259,7 +1259,7 @@ void TransectStyleComplexItem::_buildAndAppendMissionItems(QList<MissionItem*>& 
         switch (coordInfo.coordType) {
         case CoordTypeInterior:
         case CoordTypeInteriorTerrainAdded:
-            _appendWaypoint(items, missionItemParent, seqNum, mavFrame, 0 /* holdTime */, coordInfo.coord);
+            _appendWaypoint(items, missionItemParent, seqNum, mavFrame, 0 /* holdTime */, coordInfo.coord, _waypointYaw(coordIndex));
             break;
         case CoordTypeTurnaround:
         {
@@ -1268,43 +1268,43 @@ void TransectStyleComplexItem::_buildAndAppendMissionItems(QList<MissionItem*>& 
             if (buildState.addTriggerAtFirstAndLastPoint && (firstEntryTurnaround || lastExitTurnaround)) {
                 _appendCameraTriggerDistanceUpdatePoint(items, missionItemParent, seqNum, mavFrame, coordInfo.coord, buildState.useConditionGate, firstEntryTurnaround ? triggerDistance() : 0);
             } else {
-                _appendWaypoint(items, missionItemParent, seqNum, mavFrame, 0 /* holdTime */, coordInfo.coord);
+                _appendWaypoint(items, missionItemParent, seqNum, mavFrame, 0 /* holdTime */, coordInfo.coord, _waypointYaw(coordIndex));
             }
         }
             break;
         case CoordTypeInteriorHoverTrigger:
-            _appendWaypoint(items, missionItemParent, seqNum, mavFrame, _hoverAndCaptureDelaySeconds, coordInfo.coord);
+            _appendWaypoint(items, missionItemParent, seqNum, mavFrame, _hoverAndCaptureDelaySeconds, coordInfo.coord, _waypointYaw(coordIndex));
             _appendSinglePhotoCapture(items, missionItemParent, seqNum);
             break;
         case CoordTypeSurveyEntry:
             if (triggerCamera()) {
                 if (hoverAndCaptureEnabled()) {
-                    _appendWaypoint(items, missionItemParent, seqNum, mavFrame, _hoverAndCaptureDelaySeconds, coordInfo.coord);
+                    _appendWaypoint(items, missionItemParent, seqNum, mavFrame, _hoverAndCaptureDelaySeconds, coordInfo.coord, _waypointYaw(coordIndex));
                     _appendSinglePhotoCapture(items, missionItemParent, seqNum);
                 } else {
                     // We always add a trigger start to survey entry. Even for imagesInTurnaround = true. This allows you to resume a mission and refly a transect
                     _appendCameraTriggerDistanceUpdatePoint(items, missionItemParent, seqNum, mavFrame, coordInfo.coord, buildState.useConditionGate, triggerDistance());
                 }
             } else {
-                _appendWaypoint(items, missionItemParent, seqNum, mavFrame, 0 /* holdTime */, coordInfo.coord);
+                _appendWaypoint(items, missionItemParent, seqNum, mavFrame, 0 /* holdTime */, coordInfo.coord, _waypointYaw(coordIndex));
             }
             break;
         case CoordTypeSurveyExit:
             bool lastSurveyExit = coordIndex == _rgFlightPathCoordInfo.count() - 1;
             if (triggerCamera()) {
                 if (hoverAndCaptureEnabled()) {
-                    _appendWaypoint(items, missionItemParent, seqNum, mavFrame, _hoverAndCaptureDelaySeconds, coordInfo.coord);
+                    _appendWaypoint(items, missionItemParent, seqNum, mavFrame, _hoverAndCaptureDelaySeconds, coordInfo.coord, _waypointYaw(coordIndex));
                     _appendSinglePhotoCapture(items, missionItemParent, seqNum);
                 } else if (buildState.addTriggerAtFirstAndLastPoint && !buildState.hasTurnarounds && lastSurveyExit) {
                     _appendCameraTriggerDistanceUpdatePoint(items, missionItemParent, seqNum, mavFrame, coordInfo.coord, buildState.useConditionGate, 0 /* triggerDistance */);
                 } else if (buildState.imagesInTurnaround) {
-                    _appendWaypoint(items, missionItemParent, seqNum, mavFrame, 0 /* holdTime */, coordInfo.coord);
+                    _appendWaypoint(items, missionItemParent, seqNum, mavFrame, 0 /* holdTime */, coordInfo.coord, _waypointYaw(coordIndex));
                 } else {
                     // If we get this far it means the camera is triggering start/stop for each transect
                     _appendCameraTriggerDistanceUpdatePoint(items, missionItemParent, seqNum, mavFrame, coordInfo.coord, buildState.useConditionGate, 0 /* triggerDistance */);
                 }
             } else {
-                _appendWaypoint(items, missionItemParent, seqNum, mavFrame, 0 /* holdTime */, coordInfo.coord);
+                _appendWaypoint(items, missionItemParent, seqNum, mavFrame, 0 /* holdTime */, coordInfo.coord, _waypointYaw(coordIndex));
             }
             break;
         }

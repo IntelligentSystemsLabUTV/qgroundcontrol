@@ -76,6 +76,8 @@ void FieldWorkComplexItemTest::_testDirty()
 
 void FieldWorkComplexItemTest::_testRowsAndBulbTurns()
 {
+    _fieldItem->turnPattern()->setRawValue(FieldWorkComplexItem::BulbTurns);
+
     // Rows at 1.25 m, 3.75 m, ... 58.75 m from the west edge
     QCOMPARE(_fieldItem->rowCount(), 24);
     QCOMPARE(_fieldItem->passCount(), 24);
@@ -146,8 +148,8 @@ void FieldWorkComplexItemTest::_testHeadlandTooSmall()
     MultiSignalSpy spy;
     QVERIFY(spy.init(_fieldItem, QStringList{QStringLiteral("readyForSaveStateChanged")}));
 
-    // A bulb turn needs about 4.3 m with a 2 m radius and passes 2.5 m apart
-    _fieldItem->headland()->setRawValue(3.0);
+    // A U turn needs the turning radius (2 m) of headland
+    _fieldItem->headland()->setRawValue(1.5);
     QVERIFY(!_fieldItem->problem().isEmpty());
     QVERIFY(spy.emitted("readyForSaveStateChanged"));
     QCOMPARE(_fieldItem->readyForSaveState(), VisualMissionItem::NotReadyForSaveData);
@@ -156,6 +158,11 @@ void FieldWorkComplexItemTest::_testHeadlandTooSmall()
     _fieldItem->headland()->setRawValue(6.0);
     QVERIFY(_fieldItem->problem().isEmpty());
     QVERIFY_TRUE_WAIT(_fieldItem->readyForSaveState() == VisualMissionItem::ReadyForSave, TestTimeout::mediumMs());
+
+    // A bulb turn needs about 4.3 m with a 2 m radius and passes 2.5 m apart
+    _fieldItem->turnPattern()->setRawValue(FieldWorkComplexItem::BulbTurns);
+    _fieldItem->headland()->setRawValue(3.0);
+    QVERIFY(!_fieldItem->problem().isEmpty());
 }
 
 void FieldWorkComplexItemTest::_testCropBandTooWide()
@@ -273,7 +280,9 @@ void FieldWorkComplexItemTest::_testRowsToWork()
 
 void FieldWorkComplexItemTest::_testSkipRowsTurns()
 {
-    // Passes 2.5 m apart with a 2 m radius: U turns need to skip one pass (two groups: even passes, then odd ones)
+    // Passes 2.5 m apart with a 2 m radius: U turns need to skip one pass (two groups: even passes, then odd ones).
+    // Automatic turns do it too (the old "U turns skipping rows" value of saved plans is the same).
+    QCOMPARE(_fieldItem->skippedPasses(), 1);
     _fieldItem->turnPattern()->setRawValue(FieldWorkComplexItem::SkipRowsTurns);
     QCOMPARE(_fieldItem->skippedPasses(), 1);
     QCOMPARE(_fieldItem->passCount(), 24);
@@ -300,6 +309,8 @@ void FieldWorkComplexItemTest::_testReturnAlongHeadland()
 {
     // Even number of passes: the last one ends at the starting end, the rover comes back along that headland.
     // Odd number: it comes back along the far headland and then along the first pass. Never across the field.
+    // Passes in order: the last pass is on the last row
+    _fieldItem->turnPattern()->setRawValue(FieldWorkComplexItem::BulbTurns);
     for (const int rows : {6, 5}) {
         _fieldItem->rowsToWork()->setRawValue(rows);
         const QList<QGeoCoordinate> coords = _waypointCoordinates(_fieldItem);
@@ -325,6 +336,39 @@ void FieldWorkComplexItemTest::_testReturnAlongHeadland()
             }
         }
         QVERIFY(returning);
+    }
+}
+
+void FieldWorkComplexItemTest::_testWaypointHeadings()
+{
+    // Every waypoint carries the heading of the path through it (param4, compass degrees), exact in the turns too:
+    // between two waypoints on an arc (or a straight) the chord heads half way between their two headings. The rover
+    // planner joins the waypoints with arcs and needs these headings not to add loops.
+    for (const int pattern : {FieldWorkComplexItem::AutomaticTurns, FieldWorkComplexItem::BulbTurns}) {
+        _fieldItem->turnPattern()->setRawValue(pattern);
+        _fieldItem->rowsToWork()->setRawValue(7);
+        QList<MissionItem*> items;
+        _fieldItem->appendMissionItems(items, this);
+        QList<const MissionItem*> waypoints;
+        for (const MissionItem* item : items) {
+            if (item->command() == MAV_CMD_NAV_WAYPOINT) {
+                waypoints.append(item);
+            }
+        }
+        QVERIFY(waypoints.count() > 20);
+        QVERIFY(std::abs(std::remainder(waypoints.first()->param4(), 360.0)) < 1e-6);  // first pass: north
+        for (qsizetype i = 0; i + 1 < waypoints.count(); i++) {
+            const double yaw1 = waypoints[i]->param4();
+            const double yaw2 = waypoints[i + 1]->param4();
+            QVERIFY(std::isfinite(yaw1) && std::isfinite(yaw2));
+            const double change = std::remainder(yaw2 - yaw1, 360.0);
+            const double middle = yaw1 + (change / 2);
+            const double chord = waypoints[i]->coordinate().azimuthTo(waypoints[i + 1]->coordinate());
+            QVERIFY2(
+                std::abs(std::remainder(chord - middle, 360.0)) < 1.0,
+                qPrintable(
+                    QStringLiteral("waypoint %1: headings %2 and %3, chord %4").arg(i).arg(yaw1).arg(yaw2).arg(chord)));
+        }
     }
 }
 
