@@ -36,8 +36,12 @@ qualche metro e la voltata finiva esattamente all'inizio della fila, quindi entr
 - Il lavoro comincia in capezzagna con un tratto dritto prima della prima fila; ogni voltata ha prima e dopo un
   tratto dritto in capezzagna, fino a 4 m, quanto ci sta lasciando la voltata a 0,65 m dal bordo del campo.
 - Il lavoro finisce in capezzagna dal lato della partenza, rivolto fuori dal campo.
-- Avviso (non bloccante) se dopo una voltata restano meno di 3 m per raddrizzarsi; nelle statistiche *Dritto prima
-  delle file*.
+- Avviso arancione (non bloccante, gli errori restano rossi) se dopo una voltata restano meno di 3 m per
+  raddrizzarsi; nelle statistiche *Dritto prima delle file*.
+- La conferma di *Torna alla base* dice che il rover prima finisce la fila ed esce dal lato della partenza.
+- Provato l'11/11 con QGroundControl vero (Xvfb) sul simulatore: campo dell'utente con capezzagna 8 m, *Torna alla
+  base* a metà della prima fila → fine fila, voltata, fila di ritorno, uscita in capezzagna, base; nessuna ruota sulle
+  file.
 
 ### Lavoro in campo: voltate che il rover può seguire
 

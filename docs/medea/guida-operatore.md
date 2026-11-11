@@ -141,7 +141,7 @@ Finito il lavoro il rover torna dal lato della partenza **lungo la capezzagna** 
 fila), mai in diagonale sopra la coltura, e si ferma in capezzagna rivolto fuori dal campo. Prima e dopo ogni
 voltata percorre qualche metro dritto in capezzagna, per entrare nella fila già dritto.
 
-Se compare un avviso arancione il lavoro si può fare, ma con attenzione: *Dopo alcune voltate il rover ha solo
+Se compare un avviso arancione (non rosso) il lavoro si può fare, ma con attenzione: *Dopo alcune voltate il rover ha solo
 X m di capezzagna per raddrizzarsi* vuol dire che entrando in quelle file può ancora ondeggiare e toccare la
 coltura. Se il campo lo permette aumenta la **Capezzagna** (nelle statistiche, *Dritto prima delle file* deve
 arrivare ad almeno 3 m).

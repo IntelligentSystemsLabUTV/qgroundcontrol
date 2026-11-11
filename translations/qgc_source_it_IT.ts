@@ -19612,8 +19612,8 @@ Premi &apos;Ok&apos; per caricare comunque il piano.</translation>
     </message>
     <message>
       <location filename="../src/FlyView/RoverJobControls.qml" line="133"/>
-      <source>The rover stops the job and drives back to its starting point.</source>
-      <translation>Il rover interrompe il lavoro e torna al punto di partenza.</translation>
+      <source>The rover stops the job and drives back to its starting point: it cannot turn inside a row, so it first finishes the row it is on and leaves the field on the starting side.</source>
+      <translation>Il rover interrompe il lavoro e torna al punto di partenza: dentro una fila non può girare, quindi prima finisce la fila che sta facendo ed esce dal campo dal lato della partenza.</translation>
     </message>
     <message>
       <location filename="../src/FlyView/RoverJobControls.qml" line="140"/>

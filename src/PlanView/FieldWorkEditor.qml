@@ -255,7 +255,7 @@ Rectangle {
                 objectName:         "fieldWorkEditor_advice"
                 Layout.fillWidth:   true
                 wrapMode:           Text.WordWrap
-                color:              qgcPal.warningText
+                color:              qgcPal.colorOrange
                 text:               missionItem.advice
                 visible:            text !== ""
             }
