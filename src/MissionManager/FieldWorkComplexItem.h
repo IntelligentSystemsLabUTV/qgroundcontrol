@@ -54,6 +54,8 @@ public:
     Q_PROPERTY(double workTime READ workTime NOTIFY fieldChanged)
     Q_PROPERTY(double requiredTrackWidth READ requiredTrackWidth NOTIFY fieldChanged)
     Q_PROPERTY(QString problem READ problem NOTIFY fieldChanged)
+    Q_PROPERTY(QString advice READ advice NOTIFY fieldChanged)
+    Q_PROPERTY(double shortestRunIn READ shortestRunIn NOTIFY fieldChanged)
     Q_PROPERTY(int referenceEdgeIndex READ referenceEdgeIndex NOTIFY fieldChanged)
     Q_PROPERTY(QVariantList referenceEdge READ referenceEdge NOTIFY fieldChanged)
     Q_PROPERTY(QVariantList cropRows READ cropRows NOTIFY fieldChanged)
@@ -113,6 +115,12 @@ public:
 
     /// Why the job cannot be planned (empty when it can): the item is then not ready to be saved or uploaded
     QString problem() const { return _fieldPlan().problem; }
+
+    /// A warning that does not stop the job (empty when there is none): too little room to straighten before a row
+    QString advice() const;
+
+    /// Shortest straight run in the headland before entering a row after a turn, in meters
+    double shortestRunIn() const;
 
     int referenceEdgeIndex() const;
     QVariantList referenceEdge() const;  ///< the two ends of the edge the rows are parallel to
@@ -203,6 +211,7 @@ private:
         int passCount = 0;
         int skippedPasses = 0;
         bool bulbTurns = false;
+        double shortestRunIn = std::numeric_limits<double>::infinity();
         QString problem;
     };
 

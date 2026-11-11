@@ -137,8 +137,14 @@ della barra a sinistra.
 7. Sotto *Statistiche* trovi quante file ci sono nel campo e quante ne lavori, il tipo di voltata, la
    lunghezza del percorso e il **tempo stimato**.
 
-Finito il lavoro il rover torna alla partenza **lungo la capezzagna** (e, se serve, lungo la prima fila),
-mai in diagonale sopra la coltura.
+Finito il lavoro il rover torna dal lato della partenza **lungo la capezzagna** (e, se serve, lungo la prima
+fila), mai in diagonale sopra la coltura, e si ferma in capezzagna rivolto fuori dal campo. Prima e dopo ogni
+voltata percorre qualche metro dritto in capezzagna, per entrare nella fila già dritto.
+
+Se compare un avviso arancione il lavoro si può fare, ma con attenzione: *Dopo alcune voltate il rover ha solo
+X m di capezzagna per raddrizzarsi* vuol dire che entrando in quelle file può ancora ondeggiare e toccare la
+coltura. Se il campo lo permette aumenta la **Capezzagna** (nelle statistiche, *Dritto prima delle file* deve
+arrivare ad almeno 3 m).
 
 Se compare un avviso rosso il lavoro non si può caricare sul rover. I casi più comuni:
 
@@ -224,7 +230,9 @@ segnato con un punto interrogativo rosso. Di solito manca da disegnare il percor
      perde: resta sospeso (*In pausa*);
    - **Torna alla base** (chiede conferma): il rover interrompe il lavoro, torna al punto di partenza
      (*Rientro*) e si ferma. Il punto di partenza è dove il rover si trovava all'avvio del lavoro: prima del
-     primo lavoro, e quando il rover è già lì, il pulsante non c'è.
+     primo lavoro, e quando il rover è già lì, il pulsante non c'è. **Il rover non gira dentro le file**: finisce
+     la fila che sta facendo e, se quella va verso il fondo del campo, anche la voltata e la fila successiva, finché
+     esce in capezzagna dal lato della partenza; da lì va alla base.
 4. Quando il rover è *In pausa* i pulsanti sono:
    - **Riprendi**: il rover riparte da dove si era fermato;
    - **Torna alla base**: come sopra;

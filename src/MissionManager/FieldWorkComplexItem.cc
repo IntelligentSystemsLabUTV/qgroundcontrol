@@ -26,6 +26,18 @@ constexpr double kTurnPointSpacing = 1.0;
 /// Smallest number of points per quarter of circle in a turn
 constexpr int kMinPointsPerQuarter = 4;
 
+/// Straight runs in the headland before and after every turn, the longest with room, in meters: the rover comes out of
+/// a turn swaying and must be straight again before it enters the next row (rovercrea-dua simulator at 0.5 m/s, 2 m
+/// turns: 0.37 m off 1-2 m after the turn, 0.16 m at 4 m, under 0.05 m from 5 m; a wheel touches the crop of the row
+/// it straddles from about 0.35 m)
+constexpr double kRunIns[] = {4.0, 3.5, 3.0, 2.5, 2.0, 1.5, 1.0, 0.5, 0.0};
+
+/// A straight run is used only if the turn stays this far from the edge of the field: half of the 1.29 m of the rover
+constexpr double kEdgeMargin = 0.65;
+
+/// With a shorter straight run before a row the rover may still sway when it enters it: the editor says so
+constexpr double kSafeRunIn = 3.0;
+
 /// Distances below this are considered zero, in meters
 constexpr double kTolerance = 0.05;
 
@@ -92,6 +104,20 @@ bool insidePolygon(const QPointF& point, const QList<QPointF>& polygon)
         }
     }
     return false;
+}
+
+/// Inside the polygon and at least margin from its edges
+bool insideWithMargin(const QPointF& point, const QList<QPointF>& polygon, double margin)
+{
+    if (!insidePolygon(point, polygon)) {
+        return false;
+    }
+    for (qsizetype i = 0; i < polygon.count(); i++) {
+        if (distanceToSegment(point, polygon[i], polygon[(i + 1) % polygon.count()]) < margin) {
+            return false;
+        }
+    }
+    return true;
 }
 
 /// Field axes: t along the rows (from the start of the reference edge), s across them (towards the inside)
@@ -457,6 +483,22 @@ FieldWorkComplexItem::ReadyForSaveState FieldWorkComplexItem::readyForSaveState(
     return problem().isEmpty() ? TransectStyleComplexItem::readyForSaveState() : NotReadyForSaveData;
 }
 
+QString FieldWorkComplexItem::advice() const
+{
+    const FieldPlan& plan = _fieldPlan();
+    if (!plan.problem.isEmpty() || (plan.shortestRunIn >= kSafeRunIn - kTolerance)) {
+        return QString();
+    }
+    return tr("After some turns the rover has only %1 m of headland to straighten before it enters the row: it may "
+              "touch the crop. A wider headland, or a smaller turning radius, gives it more room.")
+        .arg(QString::number(plan.shortestRunIn, 'f', 1));
+}
+
+double FieldWorkComplexItem::shortestRunIn() const
+{
+    return std::isfinite(_fieldPlan().shortestRunIn) ? _fieldPlan().shortestRunIn : 0.0;
+}
+
 double FieldWorkComplexItem::pathLength() const
 {
     const QList<QGeoCoordinate>& path = _fieldPlan().path;
@@ -707,9 +749,16 @@ FieldWorkComplexItem::FieldPlan FieldWorkComplexItem::_computeFieldPlan() const
         return t;
     };
 
+    const auto allInside = [&polygon](const QList<PathPoint>& points, double margin = 0.0) {
+        return std::all_of(points.cbegin(), points.cend(), [&polygon, margin](const PathPoint& point) {
+            return (margin > 0) ? insideWithMargin(point.point, polygon, margin) : insidePolygon(point.point, polygon);
+        });
+    };
+
     // A turn in the headland from the end of a pass (at t = from, heading `direction` along t) onto the line s = toS,
-    // heading the other way: straight to the depth of the farthest row end in between, then the turn. Returns the
-    // points after the pass end; problem set if it leaves the field.
+    // heading the other way: straight to the depth of the farthest row end in between plus a run of up to kRunIn (as
+    // long as the turn stays in the field), then the turn. Returns the points after the pass end; problem set if it
+    // leaves the field.
     const auto headlandTurn = [&](double fromT, double fromS, double direction, double toS, QList<PathPoint>& turn,
                                   QString& problem) {
         const QPointF forward = direction * axes.along;
@@ -717,19 +766,26 @@ FieldWorkComplexItem::FieldPlan FieldWorkComplexItem::_computeFieldPlan() const
             (toS > fromS) ? 1.0 : ((toS < fromS) ? -1.0 : (fromS > fieldWidth / 2 ? -1.0 : 1.0));
         const QPointF sideways = sidewaysSign * axes.across;
         const double far = farthestEnd(fromS, toS, direction);
-        const double turnT = direction > 0 ? std::max(fromT, far) : std::min(fromT, far);
-        if (std::abs(turnT - fromT) > kTolerance) {
-            turn.append({axes.point(turnT, fromS), forward});
-        }
+        const double rowsEnd = direction > 0 ? std::max(fromT, far) : std::min(fromT, far);
         bool bulb = false;
         double depth = 0;
-        const QPointF turnOrigin = axes.point(turnT, fromS);
-        for (const PathPoint& turnPoint : turnPoints(std::abs(toS - fromS), radius, &bulb, &depth)) {
-            turn.append({turnOrigin + (turnPoint.point.x() * forward) + (turnPoint.point.y() * sideways),
-                         (turnPoint.direction.x() * forward) + (turnPoint.direction.y() * sideways)});
+        double turnT = rowsEnd;
+        for (const double run : kRunIns) {
+            turnT = rowsEnd + (direction * run);
+            turn.clear();
+            if (std::abs(turnT - fromT) > kTolerance) {
+                turn.append({axes.point(turnT, fromS), forward});
+            }
+            const QPointF turnOrigin = axes.point(turnT, fromS);
+            for (const PathPoint& turnPoint : turnPoints(std::abs(toS - fromS), radius, &bulb, &depth)) {
+                turn.append({turnOrigin + (turnPoint.point.x() * forward) + (turnPoint.point.y() * sideways),
+                             (turnPoint.direction.x() * forward) + (turnPoint.direction.y() * sideways)});
+            }
+            if ((run > 0) ? allInside(turn, kEdgeMargin) : allInside(turn)) {
+                break;
+            }
         }
-        if (!std::all_of(turn.cbegin(), turn.cend(),
-                         [&polygon](const PathPoint& point) { return insidePolygon(point.point, polygon); })) {
+        if (!allInside(turn)) {
             if (headland < depth - kTolerance) {
                 problem = tr("The turns at the end of the rows leave the field: the headland must be at least %1 m, "
                              "or the turning radius smaller.")
@@ -751,6 +807,14 @@ FieldWorkComplexItem::FieldPlan FieldWorkComplexItem::_computeFieldPlan() const
         const DrivenPass& pass = driven[i];
         const QPointF forward = pass.direction * axes.along;
         if (i == 0) {
+            // The job starts in the headland: the rover enters the first row already straight
+            for (const double run : kRunIns) {
+                const QPointF runIn = axes.point(pass.start - (pass.direction * run), pass.s);
+                if ((run > 0) && insideWithMargin(runIn, polygon, kEdgeMargin)) {
+                    path.append({runIn, forward});
+                    break;
+                }
+            }
             path.append({axes.point(pass.start, pass.s), forward});
         }
         path.append({axes.point(pass.end, pass.s), forward});
@@ -764,27 +828,43 @@ FieldWorkComplexItem::FieldPlan FieldWorkComplexItem::_computeFieldPlan() const
             if (std::abs(turnT - next.start) > kTolerance) {
                 turn.append({axes.point(next.start, next.s), next.direction * axes.along});
             }
+            plan.shortestRunIn = std::min(plan.shortestRunIn, std::abs(turnT - next.start));
             plan.bulbTurns = plan.bulbTurns || bulb;
             path.append(turn);
         }
     }
 
-    // Back to the start without crossing the crop: a turn in the headland beyond every row end, from the last pass
-    // onto the first one, then along the first pass (the rover straddles its rows, it does not drive over them) to
-    // where the job started. The rover ends there heading into the field.
+    // The end: in the headland on the side where the job started, heading out of the field, so that the rover can go
+    // back to base without turning over the crop. If the last pass ends on that side the rover just drives out of it;
+    // otherwise it turns in the far headland onto the first pass (the rover straddles its rows, it does not drive over
+    // them) and drives it back and out.
     const DrivenPass& firstPass = driven.first();
     const DrivenPass& lastPass = driven.last();
+    const double out = -firstPass.direction;  // from the rows into the headland where the job started
     QList<PathPoint> back;
-    QString backProblem;
-    headlandTurn(lastPass.end, lastPass.s, lastPass.direction, firstPass.s, back, backProblem);
-    if (!backProblem.isEmpty()) {
-        plan.problem =
-            tr("The way back to the start leaves the field: the headland must be wider, or the turning radius "
-               "smaller.");
-        return plan;
+    double exitS = lastPass.s;
+    if (lastPass.direction != out) {
+        QString backProblem;
+        const double backT =
+            headlandTurn(lastPass.end, lastPass.s, lastPass.direction, firstPass.s, back, backProblem).second;
+        plan.shortestRunIn = std::min(plan.shortestRunIn, std::abs(backT - firstPass.end));
+        if (!backProblem.isEmpty()) {
+            plan.problem =
+                tr("The way back to the start leaves the field: the headland must be wider, or the turning radius "
+                   "smaller.");
+            return plan;
+        }
+        exitS = firstPass.s;
     }
-    if (length(back.last().point - axes.point(firstPass.start, firstPass.s)) > kTolerance) {
-        back.append({axes.point(firstPass.start, firstPass.s), -lastPass.direction * axes.along});
+    const double rowsEnd = farthestEnd(exitS, exitS, out);
+    for (const double run : kRunIns) {
+        const QPointF exit = axes.point(rowsEnd + (out * run), exitS);
+        if ((run == 0.0) || insideWithMargin(exit, polygon, kEdgeMargin)) {
+            if (length(exit - (back.isEmpty() ? path.last().point : back.last().point)) > kTolerance) {
+                back.append({exit, out * axes.along});
+            }
+            break;
+        }
     }
     path.append(back);
 

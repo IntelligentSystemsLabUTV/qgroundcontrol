@@ -6427,6 +6427,11 @@ Premi Ok per avviare l'auto-tuning.
       <source>The way back to the start leaves the field: the headland must be wider, or the turning radius smaller.</source>
       <translation>Il rientro alla partenza esce dal campo: serve una capezzagna più larga, oppure un raggio di sterzata più piccolo.</translation>
     </message>
+    <message>
+      <location filename="../src/MissionManager/FieldWorkComplexItem.cc" line="455"/>
+      <source>After some turns the rover has only %1 m of headland to straighten before it enters the row: it may touch the crop. A wider headland, or a smaller turning radius, gives it more room.</source>
+      <translation>Dopo alcune voltate il rover ha solo %1 m di capezzagna per raddrizzarsi prima di entrare nella fila: può toccare la coltura. Una capezzagna più larga, o un raggio di sterzata più piccolo, gli lascia più spazio.</translation>
+    </message>
   </context>
   <context>
     <name>FieldWorkEditor</name>
@@ -6606,6 +6611,11 @@ Premi Ok per avviare l'auto-tuning.
       <location filename="../src/PlanView/FieldWorkEditor.qml" line="322"/>
       <source>Path length</source>
       <translation>Lunghezza del percorso</translation>
+    </message>
+    <message>
+      <location filename="../src/PlanView/FieldWorkEditor.qml" line="320"/>
+      <source>Straight before the rows</source>
+      <translation>Dritto prima delle file</translation>
     </message>
     <message>
       <location filename="../src/PlanView/FieldWorkEditor.qml" line="325"/>

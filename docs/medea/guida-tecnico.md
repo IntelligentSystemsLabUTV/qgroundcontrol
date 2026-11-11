@@ -312,11 +312,19 @@ a goccia che va circa 5,5 m oltre il punto. Agli angoli il rover passa quindi un
   Una voltata va sempre oltre l'estremità più lontana delle file che scavalca, mai sopra una fila. Se una voltata esce dal campo il lavoro non si
   può salvare né caricare: l'editor dice di quanta capezzagna c'è bisogno, oppure (voltate a goccia vicino
   al lato del campo) suggerisce di allontanare la prima fila o di saltare file.
-- **Rientro:** dopo l'ultima passata il percorso gira in capezzagna verso la prima passata, come una voltata
-  (a U, oltre l'estremità più lontana delle file in mezzo, senza angoli: il rover non può girare sul posto) e, se
-  l'ultima passata finisce dall'altra parte del campo, torna lungo la prima passata, che il rover scavalca: mai in
-  diagonale sopra la coltura. Se non sta nel campo: "Il rientro alla partenza esce dal campo". Il
-  ritorno alla casetta (RTL) parte da lì: la partenza va messa vicino all'angolo da cui comincia il lavoro.
+- **Tratti dritti in capezzagna:** il lavoro comincia in capezzagna, prima della prima fila, e ogni voltata comincia e
+  finisce con un tratto dritto: il più lungo tra 4 m e 0 (a passi di 0,5 m) che lascia la voltata ad almeno 0,65 m
+  (mezzo rover) dal bordo del campo. Motivo, dal simulatore a 1,8 km/h con voltate di 2 m: uscito da una voltata il
+  rover ondeggia (0,37 m di scarto a 1-2 m, 0,16 m a 4 m, meno di 0,05 m da 5 m) e una ruota tocca la fascia della
+  fila che scavalca già da circa 0,35 m (rover largo 1,29 m, fascia di 0,6 m). Se in qualche voltata restano meno di
+  3 m (*Dritto prima delle file* nelle statistiche) l'editor avvisa senza bloccare: allargare la capezzagna o ridurre
+  il raggio. Con un lato del campo obliquo la voltata a U, che attraversa la capezzagna perpendicolare alle file, ha
+  meno spazio dove il lato si avvicina.
+- **Fine del lavoro:** in capezzagna dal lato della partenza, rivolto fuori dal campo. Se l'ultima passata finisce da
+  quel lato il rover ne esce e si ferma; altrimenti gira nella capezzagna opposta sulla prima passata (a U, oltre
+  l'estremità più lontana delle file in mezzo), la ripercorre (la scavalca, non ci passa sopra) ed esce. Se non sta nel
+  campo: "Il rientro alla partenza esce dal campo". *Torna alla base* (RTL) parte da lì; durante un lavoro il bridge
+  prima finisce la fila ed esce dal lato della partenza.
 - **Avvisi che bloccano il lavoro:** fascia coltivata larga quanto l'interfila (nessuno spazio per le
   ruote), nessuna fila nel campo, capezzagna troppo larga, voltate fuori dal campo, lato di riferimento
   più corto di 1 m.

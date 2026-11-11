@@ -24,6 +24,21 @@ Guide d'uso: [guida per l'operatore](guida-operatore.md), [guida per il tecnico]
 
 ## 2026-11-11
 
+### Lavoro in campo: entrare nelle file dritti e finire fuori dal campo
+
+**Perché.** Nel simulatore *Torna alla base* a fine lavoro faceva un giro sopra le file (il lavoro finiva all'inizio
+della prima fila rivolto verso il campo) e le file non sembravano dritte: uscito da una voltata il rover ondeggia per
+qualche metro e la voltata finiva esattamente all'inizio della fila, quindi entrava nella fila ancora storto. Con
+0,35 m di scarto una ruota tocca già la fascia della fila che il rover scavalca.
+
+**Cosa.**
+
+- Il lavoro comincia in capezzagna con un tratto dritto prima della prima fila; ogni voltata ha prima e dopo un
+  tratto dritto in capezzagna, fino a 4 m, quanto ci sta lasciando la voltata a 0,65 m dal bordo del campo.
+- Il lavoro finisce in capezzagna dal lato della partenza, rivolto fuori dal campo.
+- Avviso (non bloccante) se dopo una voltata restano meno di 3 m per raddrizzarsi; nelle statistiche *Dritto prima
+  delle file*.
+
 ### Lavoro in campo: voltate che il rover può seguire
 
 **Perché.** Nel simulatore un lavoro in campo si fermava dopo un minuto con "Lavoro interrotto: rover fuori

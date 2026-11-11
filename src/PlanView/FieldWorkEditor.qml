@@ -251,6 +251,15 @@ Rectangle {
                 visible:            text !== ""
             }
 
+            QGCLabel {
+                objectName:         "fieldWorkEditor_advice"
+                Layout.fillWidth:   true
+                wrapMode:           Text.WordWrap
+                color:              qgcPal.warningText
+                text:               missionItem.advice
+                visible:            text !== ""
+            }
+
             // Data of the rover: for the technician
             SectionHeader {
                 id:                 roverHeader
@@ -318,6 +327,9 @@ Rectangle {
                     wrapMode:           Text.WordWrap
                     text:               _root._turnsText()
                 }
+
+                QGCLabel { text: qsTr("Straight before the rows") }
+                QGCLabel { text: _root._distanceText(missionItem.shortestRunIn) }
 
                 QGCLabel { text: qsTr("Path length") }
                 QGCLabel { text: _root._lengthText(missionItem.pathLength) }

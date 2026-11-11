@@ -90,12 +90,14 @@ void FieldWorkComplexItemTest::_testRowsAndBulbTurns()
     const QList<QGeoCoordinate> coords = _waypointCoordinates(_fieldItem);
     QVERIFY(coords.count() > 2 * 24);
 
-    // First pass on the first row, from the south end of the row (6 m of headland) to the north end
+    // First pass on the first row, from the south end of the row (6 m of headland) to the north end, after a straight
+    // run in the headland to enter the row straight (as long as it stays 0.65 m from the edge: 5 m, from steps of 0.5)
     const QGeoCoordinate firstRowSouth =
         _polygonVertices[0].atDistanceAndAzimuth(6.0, 0).atDistanceAndAzimuth(1.25, 90);
     const QGeoCoordinate firstRowNorth = firstRowSouth.atDistanceAndAzimuth(_fieldLength - 12.0, 0);
-    QVERIFY(coords[0].distanceTo(firstRowSouth) < 0.1);
-    QVERIFY(coords[1].distanceTo(firstRowNorth) < 0.1);
+    QVERIFY(coords[0].distanceTo(firstRowSouth.atDistanceAndAzimuth(4.0, 180)) < 0.1);  // 4 m at most
+    QVERIFY(coords[1].distanceTo(firstRowSouth) < 0.1);
+    QVERIFY(coords[2].distanceTo(firstRowNorth) < 0.1);
 
     // Every point, turns included, stays inside the field
     for (const QGeoCoordinate& coord : coords) {
@@ -121,7 +123,19 @@ void FieldWorkComplexItemTest::_testUTurns()
     const QList<QGeoCoordinate> coords = _waypointCoordinates(_fieldItem);
     const QGeoCoordinate firstPassSouth =
         _polygonVertices[0].atDistanceAndAzimuth(6.0, 0).atDistanceAndAzimuth(2.5, 90);
-    QVERIFY(coords[0].distanceTo(firstPassSouth) < 0.1);
+    QVERIFY(coords[1].distanceTo(firstPassSouth) < 0.1);
+    // Straight on in the headland before and after the U turn (2 m deep), as long as it stays 0.65 m from the edge of
+    // the 6 m headland: 3 m
+    const QGeoCoordinate firstPassNorth = firstPassSouth.atDistanceAndAzimuth(_fieldLength - 12.0, 0);
+    QVERIFY(coords[2].distanceTo(firstPassNorth) < 0.1);
+    QVERIFY(coords[3].distanceTo(firstPassNorth.atDistanceAndAzimuth(3.0, 0)) < 0.1);
+    QCOMPARE(_fieldItem->shortestRunIn(), 3.0);
+    QVERIFY(_fieldItem->advice().isEmpty());
+    // A narrower headland leaves less room to straighten before the rows: a warning, the job can still be done
+    _fieldItem->headland()->setRawValue(4.0);
+    QVERIFY(_fieldItem->problem().isEmpty());
+    QVERIFY(_fieldItem->shortestRunIn() < 3.0);
+    QVERIFY(!_fieldItem->advice().isEmpty());
     for (const QGeoCoordinate& coord : coords) {
         QVERIFY(_fieldItem->surveyAreaPolygon()->containsCoordinate(coord));
     }
@@ -307,35 +321,51 @@ void FieldWorkComplexItemTest::_testSkipRowsTurns()
 
 void FieldWorkComplexItemTest::_testReturnAlongHeadland()
 {
-    // Even number of passes: the last one ends at the starting end, the rover comes back along that headland.
-    // Odd number: it comes back along the far headland and then along the first pass. Never across the field.
-    // Passes in order: the last pass is on the last row
-    _fieldItem->turnPattern()->setRawValue(FieldWorkComplexItem::BulbTurns);
+    // The job ends in the south headland (where it started), heading out of the field (south), so that the rover can
+    // go back to base without turning over the crop. Even number of passes: the last one ends there and the rover just
+    // drives out of it. Odd number: it turns in the north headland onto the first pass and drives it back and out.
+    // After the last pass every point is in a headland or on the first pass, never between the rows.
+    _fieldItem->turnPattern()->setRawValue(FieldWorkComplexItem::BulbTurns);  // passes in order
+    const QGeoCoordinate rowsSouth = _polygonVertices[0].atDistanceAndAzimuth(6.0, 0);
+    const auto local = [&rowsSouth](const QGeoCoordinate& coord) {
+        const double distance = rowsSouth.distanceTo(coord);
+        const double azimuth = qDegreesToRadians(rowsSouth.azimuthTo(coord));
+        return QPointF(distance * std::sin(azimuth), distance * std::cos(azimuth));  // east, north of the rows start
+    };
     for (const int rows : {6, 5}) {
         _fieldItem->rowsToWork()->setRawValue(rows);
-        const QList<QGeoCoordinate> coords = _waypointCoordinates(_fieldItem);
-        QVERIFY(coords.last().distanceTo(coords.first()) < 0.1);
-
-        // After the last pass every point is in a headland or on the first pass, never between the rows
-        const QGeoCoordinate firstPassSouth = coords.first();
-        const double firstPassEast = 1.25;
-        bool returning = false;
-        int passEnds = 0;
-        for (qsizetype i = 1; i < coords.count(); i++) {
-            const double north = firstPassSouth.distanceTo(coords[i]) *
-                                 std::cos(qDegreesToRadians(firstPassSouth.azimuthTo(coords[i])));
-            const double east = (firstPassSouth.distanceTo(coords[i]) *
-                                 std::sin(qDegreesToRadians(firstPassSouth.azimuthTo(coords[i])))) + firstPassEast;
-            const bool inHeadland = (north < 0.05) || (north > _fieldLength - 12.0 - 0.05);
-            if (!returning && inHeadland && (std::abs(east - (firstPassEast + ((rows - 1) * 2.5))) < 0.1)) {
-                passEnds++;
-                returning = passEnds > 0;  // end of the last pass reached
-            }
-            if (returning) {
-                QVERIFY(inHeadland || (std::abs(east - firstPassEast) < 0.1));
+        QList<MissionItem*> items;
+        _fieldItem->appendMissionItems(items, this);
+        QList<const MissionItem*> waypoints;
+        for (const MissionItem* item : items) {
+            if (item->command() == MAV_CMD_NAV_WAYPOINT) {
+                waypoints.append(item);
             }
         }
-        QVERIFY(returning);
+        const QPointF end = local(waypoints.last()->coordinate());
+        QVERIFY2((end.y() < -1.0) && (end.y() > -6.0), qPrintable(QString::number(end.y())));  // south headland
+        QVERIFY(std::abs(std::remainder(waypoints.last()->param4() - 180.0, 360.0)) < 1e-6);   // heading south
+        const double lastPassEast = 1.25 + ((rows - 1) * 2.5);
+        const double exitEast = (rows % 2 == 0) ? lastPassEast : 1.25;
+        QVERIFY2(std::abs(end.x() - exitEast) < 0.1, qPrintable(QString::number(end.x())));
+
+        // From the north end of the last pass on: headlands or the first pass only
+        qsizetype lastPassEnd = -1;
+        for (qsizetype i = 0; i < waypoints.count(); i++) {
+            const QPointF point = local(waypoints[i]->coordinate());
+            if ((std::abs(point.x() - lastPassEast) < 0.1) &&
+                (std::abs(point.y() - ((rows % 2 == 0) ? 0.0 : 88.0)) < 0.1)) {
+                lastPassEnd = i;
+            }
+        }
+        QVERIFY(lastPassEnd > 0);
+        for (qsizetype i = lastPassEnd; i < waypoints.count(); i++) {
+            const QPointF point = local(waypoints[i]->coordinate());
+            const bool inHeadland = (point.y() < 0.05) || (point.y() > 88.0 - 0.05);
+            QVERIFY2(
+                inHeadland || (std::abs(point.x() - 1.25) < 0.1),
+                qPrintable(QStringLiteral("rows %1, point %2: %3, %4").arg(rows).arg(i).arg(point.x()).arg(point.y())));
+        }
     }
 }
 
