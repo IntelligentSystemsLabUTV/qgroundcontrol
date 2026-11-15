@@ -229,13 +229,17 @@ segnato con un punto interrogativo rosso. Di solito manca da disegnare il percor
 3. Durante il lavoro i pulsanti in basso sono:
    - **FERMA** (rosso, il più grande): il rover si ferma subito e spegne i motori. Il lavoro **non** si
      perde: resta sospeso (*In pausa*);
-   - **Torna alla base** (chiede conferma): il rover interrompe il lavoro, torna al punto di partenza
+   - **Torna alla base**: prima di muovere il rover la dashboard **mostra sulla mappa, in azzurro, la strada che
+     farà da dove si trova**; in basso compaiono **Conferma rientro** e **Annulla**. Controlla che la strada sia
+     libera e conferma. Il rover interrompe il lavoro, torna al punto di partenza
      (*Rientro*) e si ferma. Il punto di partenza è dove il rover si trovava all'avvio del lavoro: prima del
      primo lavoro, e quando il rover è già lì, il pulsante non c'è. **Il rover non gira dentro le file**: finisce
      la fila che sta facendo e, se quella va verso il fondo del campo, anche la voltata e la fila successiva, finché
      esce in capezzagna dal lato della partenza; poi va lungo la capezzagna fino al punto dove il lavoro era
      cominciato e **torna alla base per la stessa strada fatta all'andata**, senza tagliare dritto su terreno che
-     non conosce (recinzioni, fossi). Se finire il lavoro è più corto, lo finisce.
+     non conosce (recinzioni, fossi). Se finire il lavoro è più corto, lo finisce. Se il ritorno non si può fare
+     senza passare sulle file, compare "**Ritorno automatico non disponibile, pilotarlo a mano**": riporta il
+     rover con il joystick.
 4. Quando il rover è *In pausa* i pulsanti sono:
    - **Riprendi**: il rover riparte da dove si era fermato;
    - **Torna alla base**: come sopra;

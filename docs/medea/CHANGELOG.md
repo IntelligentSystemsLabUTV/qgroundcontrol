@@ -24,6 +24,22 @@ Guide d'uso: [guida per l'operatore](guida-operatore.md), [guida per il tecnico]
 
 ## 2026-11-15
 
+### Guida: Torna alla base mostra prima la strada sulla mappa
+
+**Perché.** L'operatore deve vedere da dove passerà il rover prima che si muova.
+
+**Cosa.** *Torna alla base* chiede al rover la strada che farebbe da dove si trova e la disegna in azzurro,
+inquadrandola tutta; in basso **Conferma rientro** e **Annulla** (FERMA resta). Mentre il rover lavora la strada
+viene chiesta di nuovo ogni 2 s. Protocollo: `MAV_CMD_REQUEST_MESSAGE(DEBUG_FLOAT_ARRAY)`, risposta in messaggi
+`DEBUG_FLOAT_ARRAY` `RTL_PATH` (punti in metri dalla base). Se il ritorno non è fattibile il rover lo rifiuta con
+"Ritorno automatico non disponibile, pilotarlo a mano". `MedeaRoverJobStatus::returnPreview`; test
+`MedeaRoverJobStatusTest::_testReturnPreviewCoordinates`.
+
+### Lavoro in campo: campi casuali per provare il rover
+
+`FieldWorkComplexItemTest::_dumpRandomFields` (solo con `MEDEA_FIELD_DUMP=<json>`): campi casuali con i waypoint
+del Lavoro in campo, per `medea_bridge/tools/return_check.py` (senza ROS) e `return_sim.py` (simulatore).
+
 ### Guida: la mappa segue il rover prima che arrivi al bordo
 
 **Perché.** La mappa si spostava solo quando il rover usciva dallo schermo o finiva sotto un angolo degli strumenti:
