@@ -12,7 +12,7 @@ PerimeterPlanCreator::PerimeterPlanCreator(PlanMasterController* planMasterContr
 
 void PerimeterPlanCreator::createPlan(const QGeoCoordinate& mapCenterCoord)
 {
-    _planMasterController->removeAll();
+    _removeAllKeepPlannedHome();
     VisualMissionItem* const perimeterItem =
         _missionController->insertComplexMissionItem(PerimeterComplexItem::canonicalName, mapCenterCoord, -1);
     _missionController->insertLandItem(mapCenterCoord, -1);

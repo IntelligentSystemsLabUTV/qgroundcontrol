@@ -12,7 +12,7 @@ FieldWorkPlanCreator::FieldWorkPlanCreator(PlanMasterController* planMasterContr
 
 void FieldWorkPlanCreator::createPlan(const QGeoCoordinate& mapCenterCoord)
 {
-    _planMasterController->removeAll();
+    _removeAllKeepPlannedHome();
     VisualMissionItem* const fieldWorkItem =
         _missionController->insertComplexMissionItem(FieldWorkComplexItem::canonicalName, mapCenterCoord, -1);
     _missionController->insertLandItem(mapCenterCoord, -1);

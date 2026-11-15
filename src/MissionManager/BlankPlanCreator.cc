@@ -9,5 +9,5 @@ BlankPlanCreator::BlankPlanCreator(PlanMasterController* planMasterController)
 
 void BlankPlanCreator::createPlan(const QGeoCoordinate& /*mapCenterCoord*/)
 {
-    _planMasterController->removeAll();
+    _removeAllKeepPlannedHome();
 }

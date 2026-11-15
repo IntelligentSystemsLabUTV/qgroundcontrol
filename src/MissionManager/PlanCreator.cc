@@ -17,3 +17,12 @@ bool PlanCreator::supportsVehicleClass(QGCMAVLinkTypes::VehicleClass_t vehicleCl
 {
     return _supportedVehicleClasses.contains(vehicleClass);
 }
+
+void PlanCreator::_removeAllKeepPlannedHome()
+{
+    const QGeoCoordinate plannedHome = _missionController->plannedHomePosition();
+    _planMasterController->removeAll();
+    if (plannedHome.isValid()) {
+        _missionController->setHomePosition(plannedHome);
+    }
+}

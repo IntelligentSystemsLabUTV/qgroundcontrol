@@ -12,7 +12,7 @@ CorridorScanPlanCreator::CorridorScanPlanCreator(PlanMasterController* planMaste
 
 void CorridorScanPlanCreator::createPlan(const QGeoCoordinate& mapCenterCoord)
 {
-    _planMasterController->removeAll();
+    _removeAllKeepPlannedHome();
     // Ground vehicles have no takeoff: the plan starts directly with the pattern
     const Vehicle* const vehicle = _planMasterController->controllerVehicle();
     const bool groundVehicle = vehicle && vehicle->rover();

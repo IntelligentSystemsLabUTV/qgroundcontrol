@@ -11,7 +11,7 @@ PathPlanCreator::PathPlanCreator(PlanMasterController* planMasterController)
 
 void PathPlanCreator::createPlan(const QGeoCoordinate& mapCenterCoord)
 {
-    _planMasterController->removeAll();
+    _removeAllKeepPlannedHome();
     VisualMissionItem* const pathItem =
         _missionController->insertComplexMissionItem(PathComplexItem::canonicalName, mapCenterCoord, -1);
     _missionController->insertLandItem(mapCenterCoord, -1);

@@ -42,6 +42,7 @@ private slots:
     void _testManualCreationRestoredOnIndividualItemRemoval();
 
     void _testPlanCreatorsFiltered();
+    void _testPlanCreatorKeepsPlannedHome();
 
 private:
     enum DirtyScenario {

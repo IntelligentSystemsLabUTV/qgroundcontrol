@@ -30,6 +30,10 @@ public:
     bool supportsVehicleClass(QGCMAVLinkTypes::VehicleClass_t vehicleClass) const;
 
 protected:
+    /// Removes the current plan keeping the planned home position, which the user has to set before a template can be
+    /// chosen. Without it the home would be moved 30 meters north of the first coordinate of the new plan.
+    void _removeAllKeepPlannedHome();
+
     PlanMasterController* _planMasterController;
     MissionController* _missionController;
 

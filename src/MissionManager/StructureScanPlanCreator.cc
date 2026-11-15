@@ -11,7 +11,7 @@ StructureScanPlanCreator::StructureScanPlanCreator(PlanMasterController* planMas
 
 void StructureScanPlanCreator::createPlan(const QGeoCoordinate& mapCenterCoord)
 {
-    _planMasterController->removeAll();
+    _removeAllKeepPlannedHome();
     VisualMissionItem* takeoffItem = _missionController->insertTakeoffItem(mapCenterCoord, -1);
     _missionController->insertComplexMissionItem(StructureScanComplexItem::canonicalName, mapCenterCoord, -1)->setWizardMode(true);
     _missionController->insertLandItem(mapCenterCoord, -1);

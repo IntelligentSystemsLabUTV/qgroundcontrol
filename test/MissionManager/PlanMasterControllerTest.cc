@@ -5,6 +5,7 @@
 #include "MissionManager.h"
 #include "MultiSignalSpy.h"
 #include "MultiVehicleManager.h"
+#include "PlanCreator.h"
 #include "PlanMasterController.h"
 #include "QmlObjectListModel.h"
 #include "SettingsManager.h"
@@ -631,6 +632,31 @@ void PlanMasterControllerTest::_testPlanCreatorsFiltered()
     QVERIFY(fixedWingCount > 0);
 
     QCOMPARE(fixedWingCount, multiRotorCount - 1);
+}
+
+void PlanMasterControllerTest::_testPlanCreatorKeepsPlannedHome()
+{
+    // The templates are enabled only once the user has set the planned home position: choosing one must not move it
+    PlanMasterController roverController(MAV_AUTOPILOT_GENERIC, MAV_TYPE_GROUND_ROVER);
+    roverController.setFlyView(false);
+    roverController.start();
+    QVERIFY(roverController.planCreators() != nullptr);
+    QVERIFY(roverController.planCreators()->count() > 0);
+
+    const QGeoCoordinate plannedHome(42.1016, 12.6277, 0);
+    const QGeoCoordinate mapCenter = plannedHome.atDistanceAndAzimuth(200, 135);
+    for (int i = 0; i < roverController.planCreators()->count(); i++) {
+        PlanCreator* const creator = roverController.planCreators()->value<PlanCreator*>(i);
+        QVERIFY(creator);
+        roverController.removeAll();
+        roverController.missionController()->setHomePosition(plannedHome);
+
+        creator->createPlan(mapCenter);
+
+        const QGeoCoordinate homeAfter = roverController.missionController()->plannedHomePosition();
+        QVERIFY2(homeAfter.isValid(), qPrintable(creator->property("name").toString()));
+        QVERIFY2(homeAfter.distanceTo(plannedHome) < 0.01, qPrintable(creator->property("name").toString()));
+    }
 }
 
 #include "UnitTest.h"
