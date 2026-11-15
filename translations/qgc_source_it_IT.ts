@@ -19625,6 +19625,26 @@ Premi &apos;Ok&apos; per caricare comunque il piano.</translation>
       <source>The job is closed and cannot be resumed: it can only be started again from the beginning. The rover stays where it is.</source>
       <translation>Il lavoro viene chiuso e non si potrà riprendere: si potrà solo ricominciare da capo. Il rover resta dov&apos;è.</translation>
     </message>
+      <message>
+      <location filename="../src/FlyView/RoverJobControls.qml"/>
+      <source>Confirm return</source>
+      <translation>Conferma rientro</translation>
+    </message>
+    <message>
+      <location filename="../src/FlyView/RoverJobControls.qml"/>
+      <source>Cancel</source>
+      <translation>Annulla</translation>
+    </message>
+    <message>
+      <location filename="../src/FlyView/RoverJobControls.qml"/>
+      <source>Return to base: the light blue line on the map is the way the rover will take from where it is. It cannot turn inside a row: it finishes the row, leaves the field on the starting side and goes back the way it came. Confirm if the way is clear.</source>
+      <translation>Torna alla base: la linea azzurra sulla mappa è la strada che il rover farà da dove si trova. Non può girarsi dentro una fila: finisce la fila, esce dal campo dal lato della partenza e torna per la strada fatta all'andata. Conferma se la strada è libera.</translation>
+    </message>
+    <message>
+      <location filename="../src/FlyView/RoverJobControls.qml"/>
+      <source>Return to base: computing the way back...</source>
+      <translation>Torna alla base: calcolo della strada di rientro...</translation>
+    </message>
   </context>
   <context>
     <name>RoverJoystickIndicator</name>

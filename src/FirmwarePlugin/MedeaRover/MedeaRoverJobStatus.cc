@@ -2,7 +2,10 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstring>
 #include <numeric>
+
+#include <QtCore/QtMath>
 
 #include "AppSettings.h"
 #include "MedeaRoverFirmwarePlugin.h"
@@ -45,6 +48,7 @@ void MedeaRoverJobStatus::setVehicle(Vehicle* vehicle)
     }
     _vehicleConnections.clear();
     _vehicle = vehicle;
+    clearReturnPreview();
     _missionState = MISSION_STATE_UNKNOWN;
     _lastError.clear();
     _speedSamples.clear();
@@ -213,9 +217,110 @@ void MedeaRoverJobStatus::_updateState()
     _updateProgress();
 }
 
+void MedeaRoverJobStatus::requestReturnPreview()
+{
+    if (!_vehicle) {
+        return;
+    }
+    const bool wasPending = returnPreviewPending();
+    _returnPreviewWanted = true;
+    if (returnPreviewPending() != wasPending) {
+        emit returnPreviewChanged();
+    }
+    VehicleTypes::MavCmdAckHandlerInfo_t handlerInfo{};
+    handlerInfo.resultHandler = &MedeaRoverJobStatus::_returnPreviewAck;
+    handlerInfo.resultHandlerData = this;
+    _vehicle->sendMavCommandWithHandler(&handlerInfo, _vehicle->defaultComponentId(), MAV_CMD_REQUEST_MESSAGE,
+                                        MAVLINK_MSG_ID_DEBUG_FLOAT_ARRAY);
+}
+
+void MedeaRoverJobStatus::clearReturnPreview()
+{
+    _returnPreviewWanted = false;
+    _previewChunks.clear();
+    _previewId = -1;
+    _returnPreview.clear();
+    emit returnPreviewChanged();
+}
+
+void MedeaRoverJobStatus::_returnPreviewAck(void* resultHandlerData, int /*compId*/, const mavlink_command_ack_t& ack,
+                                            VehicleTypes::MavCmdResultFailureCode_t /*failureCode*/)
+{
+    auto* const status = static_cast<MedeaRoverJobStatus*>(resultHandlerData);
+    if ((status == nullptr) || (ack.result == MAV_RESULT_ACCEPTED) || !status->_returnPreviewWanted) {
+        return;
+    }
+    status->clearReturnPreview();
+    emit status->returnPreviewRefused();
+}
+
+QVariantList MedeaRoverJobStatus::previewCoordinates(const QGeoCoordinate& home, const QList<QPointF>& eastNorth)
+{
+    QVariantList coordinates;
+    if (!home.isValid()) {
+        return coordinates;
+    }
+    for (const QPointF& point : eastNorth) {
+        const double distance = std::hypot(point.x(), point.y());
+        const double azimuth = qRadiansToDegrees(std::atan2(point.x(), point.y()));
+        coordinates.append(QVariant::fromValue(home.atDistanceAndAzimuth(distance, azimuth)));
+    }
+    return coordinates;
+}
+
+void MedeaRoverJobStatus::_returnPreviewChunk(const mavlink_message_t& message)
+{
+    mavlink_debug_float_array_t array{};
+    mavlink_msg_debug_float_array_decode(&message, &array);
+    const QString name = QString::fromLatin1(array.name, static_cast<qsizetype>(strnlen(array.name, sizeof(array.name))));
+    if (!_returnPreviewWanted || (name != QLatin1String(returnPreviewName))) {
+        return;
+    }
+    constexpr int header = 3;
+    const int pointCount = static_cast<int>(array.data[0]);
+    const int chunkCount = static_cast<int>(array.data[1]);
+    const int previewId = static_cast<int>(array.data[2]);
+    if ((pointCount < 1) || (chunkCount < 1) || (array.array_id >= chunkCount)) {
+        return;
+    }
+    if (previewId != _previewId) {  // a newer preview: the chunks of the older one are dropped
+        _previewChunks.clear();
+        _previewId = previewId;
+        _previewChunkCount = chunkCount;
+        _previewPointCount = pointCount;
+    }
+    constexpr int perChunk = (58 - header) / 2;
+    const int inChunk = std::min(perChunk, pointCount - (array.array_id * perChunk));
+    QList<QPointF> points;
+    for (int i = 0; i < inChunk; i++) {
+        points.append(QPointF(array.data[header + (2 * i)], array.data[header + (2 * i) + 1]));
+    }
+    _previewChunks.insert(array.array_id, points);
+    if (_previewChunks.count() < _previewChunkCount) {
+        return;
+    }
+    QList<QPointF> all;
+    for (int chunk = 0; chunk < _previewChunkCount; chunk++) {
+        all.append(_previewChunks.value(chunk));
+    }
+    _previewChunks.clear();
+    if (all.count() != _previewPointCount) {
+        return;
+    }
+    _returnPreview = previewCoordinates(_vehicle->homePosition(), all);
+    emit returnPreviewChanged();
+}
+
 void MedeaRoverJobStatus::_mavlinkMessageReceived(const mavlink_message_t& message)
 {
-    if ((message.msgid != MAVLINK_MSG_ID_MISSION_CURRENT) || !_vehicle || (message.sysid != _vehicle->id())) {
+    if (!_vehicle || (message.sysid != _vehicle->id())) {
+        return;
+    }
+    if (message.msgid == MAVLINK_MSG_ID_DEBUG_FLOAT_ARRAY) {
+        _returnPreviewChunk(message);
+        return;
+    }
+    if (message.msgid != MAVLINK_MSG_ID_MISSION_CURRENT) {
         return;
     }
 

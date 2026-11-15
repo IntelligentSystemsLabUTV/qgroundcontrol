@@ -1,6 +1,9 @@
 #pragma once
 
+#include <QtCore/QHash>
 #include <QtCore/QList>
+#include <QtCore/QPointF>
+#include <QtCore/QVariantList>
 #include <QtCore/QObject>
 #include <QtCore/QPointer>
 #include <QtCore/QTimer>
@@ -9,6 +12,7 @@
 #include <QtQmlIntegration/QtQmlIntegration>
 
 #include "MAVLinkLib.h"
+#include "VehicleTypes.h"
 
 class Vehicle;
 
@@ -37,6 +41,8 @@ class MedeaRoverJobStatus : public QObject
     Q_PROPERTY(Outcome outcome READ outcome NOTIFY outcomeChanged)
     Q_PROPERTY(QString outcomeReason READ outcomeReason NOTIFY outcomeChanged)
     Q_PROPERTY(QString lastError READ lastError NOTIFY lastErrorChanged)
+    Q_PROPERTY(QVariantList returnPreview READ returnPreview NOTIFY returnPreviewChanged)
+    Q_PROPERTY(bool returnPreviewPending READ returnPreviewPending NOTIFY returnPreviewChanged)
 
 public:
     explicit MedeaRoverJobStatus(QObject* parent = nullptr);
@@ -95,6 +101,24 @@ public:
     /// The operator has read the notice about the last job
     Q_INVOKABLE void clearOutcome();
 
+    /// The way Torna alla base would take from where the rover is now, as coordinates (empty until the rover sends it)
+    QVariantList returnPreview() const { return _returnPreview; }
+
+    bool returnPreviewPending() const { return _returnPreviewWanted && _returnPreview.isEmpty(); }
+
+    /// Ask the rover for the way back (again, while the preview is shown and the rover moves); a refusal of the rover
+    /// gives returnPreviewRefused (its reason arrives as a rover error)
+    Q_INVOKABLE void requestReturnPreview();
+
+    /// The preview is not shown any more: the points that still arrive are ignored
+    Q_INVOKABLE void clearReturnPreview();
+
+    /// Name of the DEBUG_FLOAT_ARRAY messages of the preview (medea_bridge PREVIEW_NAME)
+    static constexpr const char* returnPreviewName = "RTL_PATH";
+
+    /// Coordinates of a preview from its points, metres (east, north) from `home`
+    static QVariantList previewCoordinates(const QGeoCoordinate& home, const QList<QPointF>& eastNorth);
+
     /// Distance covered along `path` by a rover at `position` driving to the point `target` (index in `path`). The
     /// leg being driven counts for what is left of it: the distance still to go to its end, never less than 0.
     static double coveredDistance(const QList<QGeoCoordinate>& path, int target, const QGeoCoordinate& position);
@@ -112,6 +136,8 @@ signals:
     void progressChanged();
     void outcomeChanged();
     void lastErrorChanged();
+    void returnPreviewChanged();
+    void returnPreviewRefused();
 
 private:
     void _updateState();
@@ -122,6 +148,9 @@ private:
     void _setOutcome(Outcome outcome, const QString& reason);
     void _mavlinkMessageReceived(const mavlink_message_t& message);
     void _textMessageReceived(int sysid, int componentid, int severity, const QString& text);
+    void _returnPreviewChunk(const mavlink_message_t& message);
+    static void _returnPreviewAck(void* resultHandlerData, int compId, const mavlink_command_ack_t& ack,
+                                  VehicleTypes::MavCmdResultFailureCode_t failureCode);
     void _sampleSpeed();
     double _averageSpeed() const;
 
@@ -144,4 +173,11 @@ private:
     double _remainingTime = -1;
     int _pointIndex = 0;
     QList<double> _speedSamples;  ///< ground speed while working, one per second, last minute
+
+    bool _returnPreviewWanted = false;
+    QVariantList _returnPreview;
+    int _previewId = -1;                   ///< preview the chunks below belong to
+    int _previewChunkCount = 0;
+    int _previewPointCount = 0;
+    QHash<int, QList<QPointF>> _previewChunks;  ///< chunk number -> its points
 };

@@ -35,6 +35,9 @@ Rectangle {
                                         && _activeVehicle.coordinate.distanceTo(_activeVehicle.homePosition) <= _atHomeMeters
     readonly property real _atHomeMeters: 2
     property bool   _hasButtons:        _ready || _working || _paused || _returning
+    // Torna alla base first shows on the map the way the rover would take from where it is, then the operator confirms
+    property bool   _previewOpen:       false
+    property bool   _previewReady:      _jobStatus.returnPreview.length > 1
     // The state comes from what the bridge understands of the rover logs: if the motors are on while it shows a
     // rover that is ready or paused, Stop must be there all the same (the bridge never refuses it)
     property bool   _motorsOnUnexpected: (_ready || _paused) && _activeVehicle && _activeVehicle.armed
@@ -47,6 +50,37 @@ Rectangle {
 
     QGCPalette { id: qgcPal }
 
+    function _openReturnPreview() {
+        _previewOpen = true
+        _jobStatus.requestReturnPreview()
+    }
+
+    function _closeReturnPreview() {
+        _previewOpen = false
+        _jobStatus.clearReturnPreview()
+    }
+
+    // Only from these states the return can start: anything else (manual driving, emergency, already returning)
+    // closes the preview
+    on_StateChanged: {
+        if (_previewOpen && !(_ready || _working || _paused)) {
+            _closeReturnPreview()
+        }
+    }
+
+    Connections {
+        target:                         control._jobStatus
+        function onReturnPreviewRefused() { control._previewOpen = false }
+    }
+
+    // While the rover works the way back changes as it goes on: asked again every 2 s
+    Timer {
+        interval:   2000
+        repeat:     true
+        running:    control._previewOpen && control._working
+        onTriggered: control._jobStatus.requestReturnPreview()
+    }
+
     function _confirm(title, text, action) {
         QGroundControl.showMessageDialog(control, title, text, Dialog.Yes | Dialog.No, action)
     }
@@ -54,6 +88,10 @@ Rectangle {
     // What the operator can do when no button is shown, or why a button is not available. The emergency stop and the
     // fault are explained by RoverStatusBanner
     function _hint() {
+        if (_previewOpen) {
+            return _previewReady ? qsTr("Return to base: the light blue line on the map is the way the rover will take from where it is. It cannot turn inside a row: it finishes the row, leaves the field on the starting side and goes back the way it came. Confirm if the way is clear.")
+                                 : qsTr("Return to base: computing the way back...")
+        }
         switch (_state) {
         case MedeaRoverJobStatus.NotConnected:
             return qsTr("The rover is not connected")
@@ -107,7 +145,7 @@ Rectangle {
                 objectName:         "roverJob_start"
                 text:               qsTr("Start work")
                 backgroundColor:    control._startColor
-                visible:            control._ready
+                visible:            control._ready && !control._previewOpen
                 enabled:            control._jobLoaded
                 onClicked: control._confirm(qsTr("Start work"),
                                             qsTr("The rover starts moving and carries out the job loaded on it. Make sure nobody is in the work area."),
@@ -130,7 +168,7 @@ Rectangle {
                 objectName:         "roverJob_resume"
                 text:               qsTr("Resume")
                 backgroundColor:    control._startColor
-                visible:            control._paused
+                visible:            control._paused && !control._previewOpen
                 onClicked:          control._activeVehicle.startMission()
             }
 
@@ -138,10 +176,29 @@ Rectangle {
                 objectName:         "roverJob_return"
                 text:               qsTr("Return to base")
                 backgroundColor:    control._returnColor
-                visible:            control._hasHome && !control._atHome && (control._ready || control._working || control._paused)
-                onClicked: control._confirm(qsTr("Return to base"),
-                                            qsTr("The rover stops the job and drives back to its starting point: it cannot turn inside a row, so it first finishes the row it is on, leaves the field on the starting side and goes back the way it came."),
-                                            function() { control._activeVehicle.guidedModeRTL(false) })
+                visible:            control._hasHome && !control._atHome && (control._ready || control._working || control._paused) && !control._previewOpen
+                onClicked:          control._openReturnPreview()
+            }
+
+            // The way back shown on the map (light blue line): the operator checks it, then confirms
+            JobButton {
+                objectName:         "roverJob_confirmReturn"
+                text:               qsTr("Confirm return")
+                backgroundColor:    control._returnColor
+                visible:            control._previewOpen
+                enabled:            control._previewReady
+                onClicked: {
+                    control._activeVehicle.guidedModeRTL(false)
+                    control._closeReturnPreview()
+                }
+            }
+
+            JobButton {
+                objectName:         "roverJob_cancelReturn"
+                text:               qsTr("Cancel")
+                backgroundColor:    control._endColor
+                visible:            control._previewOpen
+                onClicked:          control._closeReturnPreview()
             }
 
             // The STOP of the operating rules: the job is closed and can only be started again from the beginning
@@ -149,7 +206,7 @@ Rectangle {
                 objectName:         "roverJob_end"
                 text:               qsTr("End work")
                 backgroundColor:    control._endColor
-                visible:            control._paused
+                visible:            control._paused && !control._previewOpen
                 onClicked: control._confirm(qsTr("End work"),
                                             qsTr("The job is closed and cannot be resumed: it can only be started again from the beginning. The rover stays where it is."),
                                             function() { control._activeVehicle.sendCommand(control._autopilotComponentId, control._mavCmdArmDisarm, false /* showError */, 0) })

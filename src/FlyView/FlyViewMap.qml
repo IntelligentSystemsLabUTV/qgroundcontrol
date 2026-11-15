@@ -37,6 +37,30 @@ FlightMap {
     property bool   _keepMapCenteredOnVehicle:  _flyViewSettings.keepMapCenteredOnVehicle.rawValue
 
     property bool   _disableVehicleTracking:    false
+    // MEDEA rover: the way Torna alla base would take, shown before the operator confirms it
+    property var    _roverJobStatus:            globals.roverJobStatusFlyView
+    property var    _returnPreview:             _roverJobStatus ? _roverJobStatus.returnPreview : []
+    property bool   _returnPreviewShown:        _returnPreview.length > 1
+
+    // The whole way back in view when it first appears (the map does not follow the rover meanwhile)
+    on_ReturnPreviewShownChanged: {
+        if (!_returnPreviewShown) {
+            return
+        }
+        var points = _returnPreview.concat(_activeVehicleCoordinate.isValid ? [_activeVehicleCoordinate] : [])
+        var north = -90, south = 90, east = -180, west = 180
+        for (var i = 0; i < points.length; i++) {
+            north = Math.max(north, points[i].latitude)
+            south = Math.min(south, points[i].latitude)
+            east = Math.max(east, points[i].longitude)
+            west = Math.min(west, points[i].longitude)
+        }
+        // room around it, more at the bottom where the buttons are
+        var latMargin = Math.max((north - south) * 0.25, 0.00005)
+        var lonMargin = Math.max((east - west) * 0.25, 0.00005)
+        setVisibleRegion(QtPositioning.rectangle(QtPositioning.coordinate(north + latMargin, west - lonMargin),
+                                                 QtPositioning.coordinate(south - (latMargin * 2), east + lonMargin)))
+    }
     property bool   _keepVehicleCentered:       pipMode ? true : false
     property bool   _saveZoomLevelSetting:      true
 
@@ -168,7 +192,7 @@ FlightMap {
     }
 
     function updateMapToVehiclePosition() {
-        if (animateLat.running || animateLong.running) {
+        if (animateLat.running || animateLong.running || _returnPreviewShown) {
             return
         }
         // We let FlightMap handle first vehicle position
@@ -266,6 +290,15 @@ FlightMap {
             function onUpdateLastPoint(coordinate) { trajectoryPolyline.replaceCoordinate(trajectoryPolyline.pathLength() - 1, coordinate) }
             function onPointsCleared() { trajectoryPolyline.path = [] }
         }
+    }
+
+    // MEDEA rover: preview of Torna alla base, light blue over the job (orange) and the track (red)
+    MapPolyline {
+        line.width: 6
+        line.color: "#29b6f6"
+        z:          QGroundControl.zOrderTrajectoryLines + 0.5
+        visible:    !pipMode && _returnPreviewShown
+        path:       _returnPreview
     }
 
     // Add the vehicles to the map

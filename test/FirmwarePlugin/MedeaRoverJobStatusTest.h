@@ -11,4 +11,5 @@ private slots:
     void _testStateForCustomMode();
     void _testCoveredDistance();
     void _testWithoutVehicle();
+    void _testReturnPreviewCoordinates();
 };

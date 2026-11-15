@@ -72,4 +72,21 @@ void MedeaRoverJobStatusTest::_testWithoutVehicle()
     QCOMPARE(status.state(), MedeaRoverJobStatus::NotConnected);
 }
 
+void MedeaRoverJobStatusTest::_testReturnPreviewCoordinates()
+{
+    // Points of the bridge: metres east and north of the home position
+    const QGeoCoordinate home(42.101638, 12.627671, 0);
+    const QVariantList coordinates = MedeaRoverJobStatus::previewCoordinates(
+        home, {QPointF(0, 0), QPointF(30, 0), QPointF(30, -40), QPointF(-3, 4)});
+    QCOMPARE(coordinates.count(), 4);
+    QVERIFY(coordinates[0].value<QGeoCoordinate>().distanceTo(home) < 0.01);
+    QVERIFY(qAbs(coordinates[1].value<QGeoCoordinate>().distanceTo(home) - 30.0) < 0.05);
+    QVERIFY(qAbs(home.azimuthTo(coordinates[1].value<QGeoCoordinate>()) - 90.0) < 0.1);
+    QVERIFY(qAbs(coordinates[2].value<QGeoCoordinate>().distanceTo(home) - 50.0) < 0.05);
+    QVERIFY(coordinates[2].value<QGeoCoordinate>().latitude() < home.latitude());
+    QVERIFY(qAbs(coordinates[3].value<QGeoCoordinate>().distanceTo(home) - 5.0) < 0.01);
+    // Without a home position there is nothing to draw
+    QVERIFY(MedeaRoverJobStatus::previewCoordinates(QGeoCoordinate(), {QPointF(1, 1)}).isEmpty());
+}
+
 UT_REGISTER_TEST(MedeaRoverJobStatusTest, TestLabel::Unit)
