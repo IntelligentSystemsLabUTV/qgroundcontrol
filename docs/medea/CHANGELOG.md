@@ -22,6 +22,44 @@ Guide d'uso: [guida per l'operatore](guida-operatore.md), [guida per il tecnico]
 
 ---
 
+## 2026-11-15
+
+### Lavoro in campo: le file che causano l'avviso arancione sono cerchiate sulla mappa
+
+**Perché.** L'avviso "dopo alcune voltate il rover ha solo N m di capezzagna per raddrizzarsi" non diceva quali
+voltate: con il campo di *Base* e i valori di serie sono solo due (i passaggi da un gruppo di file al successivo,
+negli angoli del campo), ma bisognava indovinarlo.
+
+**Cosa.** `FieldWorkComplexItem::shortRunIns` (ingressi nelle file raggiunti con meno di 3 m dritti dopo la voltata),
+disegnati in `FieldWorkMapVisual.qml` come cerchi arancioni quando il lavoro è selezionato; il testo dell'avviso lo
+dice. Test in `FieldWorkComplexItemTest`.
+
+### Guida: FERMA c'è anche quando i motori sono accesi e lo stato dice Pronto o In pausa
+
+**Perché.** Lo stato mostrato viene da ciò che il bridge capisce dai log del rover. Se sbaglia (rover in movimento,
+stato *Pronto*), il pulsante FERMA non c'era e il bridge lo rifiutava ("nessun lavoro in corso").
+
+**Cosa.** `RoverJobControls.qml`: FERMA visibile anche con il rover armato negli stati *Pronto* e *In pausa*. Nel
+bridge FERMA non viene più rifiutato: manda sempre `pause` (facoltativa senza lavoro in corso) e `arm(false)`.
+
+### Pianifica: la home resta dove è stata messa quando si sceglie un modello di piano
+
+**Perché.** In *Pianifica* si mette la home con un clic sulla mappa (i modelli di piano si abilitano solo dopo), poi si
+sceglie un modello (*Lavoro in campo*, *Percorso*, *Perimetro*): la home si spostava da sola, 30 m a nord del centro
+della mappa. Ci si accorgeva dello spostamento disegnando il campo (pulsante *Base*), quando compare la linea dalla
+home al primo punto. Succede anche in QGroundControl di serie con i modelli per droni.
+
+**Causa.** Ogni modello (`PlanCreator::createPlan`) comincia con `PlanMasterController::removeAll()`, che ricrea anche
+l'elemento delle impostazioni di missione e quindi cancella la home appena messa; al primo elemento inserito
+`MissionController::_setPlannedHomePositionFromFirstCoordinate` ne inventa una nuova, 30 m a nord della prima
+coordinata (qui il centro della mappa).
+
+**Cosa.** `PlanCreator::_removeAllKeepPlannedHome()`: svuota il piano e rimette la home che c'era. La usano tutti i
+modelli (anche Survey, Corridor Scan, Structure Scan e il piano vuoto). *Cancella* continua a togliere anche la home.
+
+**Test.** `PlanMasterControllerTest::_testPlanCreatorKeepsPlannedHome` (tutti i modelli del rover); a mano con
+l'interfaccia: home in un angolo della mappa, *Lavoro in campo*, *Base*: la home non si muove.
+
 ## 2026-11-11
 
 ### Lavoro in campo: comincia e finisce nello stesso punto, ritorno lungo la capezzagna
