@@ -134,11 +134,17 @@ void FieldWorkComplexItemTest::_testUTurns()
     QVERIFY(coords[3].distanceTo(firstPassNorth.atDistanceAndAzimuth(3.0, 0)) < 0.1);
     QCOMPARE(_fieldItem->shortestRunIn(), 3.0);
     QVERIFY(_fieldItem->advice().isEmpty());
+    QVERIFY(_fieldItem->shortRunIns().isEmpty());
     // A narrower headland leaves less room to straighten before the rows: a warning, the job can still be done
     _fieldItem->headland()->setRawValue(4.0);
     QVERIFY(_fieldItem->problem().isEmpty());
     QVERIFY(_fieldItem->shortestRunIn() < 3.0);
     QVERIFY(!_fieldItem->advice().isEmpty());
+    // The rows entered with too short a run are given for the map: each one is the start of a pass
+    QVERIFY(!_fieldItem->shortRunIns().isEmpty());
+    for (const QVariant& entry : _fieldItem->shortRunIns()) {
+        QVERIFY(_fieldItem->surveyAreaPolygon()->containsCoordinate(entry.value<QGeoCoordinate>()));
+    }
     for (const QGeoCoordinate& coord : coords) {
         QVERIFY(_fieldItem->surveyAreaPolygon()->containsCoordinate(coord));
     }

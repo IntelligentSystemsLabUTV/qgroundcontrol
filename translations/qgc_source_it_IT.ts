@@ -6429,8 +6429,8 @@ Premi Ok per avviare l'auto-tuning.
     </message>
     <message>
       <location filename="../src/MissionManager/FieldWorkComplexItem.cc" line="455"/>
-      <source>After some turns the rover has only %1 m of headland to straighten before it enters the row: it may touch the crop. A wider headland, or a smaller turning radius, gives it more room.</source>
-      <translation>Dopo alcune voltate il rover ha solo %1 m di capezzagna per raddrizzarsi prima di entrare nella fila: può toccare la coltura. Una capezzagna più larga, o un raggio di sterzata più piccolo, gli lascia più spazio.</translation>
+      <source>After some turns the rover has only %1 m of headland to straighten before it enters the row: it may touch the crop. A wider headland, or a smaller turning radius, gives it more room. The rows concerned are circled in orange on the map.</source>
+      <translation>Dopo alcune voltate il rover ha solo %1 m di capezzagna per raddrizzarsi prima di entrare nella fila: può toccare la coltura. Una capezzagna più larga, o un raggio di sterzata più piccolo, gli lascia più spazio. Le file interessate sono cerchiate in arancione sulla mappa.</translation>
     </message>
   </context>
   <context>

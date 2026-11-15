@@ -490,13 +490,26 @@ QString FieldWorkComplexItem::advice() const
         return QString();
     }
     return tr("After some turns the rover has only %1 m of headland to straighten before it enters the row: it may "
-              "touch the crop. A wider headland, or a smaller turning radius, gives it more room.")
+              "touch the crop. A wider headland, or a smaller turning radius, gives it more room. The rows concerned "
+              "are circled in orange on the map.")
         .arg(QString::number(plan.shortestRunIn, 'f', 1));
 }
 
 double FieldWorkComplexItem::shortestRunIn() const
 {
     return std::isfinite(_fieldPlan().shortestRunIn) ? _fieldPlan().shortestRunIn : 0.0;
+}
+
+QVariantList FieldWorkComplexItem::shortRunIns() const
+{
+    QVariantList entries;
+    const FieldPlan& plan = _fieldPlan();
+    if (plan.problem.isEmpty()) {
+        for (qsizetype i = 0; i < std::min(plan.shortRunIns.count(), kMaxVisualRows); i++) {
+            entries.append(QVariant::fromValue(plan.shortRunIns[i]));
+        }
+    }
+    return entries;
 }
 
 double FieldWorkComplexItem::pathLength() const
@@ -898,7 +911,11 @@ FieldWorkComplexItem::FieldPlan FieldWorkComplexItem::_computeFieldPlan() const
             if (std::abs(turnT - next.start) > kTolerance) {
                 turn.append({axes.point(next.start, next.s), next.direction * axes.along});
             }
-            plan.shortestRunIn = std::min(plan.shortestRunIn, std::abs(turnT - next.start));
+            const double runIn = std::abs(turnT - next.start);
+            plan.shortestRunIn = std::min(plan.shortestRunIn, runIn);
+            if (runIn < kSafeRunIn - kTolerance) {
+                plan.shortRunIns.append(fromLocalPlane(axes.point(next.start, next.s), origin));
+            }
             plan.bulbTurns = plan.bulbTurns || bulb;
             path.append(turn);
         }
@@ -930,8 +947,12 @@ FieldWorkComplexItem::FieldPlan FieldWorkComplexItem::_computeFieldPlan() const
                    "smaller.");
             return plan;
         }
-        plan.shortestRunIn =
-            std::min(plan.shortestRunIn, std::abs(backT - farthestEnd(exitS, exitS, lastPass.direction)));
+        const double backEntry = farthestEnd(exitS, exitS, lastPass.direction);
+        const double backRunIn = std::abs(backT - backEntry);
+        plan.shortestRunIn = std::min(plan.shortestRunIn, backRunIn);
+        if (backRunIn < kSafeRunIn - kTolerance) {
+            plan.shortRunIns.append(fromLocalPlane(axes.point(backEntry, exitS), origin));
+        }
         if (startFound) {
             back.append(lane);
         } else {

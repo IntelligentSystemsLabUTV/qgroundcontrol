@@ -56,6 +56,7 @@ public:
     Q_PROPERTY(QString problem READ problem NOTIFY fieldChanged)
     Q_PROPERTY(QString advice READ advice NOTIFY fieldChanged)
     Q_PROPERTY(double shortestRunIn READ shortestRunIn NOTIFY fieldChanged)
+    Q_PROPERTY(QVariantList shortRunIns READ shortRunIns NOTIFY fieldChanged)
     Q_PROPERTY(int referenceEdgeIndex READ referenceEdgeIndex NOTIFY fieldChanged)
     Q_PROPERTY(QVariantList referenceEdge READ referenceEdge NOTIFY fieldChanged)
     Q_PROPERTY(QVariantList cropRows READ cropRows NOTIFY fieldChanged)
@@ -121,6 +122,9 @@ public:
 
     /// Shortest straight run in the headland before entering a row after a turn, in meters
     double shortestRunIn() const;
+
+    /// Where the rover enters a row with too short a straight run after a turn (the cause of advice()), for the map
+    QVariantList shortRunIns() const;
 
     int referenceEdgeIndex() const;
     QVariantList referenceEdge() const;  ///< the two ends of the edge the rows are parallel to
@@ -212,6 +216,7 @@ private:
         int skippedPasses = 0;
         bool bulbTurns = false;
         double shortestRunIn = std::numeric_limits<double>::infinity();
+        QList<QGeoCoordinate> shortRunIns;  ///< row entries reached with less than the safe straight run
         QString problem;
     };
 
