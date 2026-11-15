@@ -1,11 +1,16 @@
 #include "FieldWorkComplexItemTest.h"
 
+#include <QtCore/QFile>
 #include <QtCore/QJsonArray>
+#include <QtCore/QJsonDocument>
+#include <QtCore/QJsonObject>
+#include <QtCore/QRandomGenerator>
 #include <QtCore/QtMath>
 #include <cmath>
 
 #include "CoordFixtures.h"
 #include "FieldWorkComplexItem.h"
+#include "QGCMapPolygon.h"
 #include "MissionItem.h"
 #include "MultiSignalSpy.h"
 
@@ -448,6 +453,120 @@ void FieldWorkComplexItemTest::_testSaveLoad()
     const QList<QGeoCoordinate> loadedCoords = _waypointCoordinates(loadedItem);
     QCOMPARE(loadedCoords.count(), expectedCoords.count());
     QVERIFY(loadedCoords.first().distanceTo(expectedCoords.first()) < 0.1);
+}
+
+/// Random fields with their field work, for the checks of the rover side (medea_bridge tools/return_check.py): runs
+/// only with MEDEA_FIELD_DUMP=<output .json>, MEDEA_FIELD_COUNT (default 200) and MEDEA_FIELD_SEED (default 1).
+/// Fields lie around the map origin of the rover simulator (CREA), which stays outside them: the rover starts there.
+void FieldWorkComplexItemTest::_dumpRandomFields()
+{
+    const QString output = qEnvironmentVariable("MEDEA_FIELD_DUMP");
+    if (output.isEmpty()) {
+        QSKIP("MEDEA_FIELD_DUMP not set");
+    }
+    const int count = qEnvironmentVariableIntValue("MEDEA_FIELD_COUNT") > 0 ? qEnvironmentVariableIntValue("MEDEA_FIELD_COUNT") : 200;
+    const quint32 seed = qEnvironmentVariableIsSet("MEDEA_FIELD_SEED") ? static_cast<quint32>(qEnvironmentVariableIntValue("MEDEA_FIELD_SEED")) : 1;
+    const double maxLength = qEnvironmentVariableIsSet("MEDEA_FIELD_MAX_M") ? qEnvironmentVariable("MEDEA_FIELD_MAX_M").toDouble() : 120.0;
+    QRandomGenerator random(seed);
+    const auto uniform = [&random](double low, double high) { return low + ((high - low) * random.generateDouble()); };
+    const QGeoCoordinate origin(42.101638327824894, 12.627671735073049, 0);
+
+    QJsonArray fields;
+    int attempts = 0;
+    while ((fields.count() < count) && (attempts++ < count * 20)) {
+        // Shape: rectangle, trapezoid (one oblique end), parallelogram or an irregular quadrilateral
+        const int shape = random.bounded(4);
+        const double length = uniform(std::min(20.0, maxLength), maxLength);
+        const double width = uniform(std::min(10.0, maxLength / 2), std::max(12.0, std::min(60.0, maxLength * 0.6)));
+        const double rotation = uniform(0, 360);
+        const double skew = (shape == 0) ? 0 : uniform(-25, 25);
+        const double distance = uniform(8, 30);
+        const QGeoCoordinate corner = origin.atDistanceAndAzimuth(distance, uniform(0, 360));
+        QList<QGeoCoordinate> polygon;
+        polygon.append(corner);
+        polygon.append(corner.atDistanceAndAzimuth(length, rotation));
+        polygon.append(polygon[1].atDistanceAndAzimuth(width / std::cos(qDegreesToRadians(skew)), rotation + 90 + skew));
+        if (shape == 1) {  // trapezoid: the far end oblique
+            polygon.append(corner.atDistanceAndAzimuth(width, rotation + 90));
+        } else if (shape == 2) {  // parallelogram
+            polygon.append(corner.atDistanceAndAzimuth(width / std::cos(qDegreesToRadians(skew)), rotation + 90 + skew));
+        } else if (shape == 3) {  // irregular: the last corner moved
+            polygon.append(corner.atDistanceAndAzimuth(width * uniform(0.8, 1.2), rotation + 90 + uniform(-15, 15)));
+        } else {
+            polygon.append(corner.atDistanceAndAzimuth(width, rotation + 90));
+        }
+        // The rover starts at the map origin: it must be outside the field
+        QGCMapPolygon probe;
+        probe.appendVertices(polygon);
+        if (probe.containsCoordinate(origin)) {
+            continue;
+        }
+
+        FieldWorkComplexItem* const item = new FieldWorkComplexItem(planController(), false /* flyView */, QString());
+        const double spacing = uniform(1.5, 4.0);
+        item->rowSpacing()->setRawValue(spacing);
+        item->rowWidth()->setRawValue(std::min(uniform(0.3, 1.0), spacing / 2));
+        item->rowsPerPass()->setRawValue((random.bounded(4) == 0) ? 2 : 1);
+        item->firstRowOffset()->setRawValue(spacing / 2);
+        item->headland()->setRawValue(uniform(4.0, 10.0));
+        item->turnRadius()->setRawValue(uniform(1.2, 2.5));
+        item->workSpeed()->setRawValue(0.5);
+        item->turnPattern()->setRawValue((random.bounded(5) == 0) ? FieldWorkComplexItem::BulbTurns : FieldWorkComplexItem::AutomaticTurns);
+        item->surveyAreaPolygon()->appendVertices(polygon);
+        for (int i = random.bounded(4); i > 0; i--) {
+            item->rotateRowDirection();
+        }
+        for (int i = random.bounded(4); i > 0; i--) {
+            item->rotateStartCorner();
+        }
+        if ((random.bounded(3) == 0) && (item->rowsInField() > 3)) {
+            item->rowsToWork()->setRawValue(2 + random.bounded(item->rowsInField() - 2));
+        }
+        if (!item->problem().isEmpty()) {
+            delete item;
+            continue;
+        }
+
+        QJsonObject field;
+        field["id"] = static_cast<int>(fields.count());
+        field["shape"] = QStringList{"rectangle", "trapezoid", "parallelogram", "irregular"}[shape];
+        field["rowSpacing"] = item->rowSpacing()->rawValue().toDouble();
+        field["rowWidth"] = item->rowWidth()->rawValue().toDouble();
+        field["rowsPerPass"] = item->rowsPerPass()->rawValue().toInt();
+        field["headland"] = item->headland()->rawValue().toDouble();
+        field["turnRadius"] = item->turnRadius()->rawValue().toDouble();
+        field["bulbTurns"] = item->bulbTurns();
+        field["rowsToWork"] = item->rowsToWork()->rawValue().toInt();
+        QJsonArray polygonJson;
+        for (const QGeoCoordinate& vertex : polygon) {
+            polygonJson.append(QJsonArray{vertex.latitude(), vertex.longitude()});
+        }
+        field["polygon"] = polygonJson;
+        QJsonArray rowsJson;
+        for (const QVariant& row : item->cropRows()) {
+            const QVariantList ends = row.toList();
+            const QGeoCoordinate a = ends[0].value<QGeoCoordinate>();
+            const QGeoCoordinate b = ends[1].value<QGeoCoordinate>();
+            rowsJson.append(QJsonArray{QJsonArray{a.latitude(), a.longitude()}, QJsonArray{b.latitude(), b.longitude()}});
+        }
+        field["rows"] = rowsJson;
+        QList<MissionItem*> missionItems;
+        item->appendMissionItems(missionItems, item);
+        QJsonArray waypoints;
+        for (const MissionItem* missionItem : missionItems) {
+            if (missionItem->command() == MAV_CMD_NAV_WAYPOINT) {
+                waypoints.append(QJsonArray{missionItem->param5(), missionItem->param6(), missionItem->param4()});
+            }
+        }
+        field["waypoints"] = waypoints;
+        field["speed"] = item->workSpeed()->rawValue().toDouble();
+        fields.append(field);
+        delete item;
+    }
+
+    QFile file(output);
+    QVERIFY(file.open(QIODevice::WriteOnly));
+    QVERIFY(file.write(QJsonDocument(fields).toJson(QJsonDocument::Compact)) > 0);
 }
 
 UT_REGISTER_TEST(FieldWorkComplexItemTest, TestLabel::Unit, TestLabel::MissionManager)

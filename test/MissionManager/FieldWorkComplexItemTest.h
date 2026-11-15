@@ -31,6 +31,7 @@ private slots:
     void _testReturnAlongHeadland();
     void _testWaypointHeadings();
     void _testSaveLoad();
+    void _dumpRandomFields();
 
 private:
     QList<QGeoCoordinate> _waypointCoordinates(FieldWorkComplexItem* item);
