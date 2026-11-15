@@ -24,6 +24,15 @@ Guide d'uso: [guida per l'operatore](guida-operatore.md), [guida per il tecnico]
 
 ## 2026-11-15
 
+### Guida: la mappa segue il rover prima che arrivi al bordo
+
+**Perché.** La mappa si spostava solo quando il rover usciva dallo schermo o finiva sotto un angolo degli strumenti:
+il rover restava a lungo vicino al bordo, anche sotto il riquadro *Lavoro* (che non è tra gli "inset" della mappa), e
+ogni tanto la mappa saltava.
+
+**Cosa.** `FlyViewMap.qml` (`recenterNeeded`): con un rover la mappa si ricentra appena il rover esce dal 40% centrale
+della vista. Dopo uno spostamento a mano della mappa restano i 10 secondi di attesa di serie.
+
 ### Lavoro in campo: le file che causano l'avviso arancione sono cerchiate sulla mappa
 
 **Perché.** L'avviso "dopo alcune voltate il rover ha solo N m di capezzagna per raddrizzarsi" non diceva quali

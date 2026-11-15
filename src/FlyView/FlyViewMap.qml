@@ -136,6 +136,15 @@ FlightMap {
         var centerRect = _insetCenterRect()
         //return !pointInRect(vehiclePoint,insetRect)
 
+        // MEDEA rover: the job panels are not in the tool insets and the operator must always see where the rover is
+        // going. The map follows it as soon as it leaves the middle of the view, not only when it reaches the edge.
+        if (_activeVehicle && _activeVehicle.rover) {
+            var marginX = centerRect.width * 0.3
+            var marginY = centerRect.height * 0.3
+            centerRect = Qt.rect(centerRect.x + marginX, centerRect.y + marginY,
+                                 centerRect.width - (2 * marginX), centerRect.height - (2 * marginY))
+        }
+
         // If we are outside the center inset rectangle, recenter
         if(!pointInRect(vehiclePoint, centerRect)){
             return true
