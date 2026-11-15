@@ -35,6 +35,9 @@ Rectangle {
                                         && _activeVehicle.coordinate.distanceTo(_activeVehicle.homePosition) <= _atHomeMeters
     readonly property real _atHomeMeters: 2
     property bool   _hasButtons:        _ready || _working || _paused || _returning
+    // The state comes from what the bridge understands of the rover logs: if the motors are on while it shows a
+    // rover that is ready or paused, Stop must be there all the same (the bridge never refuses it)
+    property bool   _motorsOnUnexpected: (_ready || _paused) && _activeVehicle && _activeVehicle.armed
     property real   _margins:           ScreenTools.defaultFontPixelWidth
     property real   _buttonWidth:       ScreenTools.defaultFontPixelWidth * 20
     property real   _buttonHeight:      ScreenTools.defaultFontPixelHeight * 2.5
@@ -119,7 +122,7 @@ Rectangle {
                 text:                   qsTr("Stop").toUpperCase()
                 pointSize:              ScreenTools.largeFontPointSize * 1.3
                 backgroundColor:        control._stopColor
-                visible:                control._working || control._returning
+                visible:                control._working || control._returning || control._motorsOnUnexpected
                 onClicked:              control._activeVehicle.pauseVehicle()
             }
 
