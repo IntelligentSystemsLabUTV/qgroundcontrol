@@ -47,7 +47,7 @@ In modalità avanzata tornano:
 4. **Schermo:** unità europee (m, km/h, ettari, °C) e scala dell'interfaccia al 115% sono già
    impostate (*Impostazioni → Generali*). Per lavorare al sole scegli *Schema colori → Esterni*
    (chiaro): sul PC il predefinito è *Interni* (scuro), sul tablet *Esterni*.
-5. **Prova:** senza rover puoi provare la postazione con il [rover finto](#prove-senza-rover) e con uno
+5. **Prova:** senza rover puoi provare la postazione con il [simulatore del rover](#prove-senza-rover) e con uno
    [stream video di prova](#provare-il-video-senza-camere).
 
 ## Video
@@ -186,11 +186,11 @@ schermata Guida ha allora solo i pulsanti grandi in basso, mostrati secondo lo s
 
 | Pulsante | Quando compare | Comando MAVLink | Al rover |
 | --- | --- | --- | --- |
-| Avvia lavoro (con conferma) | *Pronto*, attivo se c'è un lavoro caricato | `MAV_CMD_MISSION_START` | `start_mission` |
-| **FERMA** | *Al lavoro*, *Rientro* | `MAV_CMD_DO_PAUSE_CONTINUE` (0) | `pause` (si ferma, motori spenti, lavoro sospeso) |
-| Riprendi | *In pausa* | `MAV_CMD_DO_PAUSE_CONTINUE` (1) | `resume` |
-| Torna alla base (con conferma) | *Pronto*, *Al lavoro*, *In pausa*, solo con un punto di partenza (`HOME_POSITION`) e a più di 2 m da lì | `MAV_CMD_NAV_RETURN_TO_LAUNCH` | `return_home` |
-| Termina lavoro (con conferma) | *In pausa* | `MAV_CMD_COMPONENT_ARM_DISARM` (0) | `stop` (chiude il lavoro) |
+| Avvia lavoro (con conferma) | *Pronto*, attivo se c'è un lavoro caricato | `MAV_CMD_MISSION_START` | `stop`, `build`, `arm`, `start` |
+| **FERMA** | *Al lavoro*, *Rientro*, e ogni volta che i motori risultano accesi | `MAV_CMD_DO_PAUSE_CONTINUE` (0) | `pause`, poi `arm` spento (si ferma, lavoro sospeso) |
+| Riprendi | *In pausa* | `MAV_CMD_DO_PAUSE_CONTINUE` (1) | `arm`, `start` (percorso ricostruito se il rover è stato spostato) |
+| Torna alla base (con conferma) | *Pronto*, *Al lavoro*, *In pausa*, solo con un punto di partenza (`HOME_POSITION`) e a più di 2 m da lì | `MAV_CMD_NAV_RETURN_TO_LAUNCH` | `stop`, `build` della strada di ritorno, `arm`, `start` |
+| Termina lavoro (con conferma) | *In pausa* | `MAV_CMD_COMPONENT_ARM_DISARM` (0) | `stop`, `arm` spento (chiude il lavoro) |
 
 - *FERMA* è l'unico stop della dashboard e non fa perdere il lavoro; *Termina lavoro* è lo STOP delle
   regole operative del CREA. L'arresto di emergenza è solo il fungo elettrico sul rover.
@@ -220,9 +220,10 @@ schermata Guida ha allora solo i pulsanti grandi in basso, mostrati secondo lo s
     emergenza* o *Guasto* (con l'ultimo messaggio di errore del rover come motivo);
   - l'avviso di *Guasto* riporta l'ultimo `STATUSTEXT` di gravità *error* o superiore.
 - L'indicatore di posizione dice *RTK fisso*, *RTK float*, *GPS senza RTK* o *Nessuna posizione*
-  (da `GPS_RAW_INT.fix_type`); in modalità avanzata il tocco apre la pagina GPS di QGroundControl.
-- Con due pacchi batteria il bridge invia due `BATTERY_STATUS` (id 0 e 1): l'indicatore mostra il più
-  scarico, il dettaglio è nella pagina della batteria (modalità avanzata).
+  (da `GPS_RAW_INT.fix_type`); in modalità avanzata il tocco apre la pagina GPS di QGroundControl, con il
+  numero di satelliti. Il bridge mostra il **peggiore dei tre ricevitori** del rover (`ros.gnss_pvt` in
+  `bridge.yaml`); un ricevitore muto conta come *Nessuna posizione*. Nel simulatore resta *GPS senza RTK*.
+- Niente batteria: sul rover nessuna scheda la misura, il bridge non manda `BATTERY_STATUS`.
 - In modalità operatore sono nascosti il pulsante rosso di registrazione video (sembrava un arresto di
   emergenza; la registrazione è un compito del tecnico) e la modalità accanto allo stato (è la stessa
   informazione).
@@ -337,7 +338,7 @@ a goccia che va circa 5,5 m oltre il punto. Agli angoli il rover passa quindi un
 - **Fly View:** con più di 30 punti si vedono solo la partenza e il punto verso cui va il rover; il
   percorso resta disegnato come linea.
 
-Valori predefiniti delle colture, **indicativi e da confermare con il CREA** (domanda 25 in
+Valori predefiniti delle colture, **indicativi e da confermare con il CREA** (domanda 5 in
 `docs/domande-aperte.md` di `medea_hmi`). Interfila, prima fila e capezzagna le corregge anche l'operatore
 (*Coltura e file*); fascia coltivata, file per passata e raggio di sterzata sono dati del rover e stanno in
 *Rover* (modalità avanzata):
@@ -402,8 +403,8 @@ Va lanciato dal PC, non dal container. QGroundControl gira nel container di svil
 spento. La preparazione è descritta nel README di `medea_hmi`.
 
 Poi: *Pianifica* → lavoro → *Carica sul veicolo* → (la Guida si apre da sola) → **Avvia lavoro**. Nel simulatore
-non ci sono fungo, paraurti né stato delle schede motori; la posizione è esatta (senza EKF finché manca il relativo
-modulo privato). Dettagli e prove automatiche: `docs/integrazione-ros2.md` §10 di `medea_hmi`.
+non ci sono fungo, paraurti né stato delle schede motori; la posizione è esatta (con `USE_EKF=true bin/rover_sim.sh build` e `start` si provano
+anche gli EKF). Dettagli e prove automatiche: `docs/integrazione-ros2.md` §10 di `medea_hmi`.
 
 Nelle build di sviluppo (Debug) c'è anche il collegamento simulato di QGroundControl (*Impostazioni →
 Collegamento simulato*, *Veicolo APM ArduRover*): finge un rover ArduPilot, non si muove e mostra

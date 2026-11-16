@@ -9,7 +9,7 @@ QGC_LOGGING_CATEGORY(MedeaRoverFirmwarePluginLog, "FirmwarePlugin.MedeaRoverFirm
 
 QString MedeaRoverFirmwarePlugin::modeName(uint32_t customMode)
 {
-    // The machine states of the rover (docs/piano-dashboard.md in medea_hmi), as the operator reads them
+    // The machine states of the rover (docs/integrazione-ros2.md in medea_hmi), as the operator reads them
     switch (customMode) {
         case IdleMode:
             return tr("Ready");

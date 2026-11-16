@@ -295,8 +295,8 @@ diagonale sarebbe passato sopra la coltura.
   `MedeaRoverFirmwarePluginTest` aggiornato per gli 8 stati.
 
 **Perché.** Dopo la chiamata con S. Figorilli (CREA) la dashboard segue gli stati macchina e gli stati
-della missione delle sue regole operative, e la gestione del lavoro passa alla dashboard (piano in
-`docs/piano-dashboard.md` del repository `medea_hmi`):
+della missione delle sue regole operative, e la gestione del lavoro passa alla dashboard (decisioni in
+`docs/integrazione-ros2.md` del repository `medea_hmi`):
 
 - l'operatore deve capire a colpo d'occhio cosa fa il rover: prima c'erano due indicazioni (stato e
   modalità) con parole tecniche, ora un solo stato colorato;
