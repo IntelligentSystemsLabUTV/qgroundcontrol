@@ -310,11 +310,15 @@ a goccia che va circa 5,5 m oltre il punto. Agli angoli il rover passa quindi un
   dalla traiettoria è 0,37 m a 1,8 km/h e 0,84 m a 2,8 km/h (il rover si ferma oltre 1 m). Si può alzare fino
   a 3 km/h con voltate più larghe (raggio 3 m a 2,8 km/h: 0,54 m), da verificare sul rover vero. Il campo
   ricorda l'ultima velocità usata: chi aveva già lavorato a 2,8 km/h la ritrova finché non la cambia.
-  Una voltata va sempre oltre l'estremità più lontana delle file che scavalca, mai sopra una fila. Se una voltata esce dal campo il lavoro non si
+  Una voltata comincia e finisce **0,6 m oltre la fine di ogni fila che le ruote possono toccare**: le file tra le
+  due passate e quelle accanto, a mezza carreggiata (0,65 m) più mezza fascia. Con un lato del campo obliquo le file
+  accanto alla passata finiscono più in là della passata stessa; gli 0,6 m sono mezzo passo (1,08 m) più un margine,
+  perché sterzando su tutti e due gli assi le ruote si spostano di lato appena il rover comincia a girare. Lo stesso
+  vale per il rientro lungo la capezzagna a fine lavoro. Se una voltata esce dal campo il lavoro non si
   può salvare né caricare: l'editor dice di quanta capezzagna c'è bisogno, oppure (voltate a goccia vicino
   al lato del campo) suggerisce di allontanare la prima fila o di saltare file.
 - **Tratti dritti in capezzagna:** il lavoro comincia in capezzagna, prima della prima fila, e ogni voltata comincia e
-  finisce con un tratto dritto: il più lungo tra 4 m e 0 (a passi di 0,5 m) che lascia la voltata ad almeno 0,65 m
+  finisce con un tratto dritto, dopo gli 0,6 m sopra: il più lungo tra 4 m e 0 (a passi di 0,5 m) che lascia la voltata ad almeno 0,65 m
   (mezzo rover) dal bordo del campo. Motivo, dal simulatore a 1,8 km/h con voltate di 2 m: uscito da una voltata il
   rover ondeggia (0,37 m di scarto a 1-2 m, 0,16 m a 4 m, meno di 0,05 m da 5 m) e una ruota tocca la fascia della
   fila che scavalca già da circa 0,35 m (rover largo 1,29 m, fascia di 0,6 m). Se in qualche voltata restano meno di

@@ -35,6 +35,11 @@ constexpr double kRunIns[] = {4.0, 3.5, 3.0, 2.5, 2.0, 1.5, 1.0, 0.5, 0.0};
 /// A straight run is used only if the turn stays this far from the edge of the field: half of the 1.29 m of the rover
 constexpr double kEdgeMargin = 0.65;
 
+/// A turn starts and ends at least this far beyond the end of the rows, in meters: the wheels are half the 1.08 m
+/// wheelbase ahead of and behind the centre of the rover, and with both axles steering they swing sideways as soon as
+/// it turns. Closer, the wheels still beside a row would run over its end.
+constexpr double kWheelClearance = 0.6;
+
 /// With a shorter straight run before a row the rover may still sway when it enters it: the editor says so
 constexpr double kSafeRunIn = 3.0;
 
@@ -677,6 +682,7 @@ FieldWorkComplexItem::FieldPlan FieldWorkComplexItem::_computeFieldPlan() const
         return plan;
     }
     plan.rowsInField = static_cast<int>(rows.count());
+    const QList<Row> fieldRows = rows;  // also the rows not worked: the wheels must not run over them either
     const int rowsToWork = _rowsToWorkFact.rawValue().toInt();
     if ((rowsToWork > 0) && (rowsToWork < rows.count())) {
         rows = rows.mid(0, rowsToWork);  // the first rows from the reference edge
@@ -750,13 +756,24 @@ FieldWorkComplexItem::FieldPlan FieldWorkComplexItem::_computeFieldPlan() const
             {pass.s, direction, direction > 0 ? pass.start : pass.end, direction > 0 ? pass.end : pass.start});
     }
 
-    // Farthest end towards one headland (side +1: along t, -1: against it) of the passes between two passes, both
-    // included: a turn or a crossing of the headland goes beyond it, never over the end of a row in between
-    const auto farthestEnd = [&passes](double s1, double s2, double side) {
+    // Farthest end towards one headland (side +1: along t, -1: against it) of what the rover can drive over between
+    // two lines s1 and s2: the passes, and every crop row a wheel can reach (half the track of the rover plus half the
+    // crop band beyond). A turn or a crossing of the headland goes beyond it, never over the end of a row. The end of
+    // the pass alone is not enough: with an edge askew to the rows, the rows beside the line of a pass (under the
+    // wheels, or straddled when the rover works more rows per pass) end farther out than the line itself.
+    const double reach = kEdgeMargin + (rowWidth / 2);
+    const auto farthestEnd = [&passes, &fieldRows, reach](double s1, double s2, double side) {
         double t = side > 0 ? std::numeric_limits<double>::lowest() : std::numeric_limits<double>::max();
         for (const Row& pass : passes) {
             if ((pass.s - s1) * (pass.s - s2) <= kTolerance) {
                 t = side > 0 ? std::max(t, pass.end) : std::min(t, pass.start);
+            }
+        }
+        const double low = std::min(s1, s2) - reach;
+        const double high = std::max(s1, s2) + reach;
+        for (const Row& row : fieldRows) {
+            if ((row.s > low) && (row.s < high)) {
+                t = side > 0 ? std::max(t, row.end) : std::min(t, row.start);
             }
         }
         return t;
@@ -778,10 +795,18 @@ FieldWorkComplexItem::FieldPlan FieldWorkComplexItem::_computeFieldPlan() const
         const double sidewaysSign =
             (toS > fromS) ? 1.0 : ((toS < fromS) ? -1.0 : (fromS > fieldWidth / 2 ? -1.0 : 1.0));
         const QPointF sideways = sidewaysSign * axes.across;
-        const double far = farthestEnd(fromS, toS, direction);
-        const double rowsEnd = direction > 0 ? std::max(fromT, far) : std::min(fromT, far);
         bool bulb = false;
         double depth = 0;
+        // Across the rows the turn covers from fromS to toS, a bulb turn also beyond them
+        double sideMin = 0;
+        double sideMax = 0;
+        for (const PathPoint& turnPoint : turnPoints(std::abs(toS - fromS), radius, &bulb, &depth)) {
+            sideMin = std::min(sideMin, turnPoint.point.y());
+            sideMax = std::max(sideMax, turnPoint.point.y());
+        }
+        const double far = farthestEnd(fromS + (sidewaysSign * sideMin), fromS + (sidewaysSign * sideMax), direction);
+        const double rowsEnd =
+            (direction > 0 ? std::max(fromT, far) : std::min(fromT, far)) + (direction * kWheelClearance);
         double turnT = rowsEnd;
         for (const double run : kRunIns) {
             turnT = rowsEnd + (direction * run);
@@ -799,10 +824,10 @@ FieldWorkComplexItem::FieldPlan FieldWorkComplexItem::_computeFieldPlan() const
             }
         }
         if (!allInside(turn)) {
-            if (headland < depth - kTolerance) {
+            if (headland < depth + kWheelClearance - kTolerance) {
                 problem = tr("The turns at the end of the rows leave the field: the headland must be at least %1 m, "
                              "or the turning radius smaller.")
-                              .arg(QString::number(std::ceil(depth * 10) / 10, 'f', 1));
+                              .arg(QString::number(std::ceil((depth + kWheelClearance) * 10) / 10, 'f', 1));
             } else {
                 // A bulb turn bulges sideways beyond the passes it joins: the rows close to the side of the field
                 problem =
@@ -845,7 +870,7 @@ FieldWorkComplexItem::FieldPlan FieldWorkComplexItem::_computeFieldPlan() const
         const QPointF sideways = sidewaysSign * axes.across;
         const double lateral = std::abs(firstPass.s - exitS);
         const double rowsEnd = farthestEnd(exitS, firstPass.s, out);
-        for (const double clear : {1.0, 0.5}) {
+        for (const double clear : {1.0, kWheelClearance}) {
             const double arcT = rowsEnd + (out * clear);  // beyond every row end in between
             const QPointF arcOrigin = axes.point(arcT, exitS);
             QList<PathPoint> candidate{{arcOrigin, forward}};

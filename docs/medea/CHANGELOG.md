@@ -22,6 +22,24 @@ Guide d'uso: [guida per l'operatore](guida-operatore.md), [guida per il tecnico]
 
 ---
 
+## 2026-11-18
+
+### Lavoro in campo: voltate e rientro oltre la fine delle file sotto le ruote
+
+**Perché.** Controllando le ruote del rover (carreggiata 1,29 m, passo 1,08 m) lungo i lavori di 300 campi casuali,
+in alcuni campi con un lato obliquo una voltata o il rientro lungo la capezzagna passavano sulla punta di una fila
+(fino a 0,25 m dentro la fascia). Due cause: la voltata partiva oltre la fine della **linea della passata**, ma le
+file accanto, dove passano le ruote, con il lato obliquo finiscono più in là; e partiva anche solo 0,5 m (o 0) dopo,
+mentre le ruote stanno 0,54 m avanti e dietro il centro e, sterzando su tutti e due gli assi, si spostano di lato
+appena il rover gira.
+
+**Cosa.** `farthestEnd` considera ogni fila di coltura (anche quelle non lavorate) entro mezza carreggiata più mezza
+fascia dalle passate che la voltata attraversa, una voltata a goccia compresa la parte che sporge; voltate e rientro
+cominciano e finiscono 0,6 m oltre (`kWheelClearance`). Nei 300 campi: nessuna ruota sulle file fuori dalle passate
+(prima 5 campi); 9 campi con capezzagna stretta ora sono rifiutati con la capezzagna necessaria; i 300 lavori sono
+costruiti dal vero `path_planner`; nessun rientro del bridge passa sulle file. Test `_testUTurns` aggiornato (tratto
+dritto di 3,1 m: 0,6 + 2,5).
+
 ## 2026-11-15
 
 ### Guida: Torna alla base mostra prima la strada sulla mappa

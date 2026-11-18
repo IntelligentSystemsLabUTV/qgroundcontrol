@@ -132,12 +132,12 @@ void FieldWorkComplexItemTest::_testUTurns()
     const QGeoCoordinate firstPassSouth =
         _polygonVertices[0].atDistanceAndAzimuth(6.0, 0).atDistanceAndAzimuth(2.5, 90);
     QVERIFY(coords[1].distanceTo(firstPassSouth) < 0.1);
-    // Straight on in the headland before and after the U turn (2 m deep), as long as it stays 0.65 m from the edge of
-    // the 6 m headland: 3 m
+    // Straight on in the headland before and after the U turn (2 m deep): 0.6 m for the wheels to clear the rows, then
+    // the longest run that keeps the turn 0.65 m from the edge of the 6 m headland, 2.5 m
     const QGeoCoordinate firstPassNorth = firstPassSouth.atDistanceAndAzimuth(_fieldLength - 12.0, 0);
     QVERIFY(coords[2].distanceTo(firstPassNorth) < 0.1);
-    QVERIFY(coords[3].distanceTo(firstPassNorth.atDistanceAndAzimuth(3.0, 0)) < 0.1);
-    QCOMPARE(_fieldItem->shortestRunIn(), 3.0);
+    QVERIFY(coords[3].distanceTo(firstPassNorth.atDistanceAndAzimuth(3.1, 0)) < 0.05);
+    QCOMPARE(_fieldItem->shortestRunIn(), 3.1);
     QVERIFY(_fieldItem->advice().isEmpty());
     QVERIFY(_fieldItem->shortRunIns().isEmpty());
     // A narrower headland leaves less room to straighten before the rows: a warning, the job can still be done
